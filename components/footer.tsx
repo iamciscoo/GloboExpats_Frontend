@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Mail,
@@ -9,23 +8,10 @@ import {
   Facebook,
   Twitter,
   Instagram,
-  Linkedin,
-  ArrowRight,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { CATEGORIES } from '@/lib/constants'
 
 export default function Footer() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-
-  useEffect(() => {
-    // Check login status from localStorage
-    if (typeof window !== 'undefined') {
-      setIsLoggedIn(localStorage.getItem('isLoggedIn') === 'true')
-    }
-  }, [])
-
   return (
     <footer className="bg-brand-primary text-neutral-200">
       <div className="container mx-auto px-4 py-12">

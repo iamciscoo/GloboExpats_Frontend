@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,6 +25,7 @@ import {
   ITEM_CONDITIONS,
   EXPAT_LOCATIONS,
 } from '@/lib/constants'
+import { debounce, generateSlug } from '@/lib/utils'
 import { ProductCard } from '@/components/ui/product-card'
 import {
   Search,
@@ -359,10 +360,21 @@ export default function BrowsePage() {
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState(initialQuery)
+  const [searchInput, setSearchInput] = useState(initialQuery)
   const [sortBy, setSortBy] = useState('relevance')
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(initialPage)
   const [itemsPerPage] = useState(12) // Fixed items per page
+  const isApplyingUrlParams = useRef(false)
+
+  // Debounce updates to the actual search query to reduce re-renders and URL churn
+  const debouncedUpdateQuery = useMemo(
+    () =>
+      debounce((value: string) => {
+        setSearchQuery(value)
+      }, 300),
+    []
+  )
 
   const [filters, setFilters] = useState<FilterState>({
     selectedCategory: initialCategory,
@@ -372,6 +384,32 @@ export default function BrowsePage() {
     timePosted: '',
     location: '',
   })
+
+  // Sync state FROM URL (supports back/forward navigation & direct linking)
+  useEffect(() => {
+    isApplyingUrlParams.current = true
+    const q = searchParams.get('q') || ''
+    const cat = searchParams.get('category') || ''
+    const page = parseInt(searchParams.get('page') || '1')
+
+    if (q !== searchQuery) {
+      setSearchQuery(q)
+      setSearchInput(q)
+    }
+    if (cat !== filters.selectedCategory) {
+      setFilters((prev) => ({ ...prev, selectedCategory: cat }))
+    }
+    if (Number.isFinite(page) && page !== currentPage) {
+      setCurrentPage(page)
+    }
+
+    const t = setTimeout(() => {
+      isApplyingUrlParams.current = false
+    }, 0)
+
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   const clearAllFilters = () => {
     setFilters({
@@ -399,15 +437,15 @@ export default function BrowsePage() {
     if (currentPage > 1) params.set('page', currentPage.toString())
     else params.delete('page')
 
-    router.replace(`/browse?${params.toString()}`)
+    const qs = params.toString()
+    router.replace(qs ? `/browse?${qs}` : '/browse')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, filters.selectedCategory, currentPage])
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory =
-      !filters.selectedCategory ||
-      product.title.toLowerCase().includes(filters.selectedCategory.replace('-', ' '))
+      !filters.selectedCategory || product.categorySlug === filters.selectedCategory
 
     // Convert price string to number for comparison
     const priceNumber = parseInt(product.price.replace(/[^\d]/g, ''))
@@ -420,7 +458,7 @@ export default function BrowsePage() {
       (filters.sellerType === 'premium' && product.isPremium)
 
     const matchesLocation =
-      !filters.location || product.location.toLowerCase().includes(filters.location)
+      !filters.location || generateSlug(product.location).includes(filters.location)
 
     return matchesSearch && matchesCategory && matchesPrice && matchesSellerType && matchesLocation
   })
@@ -433,6 +471,7 @@ export default function BrowsePage() {
 
   // Reset to page 1 when filters change
   useEffect(() => {
+    if (isApplyingUrlParams.current) return
     setCurrentPage(1)
   }, [filters, searchQuery])
 
@@ -491,8 +530,11 @@ export default function BrowsePage() {
                 <Input
                   placeholder="Search for cars, electronics, furniture..."
                   className="pl-10 w-full h-11 bg-gray-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => {
+                    setSearchInput(e.target.value)
+                    debouncedUpdateQuery(e.target.value)
+                  }}
                 />
               </div>
             </div>
