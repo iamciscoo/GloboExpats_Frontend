@@ -260,6 +260,12 @@ const nextConfig = {
   // Disable X-Powered-By header for security
   poweredByHeader: false,
 
+  // Ensure proper static file serving in Docker
+  assetPrefix: process.env.NODE_ENV === 'production' ? '' : undefined,
+  
+  // Configure static file serving
+  trailingSlash: false,
+
   /**
    * =============================================================================
    * DEVELOPMENT OPTIMIZATIONS

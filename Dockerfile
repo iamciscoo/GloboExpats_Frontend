@@ -61,6 +61,9 @@ RUN pnpm run build
 FROM node:18-alpine AS runner
 WORKDIR /app
 
+# Install curl for health checks
+RUN apk add --no-cache curl
+
 # Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
@@ -85,12 +88,13 @@ RUN chown -R nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy custom server for better static file handling
-COPY --from=builder --chown=nextjs:nodejs /app/server.js ./
-
 # Ensure proper permissions for all assets
 RUN chown -R nextjs:nodejs ./public
 RUN chown -R nextjs:nodejs ./.next
+
+# Copy health check script
+COPY --chown=nextjs:nodejs healthcheck.sh ./
+RUN chmod +x healthcheck.sh
 
 # Expose port
 EXPOSE 3000
@@ -102,9 +106,9 @@ ENV HOSTNAME="0.0.0.0"
 # Switch to non-root user
 USER nextjs
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:3000/api/health || exit 1
+# Health check using the script
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD ./healthcheck.sh
 
-# Start the application
+# Start the application using the Next.js standalone server
 CMD ["node", "server.js"]
