@@ -1,0 +1,119 @@
+# =============================================================================
+# DOCKERIGNORE - EXPAT MARKETPLACE FRONTEND
+# =============================================================================
+# Exclude unnecessary files from Docker build context to reduce build time
+# and image size
+# =============================================================================
+
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Testing
+coverage/
+.nyc_output/
+*.test.js
+*.test.ts
+*.test.tsx
+*.spec.js
+*.spec.ts
+*.spec.tsx
+__tests__/
+jest.config.js
+vitest.config.ts
+vitest.setup.ts
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.github/
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+*.md
+docs/
+
+# Development tools
+.eslintrc.js
+.eslintrc.json
+.prettierrc
+.prettierrc.js
+prettier.config.js
+.editorconfig
+
+# Scripts and configurations
+scripts/
+tailwind.config.ts
+postcss.config.mjs
+components.json
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output/
+
+# Storybook build outputs
+storybook-static/
+
+# Temporary folders
+tmp/
+temp/
+
+# Docker files (if building from within a container)
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Deployment scripts
+deploy.sh
+*.sh
+
+# Kubernetes manifests
+k8s/
+kubernetes/
+*.yaml
+*.yml
