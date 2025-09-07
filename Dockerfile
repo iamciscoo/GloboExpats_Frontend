@@ -68,13 +68,29 @@ RUN adduser --system --uid 1001 nextjs
 # Set environment
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-# Copy public assets
+# Fix static file serving in standalone mode
+ENV __NEXT_PRIVATE_STANDALONE_CONFIG=1
+
+# Copy public assets first
 COPY --from=builder /app/public ./public
 
-# Copy built application
+# Create .next directory with proper ownership
+RUN mkdir -p .next
+RUN chown -R nextjs:nodejs .next
+
+# Copy built application with all static assets
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Copy custom server for better static file handling
+COPY --from=builder --chown=nextjs:nodejs /app/server.js ./
+
+# Ensure proper permissions for all assets
+RUN chown -R nextjs:nodejs ./public
+RUN chown -R nextjs:nodejs ./.next
 
 # Expose port
 EXPOSE 3000

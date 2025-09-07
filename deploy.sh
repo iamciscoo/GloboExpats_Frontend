@@ -280,6 +280,9 @@ deploy_container() {
         -p $PORT:3000 \
         -e NODE_ENV=$ENVIRONMENT \
         -e NEXT_TELEMETRY_DISABLED=1 \
+        -e PORT=3000 \
+        -e HOSTNAME=0.0.0.0 \
+        -e __NEXT_PRIVATE_STANDALONE_CONFIG=1 \
         --restart unless-stopped \
         $IMAGE_NAME:$TAG
     
