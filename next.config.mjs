@@ -57,7 +57,7 @@ const nextConfig = {
       '@radix-ui/react-toast',
     ],
     // Optimize CSS imports
-    optimizeCss: true,
+    optimizeCss: false,
     // Enable Turbo for faster builds in development
     turbo: {
       rules: {
