@@ -2,6 +2,28 @@ import type { Config } from 'tailwindcss'
 
 const config: Config = {
   darkMode: ['class'],
+  // Ensure dynamic/conditional classes aren’t purged in production
+  safelist: [
+    // Status badges and variants
+    'bg-green-100',
+    'text-green-800',
+    'bg-blue-100',
+    'text-blue-800',
+    'bg-yellow-100',
+    'text-yellow-800',
+    'bg-gray-100',
+    'text-gray-800',
+    'bg-red-100',
+    'text-red-800',
+    // Common focus/hover utilities seen in components
+    'focus:ring-cyan-500',
+    'hover:shadow-blue-900/20',
+    // Gradient color stops used in UI
+    'from-cyan-400',
+    'to-blue-500',
+    'from-brand-primary',
+    'to-brand-accent',
+  ],
   content: [
     './pages/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',

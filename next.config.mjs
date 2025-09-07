@@ -264,8 +264,8 @@ const nextConfig = {
    * =============================================================================
    */
 
-  // Generate standalone build for Docker deployment (skip on Windows to avoid symlink errors)
-  output: process.platform === 'win32' ? undefined : 'standalone',
+  // Generate standalone build for Docker deployment
+  output: 'standalone',
 
   // Compress static assets
   compress: true,
@@ -311,6 +311,30 @@ const nextConfig = {
     fetches: {
       fullUrl: true,
     },
+  },
+
+  // Ensure proper headers for static assets
+  async headers() {
+    return [
+      {
+        source: '/_next/static/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/(.*\\.css)',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'text/css',
+          },
+        ],
+      },
+    ]
   },
 }
 
