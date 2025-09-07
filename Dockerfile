@@ -26,13 +26,13 @@ COPY yarn.lock* ./
 
 # Install dependencies with fallback strategies
 RUN if [ -f pnpm-lock.yaml ]; then \
-        echo "Using pnpm..." && pnpm install --frozen-lockfile --prod=false; \
-    elif [ -f package-lock.json ]; then \
-        echo "Using npm..." && npm ci --only=production=false; \
+        echo "Using pnpm..." && pnpm install --frozen-lockfile; \
     elif [ -f yarn.lock ]; then \
         echo "Using yarn..." && npm install -g yarn && yarn install --frozen-lockfile; \
+    elif [ -f package-lock.json ]; then \
+        echo "Using npm with legacy peer deps..." && npm ci --legacy-peer-deps; \
     else \
-        echo "No lock file found, using pnpm install..." && pnpm install --prod=false; \
+        echo "No lock file found, using pnpm install..." && pnpm install; \
     fi
 
 # =============================================================================
