@@ -92,10 +92,6 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 RUN chown -R nextjs:nodejs ./public
 RUN chown -R nextjs:nodejs ./.next
 
-# Copy health check script
-COPY --chown=nextjs:nodejs healthcheck.sh ./
-RUN chmod +x healthcheck.sh
-
 # Expose port
 EXPOSE 3000
 
@@ -106,9 +102,9 @@ ENV HOSTNAME="0.0.0.0"
 # Switch to non-root user
 USER nextjs
 
-# Health check using the script
+# Health check using curl directly (no external script needed)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD ./healthcheck.sh
+  CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start the application using the Next.js standalone server
 CMD ["node", "server.js"]
