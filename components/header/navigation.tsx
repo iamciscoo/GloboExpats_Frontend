@@ -19,20 +19,13 @@ export const Navigation = React.memo<NavigationProps>(
           Browse
         </Link>
 
-        <Link
-          href="/community"
-          className="text-sm font-medium text-neutral-200 hover:text-white hover:bg-white/10 px-3 py-2 rounded-md transition-colors"
-        >
-          Community
-        </Link>
-
         {isLoggedIn && (
           <Link
-            href="/seller/dashboard"
+            href="/expat/dashboard"
             className="text-sm font-medium text-neutral-200 hover:text-white hover:bg-white/10 px-3 py-2 rounded-md transition-colors flex items-center gap-1"
           >
             <Package className="h-4 w-4" />
-            Sell
+            My Listings
           </Link>
         )}
 

@@ -1,0 +1,23 @@
+{
+  "endpoints": {
+    "users": "/api/users",
+    "products": "/api/products",
+    "categories": "/api/categories",
+    "locations": "/api/locations",
+    "currencies": "/api/currencies"
+  },
+  "fallback": {
+    "users": "/assets/data/users.json",
+    "products": "/assets/data/products.json",
+    "categories": "/assets/data/categories.json"
+  },
+  "assets": {
+    "baseUrl": "/assets",
+    "images": {
+      "products": "/assets/images/products",
+      "avatars": "/assets/images/avatars",
+      "heroes": "/assets/images/heroes",
+      "placeholders": "/assets/images/placeholders"
+    }
+  }
+}

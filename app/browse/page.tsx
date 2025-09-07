@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -25,6 +25,7 @@ import {
   ITEM_CONDITIONS,
   EXPAT_LOCATIONS,
 } from '@/lib/constants'
+import { debounce, generateSlug } from '@/lib/utils'
 import { ProductCard } from '@/components/ui/product-card'
 import {
   Search,
@@ -53,7 +54,7 @@ interface FilterState {
   selectedCategory: string
   priceRange: [number, number]
   condition: string
-  sellerType: string
+  expatType: string
   timePosted: string
   location: string
 }
@@ -77,7 +78,7 @@ const FilterContentEl = ({ filters, setFilters, clearAllFilters }: FilterProps) 
     filters.priceRange[0] > 0 ||
     filters.priceRange[1] < 10000000 ||
     filters.condition ||
-    filters.sellerType ||
+    filters.expatType ||
     filters.timePosted ||
     filters.location
 
@@ -276,29 +277,29 @@ const FilterContentEl = ({ filters, setFilters, clearAllFilters }: FilterProps) 
           <div className="space-y-3">
             <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
               <Shield className="h-4 w-4 text-blue-600" />
-              Seller Type
+              Expat Type
             </Label>
             <RadioGroup
-              value={filters.sellerType}
-              onValueChange={(value) => updateFilter('sellerType', value)}
+              value={filters.expatType}
+              onValueChange={(value) => updateFilter('expatType', value)}
               className="space-y-2"
             >
               <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 transition-colors">
-                <RadioGroupItem value="" id="seller-all" />
+                <RadioGroupItem value="" id="expat-all" />
                 <Label
-                  htmlFor="seller-all"
+                  htmlFor="expat-all"
                   className="text-sm text-gray-600 cursor-pointer hover:text-gray-800 transition-colors"
                 >
-                  All sellers
+                  All expats
                 </Label>
               </div>
               <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 transition-colors">
-                <RadioGroupItem value="verified" id="seller-verified" />
+                <RadioGroupItem value="verified" id="expat-verified" />
                 <Label
-                  htmlFor="seller-verified"
+                  htmlFor="expat-verified"
                   className="text-sm text-gray-600 cursor-pointer hover:text-gray-800 transition-colors flex items-center gap-2"
                 >
-                  Verified sellers only
+                  Verified expats only
                   <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
                     <Shield className="h-3 w-3 mr-1" />
                     Trusted
@@ -306,12 +307,12 @@ const FilterContentEl = ({ filters, setFilters, clearAllFilters }: FilterProps) 
                 </Label>
               </div>
               <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 transition-colors">
-                <RadioGroupItem value="premium" id="seller-premium" />
+                <RadioGroupItem value="premium" id="expat-premium" />
                 <Label
-                  htmlFor="seller-premium"
+                  htmlFor="expat-premium"
                   className="text-sm text-gray-600 cursor-pointer hover:text-gray-800 transition-colors flex items-center gap-2"
                 >
-                  Premium sellers only
+                  Premium expats only
                   <Badge variant="secondary" className="text-xs bg-amber-100 text-amber-700">
                     <Star className="h-3 w-3 mr-1" />
                     Premium
@@ -359,26 +360,63 @@ export default function BrowsePage() {
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState(initialQuery)
+  const [searchInput, setSearchInput] = useState(initialQuery)
   const [sortBy, setSortBy] = useState('relevance')
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(initialPage)
   const [itemsPerPage] = useState(12) // Fixed items per page
+  const isApplyingUrlParams = useRef(false)
+
+  // Debounce updates to the actual search query to reduce re-renders and URL churn
+  const debouncedUpdateQuery = useMemo(
+    () =>
+      debounce((value: string) => {
+        setSearchQuery(value)
+      }, 300),
+    []
+  )
 
   const [filters, setFilters] = useState<FilterState>({
     selectedCategory: initialCategory,
     priceRange: [0, 10000000],
     condition: '',
-    sellerType: '',
+    expatType: '',
     timePosted: '',
     location: '',
   })
+
+  // Sync state FROM URL (supports back/forward navigation & direct linking)
+  useEffect(() => {
+    isApplyingUrlParams.current = true
+    const q = searchParams.get('q') || ''
+    const cat = searchParams.get('category') || ''
+    const page = parseInt(searchParams.get('page') || '1')
+
+    if (q !== searchQuery) {
+      setSearchQuery(q)
+      setSearchInput(q)
+    }
+    if (cat !== filters.selectedCategory) {
+      setFilters((prev) => ({ ...prev, selectedCategory: cat }))
+    }
+    if (Number.isFinite(page) && page !== currentPage) {
+      setCurrentPage(page)
+    }
+
+    const t = setTimeout(() => {
+      isApplyingUrlParams.current = false
+    }, 0)
+
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   const clearAllFilters = () => {
     setFilters({
       selectedCategory: '',
       priceRange: [0, 10000000],
       condition: '',
-      sellerType: '',
+      expatType: '',
       timePosted: '',
       location: '',
     })
@@ -399,30 +437,30 @@ export default function BrowsePage() {
     if (currentPage > 1) params.set('page', currentPage.toString())
     else params.delete('page')
 
-    router.replace(`/browse?${params.toString()}`)
+    const qs = params.toString()
+    router.replace(qs ? `/browse?${qs}` : '/browse')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, filters.selectedCategory, currentPage])
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesCategory =
-      !filters.selectedCategory ||
-      product.title.toLowerCase().includes(filters.selectedCategory.replace('-', ' '))
+      !filters.selectedCategory || product.categorySlug === filters.selectedCategory
 
     // Convert price string to number for comparison
     const priceNumber = parseInt(product.price.replace(/[^\d]/g, ''))
     const matchesPrice =
       priceNumber >= filters.priceRange[0] && priceNumber <= filters.priceRange[1]
 
-    const matchesSellerType =
-      !filters.sellerType ||
-      (filters.sellerType === 'verified' && product.isVerified) ||
-      (filters.sellerType === 'premium' && product.isPremium)
+    const matchesExpatType =
+      !filters.expatType ||
+      (filters.expatType === 'verified' && product.isVerified) ||
+      (filters.expatType === 'premium' && product.isPremium)
 
     const matchesLocation =
-      !filters.location || product.location.toLowerCase().includes(filters.location)
+      !filters.location || generateSlug(product.location).includes(filters.location)
 
-    return matchesSearch && matchesCategory && matchesPrice && matchesSellerType && matchesLocation
+    return matchesSearch && matchesCategory && matchesPrice && matchesExpatType && matchesLocation
   })
 
   // Pagination calculations
@@ -433,6 +471,7 @@ export default function BrowsePage() {
 
   // Reset to page 1 when filters change
   useEffect(() => {
+    if (isApplyingUrlParams.current) return
     setCurrentPage(1)
   }, [filters, searchQuery])
 
@@ -491,8 +530,11 @@ export default function BrowsePage() {
                 <Input
                   placeholder="Search for cars, electronics, furniture..."
                   className="pl-10 w-full h-11 bg-gray-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  value={searchInput}
+                  onChange={(e) => {
+                    setSearchInput(e.target.value)
+                    debouncedUpdateQuery(e.target.value)
+                  }}
                 />
               </div>
             </div>
@@ -506,7 +548,7 @@ export default function BrowsePage() {
                     Filters
                     {(filters.selectedCategory ||
                       filters.condition ||
-                      filters.sellerType ||
+                      filters.expatType ||
                       filters.timePosted ||
                       filters.location) && (
                       <Badge variant="secondary" className="ml-2 text-xs bg-blue-100 text-blue-700">
@@ -616,7 +658,7 @@ export default function BrowsePage() {
                 <div
                   className={
                     viewMode === 'grid'
-                      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+                      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
                       : 'space-y-6'
                   }
                 >

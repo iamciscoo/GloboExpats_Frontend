@@ -65,7 +65,7 @@ export default function NotFound() {
               Contact Support
             </Link>
             <span className="text-neutral-400">•</span>
-            <Link href="/seller/register" className="text-brand-primary hover:underline">
+            <Link href="/register" className="text-brand-primary hover:underline">
               Become a Seller
             </Link>
             <span className="text-neutral-400">•</span>

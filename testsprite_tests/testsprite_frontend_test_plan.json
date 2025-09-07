@@ -1,0 +1,683 @@
+[
+  {
+    "id": "TC001",
+    "title": "User Login with Email OTP",
+    "description": "Verify that a user can successfully log in using the email-based OTP method.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login page."
+      },
+      {
+        "type": "action",
+        "description": "Enter a valid registered email address."
+      },
+      {
+        "type": "action",
+        "description": "Request OTP and enter the received OTP."
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form."
+      },
+      {
+        "type": "assertion",
+        "description": "User is authenticated and redirected to the homepage or user dashboard."
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "User Login Failure with Invalid OTP",
+    "description": "Ensure login fails when an invalid or expired OTP is submitted.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the login page."
+      },
+      {
+        "type": "action",
+        "description": "Enter a valid registered email address."
+      },
+      {
+        "type": "action",
+        "description": "Enter an invalid or expired OTP."
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form."
+      },
+      {
+        "type": "assertion",
+        "description": "Display appropriate error message and deny access."
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "User Login with Social Account",
+    "description": "Verify successful login via supported social login providers.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to login page."
+      },
+      {
+        "type": "action",
+        "description": "Click on a social login button (e.g., Google, Facebook)."
+      },
+      {
+        "type": "action",
+        "description": "Complete social login flow."
+      },
+      {
+        "type": "assertion",
+        "description": "User is authenticated and redirected appropriately."
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "New User Auto-Registration on Social Login",
+    "description": "Verify that a new user is auto-registered if logging in with a social account for the first time.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Use a social login account not previously registered."
+      },
+      {
+        "type": "action",
+        "description": "Complete social login authentication."
+      },
+      {
+        "type": "assertion",
+        "description": "New user account is created and user is authenticated."
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Role-Based Access Control Enforcement",
+    "description": "Validate that access to certain pages and actions are granted or denied based on user roles (buyer, seller, admin).",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as buyer and attempt to access seller dashboard."
+      },
+      {
+        "type": "assertion",
+        "description": "Access is denied or redirected appropriately."
+      },
+      {
+        "type": "action",
+        "description": "Log in as seller and access seller dashboard."
+      },
+      {
+        "type": "assertion",
+        "description": "Seller dashboard is accessible."
+      },
+      {
+        "type": "action",
+        "description": "Log in as admin and access admin dashboard."
+      },
+      {
+        "type": "assertion",
+        "description": "Admin dashboard is accessible with full management tools."
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "User Profile Management - Update Preferences and Verification Status",
+    "description": "Verify users can view and update their profile including expat-specific preferences and their verification status is displayed correctly.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as a verified user."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to user profile page."
+      },
+      {
+        "type": "action",
+        "description": "Update expat-specific preferences such as preferred region and language."
+      },
+      {
+        "type": "action",
+        "description": "Save changes."
+      },
+      {
+        "type": "assertion",
+        "description": "Changes are saved and updated preferences appear correctly."
+      },
+      {
+        "type": "assertion",
+        "description": "Verification status displayed matches backend user verification level."
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Create New Product Listing with Image Upload Validation",
+    "description": "Ensure sellers can create new listings with valid images and that invalid image uploads are handled gracefully.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as a verified seller."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to new listing creation page."
+      },
+      {
+        "type": "action",
+        "description": "Fill in product details including category, description, and price."
+      },
+      {
+        "type": "action",
+        "description": "Upload one or more images within allowed size and formats."
+      },
+      {
+        "type": "assertion",
+        "description": "Images are previewed correctly and accepted."
+      },
+      {
+        "type": "action",
+        "description": "Submit listing form."
+      },
+      {
+        "type": "assertion",
+        "description": "Listing is created and visible in seller's listing dashboard."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to upload disallowed image format or too large image."
+      },
+      {
+        "type": "assertion",
+        "description": "Appropriate error messages appear and upload is prevented."
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Edit and Archive Product Listing Flows",
+    "description": "Validate sellers can edit existing listings and archive outdated or sold listings, with correct status updates reflected.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as a seller."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to seller listing management dashboard."
+      },
+      {
+        "type": "action",
+        "description": "Edit product details of an existing listing."
+      },
+      {
+        "type": "action",
+        "description": "Save edited listing."
+      },
+      {
+        "type": "assertion",
+        "description": "Listing details are updated and displayed correctly."
+      },
+      {
+        "type": "action",
+        "description": "Archive an existing listing."
+      },
+      {
+        "type": "assertion",
+        "description": "Listing status updates to archived and is not visible in public marketplace."
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Browse and Filter Marketplace Listings",
+    "description": "Confirm users can browse marketplace listings without login, and apply multiple filters including category, price range, and premium badge.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open marketplace browse page as anonymous user."
+      },
+      {
+        "type": "assertion",
+        "description": "Listings load with featured and premium badges visible."
+      },
+      {
+        "type": "action",
+        "description": "Apply category filter to narrow down listings."
+      },
+      {
+        "type": "assertion",
+        "description": "Listings update to show only items in selected category."
+      },
+      {
+        "type": "action",
+        "description": "Apply price range filter."
+      },
+      {
+        "type": "assertion",
+        "description": "Listings refresh to conform to selected price range."
+      },
+      {
+        "type": "action",
+        "description": "Apply premium badge filter."
+      },
+      {
+        "type": "assertion",
+        "description": "Only premium listings are shown."
+      },
+      {
+        "type": "action",
+        "description": "Combine multiple filters and search query."
+      },
+      {
+        "type": "assertion",
+        "description": "Listings update accordingly with relevant items displayed."
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Real-Time Messaging Between Verified Buyers and Sellers",
+    "description": "Verify that only verified buyers can send real-time messages to sellers and that messages appear in both sender and recipient interfaces.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as a verified buyer."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to a seller's product detail page."
+      },
+      {
+        "type": "action",
+        "description": "Initiate a message conversation using messaging interface."
+      },
+      {
+        "type": "action",
+        "description": "Send a message to the seller."
+      },
+      {
+        "type": "assertion",
+        "description": "Message is delivered in real-time to the seller's inbox."
+      },
+      {
+        "type": "action",
+        "description": "Log in as the seller."
+      },
+      {
+        "type": "assertion",
+        "description": "Seller sees the incoming buyer message immediately."
+      },
+      {
+        "type": "action",
+        "description": "Reply to the buyer."
+      },
+      {
+        "type": "assertion",
+        "description": "Buyer receives the seller's message in real-time."
+      },
+      {
+        "type": "action",
+        "description": "Attempt message sending as unverified buyer."
+      },
+      {
+        "type": "assertion",
+        "description": "Messaging interface is disabled or message sending is blocked."
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Admin Monitoring and Notification of Overdue Listings",
+    "description": "Confirm admins can view overdue listings, send notifications to sellers, and archive overdue items.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as admin."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to admin listings dashboard."
+      },
+      {
+        "type": "assertion",
+        "description": "Overdue listings appear categorized and sorted."
+      },
+      {
+        "type": "action",
+        "description": "Select an overdue listing and send notification to seller."
+      },
+      {
+        "type": "assertion",
+        "description": "Notification is logged and seller receives alert."
+      },
+      {
+        "type": "action",
+        "description": "Archive an overdue listing via admin panel."
+      },
+      {
+        "type": "assertion",
+        "description": "Listing is moved to archive and no longer appears in active listings."
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Currency Toggle and Multi-Currency Support",
+    "description": "Validate that users can toggle between currencies and product prices and cart totals update accordingly.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open any marketplace listing or cart page."
+      },
+      {
+        "type": "action",
+        "description": "Switch currency toggle to a different supported currency."
+      },
+      {
+        "type": "assertion",
+        "description": "All product prices and totals reflect the selected currency with correct conversion."
+      },
+      {
+        "type": "action",
+        "description": "Reload page and confirm persistence of selected currency preference."
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Responsive Design Validation across Desktop, Tablet, and Mobile",
+    "description": "Verify UI layout, navigation, and accessibility conform across desktop (>=1024px), tablet (768px), and mobile (375px) screen sizes.",
+    "category": "ui",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Load homepage in large desktop viewport."
+      },
+      {
+        "type": "assertion",
+        "description": "Full header, hero carousel, and menu are visible and functional."
+      },
+      {
+        "type": "action",
+        "description": "Resize viewport to tablet width (768px)."
+      },
+      {
+        "type": "assertion",
+        "description": "Header adjusts, navigation collapses appropriately, and content remains accessible."
+      },
+      {
+        "type": "action",
+        "description": "Resize viewport to mobile width (375px)."
+      },
+      {
+        "type": "assertion",
+        "description": "Mobile navigation is accessible via toggle, content is readable and controls usable."
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Accessibility Compliance Testing for WCAG 2.1 AA",
+    "description": "Check that all major UI components, including forms, navigation, and messaging interfaces, meet accessibility standards.",
+    "category": "ui",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Perform keyboard-only navigation through main pages and forms."
+      },
+      {
+        "type": "assertion",
+        "description": "All interactive elements are reachable and usable via keyboard."
+      },
+      {
+        "type": "action",
+        "description": "Use screen reader to navigate listing pages and verify ARIA labels and roles."
+      },
+      {
+        "type": "assertion",
+        "description": "Correct and descriptive labels are read, and focus is visible."
+      },
+      {
+        "type": "action",
+        "description": "Check color contrast ratios comply with WCAG 2.1 AA."
+      },
+      {
+        "type": "assertion",
+        "description": "Text and relevant UI elements have sufficient contrast."
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Error Handling and Validation on Forms",
+    "description": "Test that all user input forms enforce proper validation rules and display meaningful error messages on invalid input.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to registration form."
+      },
+      {
+        "type": "action",
+        "description": "Submit form with missing required fields."
+      },
+      {
+        "type": "assertion",
+        "description": "Appropriate error messages highlight missing fields."
+      },
+      {
+        "type": "action",
+        "description": "Submit form with invalid data formats (email, phone number)."
+      },
+      {
+        "type": "assertion",
+        "description": "Validation errors prevent submission with informative messages."
+      },
+      {
+        "type": "action",
+        "description": "Try invalid input on product listing creation and profile update forms."
+      },
+      {
+        "type": "assertion",
+        "description": "Validation responds correctly in all relevant contexts."
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Loading States and Lazy Loading Behavior",
+    "description": "Verify that loading skeletons and lazy loading are used to improve user experience during data or component fetching.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to browse or homepage with slow network throttling."
+      },
+      {
+        "type": "assertion",
+        "description": "Loading skeletons appear where content will load."
+      },
+      {
+        "type": "action",
+        "description": "Scroll through listings and image-heavy pages."
+      },
+      {
+        "type": "assertion",
+        "description": "Images and components lazy load as they come into viewport."
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Persistent Shopping Cart Storage Across Sessions",
+    "description": "Ensure items added to the cart persist through page reloads and user sessions where applicable.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Add multiple items to shopping cart."
+      },
+      {
+        "type": "assertion",
+        "description": "Cart icon updates to reflect item counts."
+      },
+      {
+        "type": "action",
+        "description": "Reload the browser or close and reopen tab."
+      },
+      {
+        "type": "assertion",
+        "description": "Cart contents remain preserved and accessible."
+      },
+      {
+        "type": "action",
+        "description": "Log out and log back in."
+      },
+      {
+        "type": "assertion",
+        "description": "Cart content is retained if user is authenticated; otherwise cleared as per spec."
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Seller Verification Workflow and Badge Assignment",
+    "description": "Confirm that sellers can submit verification documents, admins can approve, and approved sellers receive corresponding badges.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Register as seller and submit required verification documents."
+      },
+      {
+        "type": "action",
+        "description": "Confirm verification submission acknowledgement."
+      },
+      {
+        "type": "action",
+        "description": "Log in as admin and approve seller verification."
+      },
+      {
+        "type": "action",
+        "description": "Log in as seller and verify premium seller badge is displayed."
+      },
+      {
+        "type": "assertion",
+        "description": "Seller dashboard and listings reflect premium badge status."
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Localization and Regional Cultural Adaptations",
+    "description": "Verify that users see localized language, currency, color themes, and traditional patterns according to selected region settings.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Change language and region preferences in user profile."
+      },
+      {
+        "type": "assertion",
+        "description": "UI text updates to selected language."
+      },
+      {
+        "type": "assertion",
+        "description": "Currency toggles to appropriate regional currency."
+      },
+      {
+        "type": "assertion",
+        "description": "Theme colors and cultural pattern overlays adjust accordingly."
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Homepage Hero Carousel Functionality",
+    "description": "Validate that the homepage hero carousel displays rotating featured categories and trust indicators with proper controls and responsiveness.",
+    "category": "ui",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open homepage."
+      },
+      {
+        "type": "assertion",
+        "description": "Hero carousel cycles through featured categories automatically."
+      },
+      {
+        "type": "action",
+        "description": "Manually navigate carousel using controls."
+      },
+      {
+        "type": "assertion",
+        "description": "Carousel responds to manual navigation inputs as expected."
+      },
+      {
+        "type": "action",
+        "description": "Verify trust indicators and CTA buttons are visible on carousel slides."
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "Error Boundary and Graceful Recovery",
+    "description": "Test that the application gracefully handles unexpected errors and displays error boundaries without crashing the whole UI.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Simulate an error in a component (e.g., by forcing a render error)."
+      },
+      {
+        "type": "assertion",
+        "description": "Error boundary displays a user-friendly message or fallback UI."
+      },
+      {
+        "type": "assertion",
+        "description": "Rest of the application remains functional and navigable."
+      }
+    ]
+  }
+]

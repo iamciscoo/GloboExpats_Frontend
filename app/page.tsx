@@ -51,9 +51,6 @@ import HeroCarousel from '@/components/hero-carousel'
 import FeaturedListings from '@/components/featured-listings'
 import CategorySidebar from '@/components/category-sidebar'
 import MobileSidebarToggle from '@/components/mobile-sidebar-toggle'
-import { Shield, Users, Globe } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
 
 /**
  * =============================================================================
@@ -132,113 +129,6 @@ export default function HomePage() {
           */}
           <FeaturedListings />
 
-          {/* 
-            =================================================================
-            COMMUNITY ENGAGEMENT SECTION
-            =================================================================
-            Strategic community introduction designed to build trust and
-            explain the platform's unique value proposition to expat users.
-            Positioned after users have seen products and visual content.
-            
-            Content Strategy:
-            - Emphasize global community aspect
-            - Highlight verification and trust
-            - Show professional network benefits
-            - Provide clear next actions
-          */}
-          <section className="py-12 bg-white/80 backdrop-blur-sm">
-            <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              {/* 
-                ===========================================================
-                COMMUNITY INTRODUCTION BANNER
-                ===========================================================
-                Eye-catching gradient banner introducing the global expat
-                community concept with engaging visual elements.
-              */}
-              <div className="bg-gradient-to-r from-brand-primary to-blue-600 rounded-2xl p-8 mb-8 text-white relative overflow-hidden">
-                {/* Subtle pattern overlay for visual interest */}
-                <div className="absolute inset-0 opacity-20">
-                  <div className="w-full h-full bg-white/5 bg-[radial-gradient(circle_at_50%_50%,_white_1px,_transparent_1px)] bg-[length:20px_20px]"></div>
-                </div>
-
-                <div className="relative z-10">
-                  <div className="text-center">
-                    <h3 className="text-2xl font-bold mb-2">🌍 Global Expat Community</h3>
-                    <p className="text-blue-100 text-lg">
-                      Connecting professionals worldwide through trusted marketplace
-                    </p>
-                    <p className="text-blue-200 text-sm mt-2">
-                      Join our growing community of verified expat professionals
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* 
-                ===========================================================
-                VALUE PROPOSITION CARDS
-                ===========================================================
-                Three-column grid highlighting key platform benefits.
-                Focuses on verification, networking, and global reach.
-                
-                Design: Card-based layout with icons and descriptions
-                Responsive: Stacks on mobile, grid on desktop
-                Purpose: Build trust and explain unique value
-              */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {/* Verification Trust Card */}
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-neutral-200/50 hover:shadow-lg transition-shadow">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                      <Shield className="w-5 h-5 text-green-600" />
-                    </div>
-                    <h4 className="font-semibold text-neutral-800">Verified Only</h4>
-                  </div>
-                  <p className="text-sm text-neutral-600">
-                    Every seller is identity and organization verified for your safety.
-                  </p>
-                </div>
-
-                {/* Professional Network Card */}
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-neutral-200/50 hover:shadow-lg transition-shadow">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Users className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <h4 className="font-semibold text-neutral-800">Professional Network</h4>
-                  </div>
-                  <p className="text-sm text-neutral-600">
-                    Connect with fellow expat professionals in your field and location.
-                  </p>
-                </div>
-
-                {/* Global Reach Card */}
-                <div className="bg-white rounded-xl p-6 shadow-sm border border-neutral-200/50 hover:shadow-lg transition-shadow">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <Globe className="w-5 h-5 text-purple-600" />
-                    </div>
-                    <h4 className="font-semibold text-neutral-800">Global Reach</h4>
-                  </div>
-                  <p className="text-sm text-neutral-600">
-                    Buy and sell with trusted expat community members worldwide.
-                  </p>
-                </div>
-              </div>
-
-              {/* 
-                ===========================================================
-                CALL-TO-ACTION SECTION
-                ===========================================================
-                Subtle but effective CTA section encouraging user engagement.
-                Positioned at the end of community section for natural flow.
-                
-                Design: Rounded button group with primary and secondary actions
-                Actions: Start selling (primary), Browse items (secondary)
-                Strategy: Multiple engagement paths based on user intent
-              */}
-            </div>
-          </section>
 
           {/* 
             =================================================================

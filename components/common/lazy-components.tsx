@@ -16,7 +16,7 @@ export const AdminDashboard = dynamic(() => import('@/app/admin/dashboard/page')
   ssr: false, // Admin features don't need SSR
 })
 
-export const SellerDashboard = dynamic(() => import('@/app/seller/dashboard/page'), {
+export const ExpatDashboard = dynamic(() => import('@/app/expat/dashboard/page'), {
   loading: () => <DashboardStatsSkeleton />,
   ssr: false,
 })
@@ -65,7 +65,7 @@ export const AnalyticsDashboard = dynamic(() => import('@/components/analytics/d
 // Export all lazy components for easy imports
 export const LazyComponents = {
   AdminDashboard,
-  SellerDashboard,
+  ExpatDashboard,
   Chart,
   MessagesInterface,
   NotificationCenter,

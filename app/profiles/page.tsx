@@ -365,7 +365,7 @@ function ProfileCard({ profile, viewMode }: { profile: any; viewMode: 'grid' | '
                       Message
                     </Button>
                   </Link>
-                  <Link href={`/seller/profile/${profile.id}`}>
+                  <Link href={`/expat/profile/${profile.id}`}>
                     <Button size="sm">View Profile</Button>
                   </Link>
                 </div>
@@ -437,7 +437,7 @@ function ProfileCard({ profile, viewMode }: { profile: any; viewMode: 'grid' | '
           </div>
 
           <div className="flex flex-col gap-2">
-            <Link href={`/seller/profile/${profile.id}`}>
+            <Link href={`/expat/profile/${profile.id}`}>
               <Button className="w-full" size="sm">
                 View Profile
               </Button>

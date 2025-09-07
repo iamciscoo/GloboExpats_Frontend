@@ -181,23 +181,6 @@ export default function AccountSettings() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Breadcrumb Navigation */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center gap-2 text-sm text-neutral-600">
-            <Link href="/" className="hover:text-brand-primary">
-              Home
-            </Link>
-            <ChevronRight className="w-4 h-4" />
-            <Link href="/account" className="hover:text-brand-primary">
-              Account
-            </Link>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-neutral-800">Settings</span>
-          </div>
-        </div>
-      </div>
-
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>

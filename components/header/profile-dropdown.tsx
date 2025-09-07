@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ChevronDown, Package, Shield, User, Bell, Settings } from 'lucide-react'
+import { ChevronDown, Shield, User, Bell, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -116,16 +116,7 @@ export const ProfileDropdown = React.memo<ProfileDropdownProps>(
             asChild
             className="cursor-pointer hover:bg-neutral-100 focus:bg-neutral-100"
           >
-            <Link href="/seller/dashboard">
-              <Package className="w-4 h-4 mr-2" />
-              My Listings
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            asChild
-            className="cursor-pointer hover:bg-neutral-100 focus:bg-neutral-100"
-          >
-            <Link href="/messages">
+            <Link href="/notifications">
               <Bell className="w-4 h-4 mr-2" />
               Notifications
             </Link>

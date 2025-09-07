@@ -1,4 +1,4 @@
-import { LucideIcon } from 'lucide-react'
+// Core types for the expat marketplace platform
 
 /**
  * =============================================================================
@@ -57,10 +57,10 @@ export interface VerificationStatus {
   /** Whether user can buy items (requires organization email at minimum) */
   canBuy: boolean
 
-  /** Whether user can sell items (requires full verification) */
-  canSell: boolean
+  /** Whether user can list items (requires full verification) */
+  canList: boolean
 
-  /** Whether user can contact sellers */
+  /** Whether user can contact other expats */
   canContact: boolean
 
   /** Current verification step user is on */
@@ -144,7 +144,7 @@ export interface ListingItem extends LoadingState {
   currency: string
   image: string
   images?: string[]
-  seller: SellerInfo
+  listedBy: ExpatInfo
   category: string
   location: string
   condition?: ItemCondition
@@ -154,8 +154,8 @@ export interface ListingItem extends LoadingState {
   status?: ListingStatus
 }
 
-// Simplified seller information
-export interface SellerInfo {
+// Simplified expat information
+export interface ExpatInfo {
   id: string
   name: string
   avatar?: string
@@ -174,7 +174,7 @@ export interface FeaturedItem {
   originalPrice?: string
   image: string
   images?: string[]
-  seller: string
+  listedBy: string
   rating: number
   reviews: number
   location: string
@@ -238,11 +238,11 @@ export interface Product extends LoadingState {
 
 /**
  * =============================================================================
- * SELLER MANAGEMENT TYPES - SIMPLIFIED
+ * EXPAT LISTING MANAGEMENT TYPES - SIMPLIFIED
  * =============================================================================
  */
 
-// Simplified product listing for seller management
+// Simplified product listing for expat management
 export interface ProductListing extends LoadingState {
   id: number
   title: string
@@ -270,7 +270,7 @@ export interface ProductListing extends LoadingState {
 export interface Order extends LoadingState {
   id: string
   buyer: BuyerInfo
-  seller: SellerInfo
+  listedBy: ExpatInfo
   product: OrderProduct
   amount: string
   currency: string
@@ -314,7 +314,7 @@ export type OrderStatus =
 export interface Review extends LoadingState {
   id: number
   buyer: BuyerInfo
-  seller: SellerInfo
+  listedBy: ExpatInfo
   rating: number
   comment: string
   date: string
@@ -459,12 +459,12 @@ export interface ApiResponse<T> {
 
 /**
  * =============================================================================
- * SELLER & PROFILE TYPES - ENHANCED
+ * EXPAT & PROFILE TYPES - ENHANCED
  * =============================================================================
  */
 
-// Enhanced seller information with profile data
-export interface SellerProfile {
+// Enhanced expat information with profile data
+export interface ExpatProfile {
   id: string
   name: string
   email: string
@@ -476,7 +476,7 @@ export interface SellerProfile {
   location: string
   memberSince: string
   totalListings: number
-  completedSales: number
+  completedTransactions: number
   bio?: string
   website?: string
   specialties?: string[]
@@ -500,8 +500,8 @@ export interface SellerProfile {
   }
 }
 
-// Enhanced seller info for product displays
-export interface SellerInfo {
+// Enhanced expat info for product displays
+export interface ExpatInfo {
   id: string
   name: string
   avatar?: string

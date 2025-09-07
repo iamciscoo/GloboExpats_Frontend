@@ -4,19 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import {
-  ArrowLeft,
-  Shield,
-  CreditCard,
-  Truck,
-  MapPin,
-  Phone,
-  Mail,
-  User,
-  AlertCircle,
-  CheckCircle2,
-  Lock,
-} from 'lucide-react'
+import { ArrowLeft, Shield, CreditCard, Truck, AlertCircle, CheckCircle2, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -202,9 +190,9 @@ export default function CheckoutPage() {
   // Show loading state while checking authentication
   if (authLoading || !authChecked) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center bg-white p-12 rounded-3xl shadow-2xl border-4 border-blue-200">
-          <div className="w-20 h-20 border-6 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+        <div className="text-center bg-white p-12 rounded-3xl shadow-futuristic border border-neutral-200">
+          <div className="w-20 h-20 border-6 border-neutral-400 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Preparing Your Checkout</h2>
           <p className="text-gray-600 text-lg">Setting up secure payment...</p>
         </div>
@@ -298,7 +286,7 @@ export default function CheckoutPage() {
           price: item.price * item.quantity,
           quantity: item.quantity,
           image: item.image,
-          seller: item.sellerName,
+          seller: item.expatName,
           sellerVerified: item.verified,
         })),
         shippingAddress: {
@@ -329,81 +317,62 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Enhanced Header */}
-        <div className="bg-white rounded-2xl shadow-lg border-2 border-blue-100 p-8 mb-8">
+    <div className="min-h-screen bg-neutral-50">
+      <div className="container mx-auto px-4 py-12 max-w-7xl">
+        {/* Modern Header */}
+        <div className="bg-surface-elevated rounded-3xl shadow-futuristic border border-neutral-200 p-10 mb-12">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-8">
               <Link href="/cart">
                 <Button
                   variant="outline"
                   size="lg"
-                  className="hover:bg-blue-50 border-2 border-blue-200"
+                  className="border-2 border-neutral-300 hover:border-brand-primary hover:bg-brand-primary/5 text-neutral-700 hover:text-brand-primary rounded-2xl px-6 py-3 font-semibold transition-all duration-300"
                 >
                   <ArrowLeft className="w-5 h-5 mr-2" />
                   Back to Cart
                 </Button>
               </Link>
-              <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-                  Secure Checkout
-                </h1>
-                <p className="text-xl text-gray-600 mt-2">
-                  Complete your purchase safely & quickly
-                </p>
+            </div>
+            <div className="flex justify-center mb-6">
+              <div className="flex items-center space-x-6">
+                {[1, 2, 3].map((step) => (
+                  <div key={step} className="flex items-center">
+                    <div
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center font-semibold transition-all duration-200 ${
+                        step <= currentStep
+                          ? 'bg-brand-primary text-white'
+                          : 'bg-neutral-200 text-neutral-500'
+                      }`}
+                    >
+                      {step}
+                    </div>
+                    {step < 3 && (
+                      <div
+                        className={`w-12 h-1 mx-3 rounded-full transition-all duration-200 ${
+                          step < currentStep ? 'bg-brand-primary' : 'bg-neutral-200'
+                        }`}
+                      />
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
-            <div className="flex items-center gap-3 bg-gradient-to-r from-green-100 to-blue-100 px-6 py-3 rounded-xl border-2 border-green-200">
-              <Lock className="w-6 h-6 text-green-600" />
-              <span className="text-lg text-green-700 font-semibold">SSL Protected</span>
-            </div>
           </div>
-        </div>
 
-        {/* Enhanced Step Indicator */}
-        <div className="mb-10">
-          <div className="flex items-center justify-center">
-            {[1, 2, 3].map((step, index) => (
-              <div key={step} className="flex items-center">
-                <div
-                  className={`flex items-center justify-center w-16 h-16 rounded-full border-4 transition-all duration-500 transform ${
-                    step <= currentStep
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 border-blue-600 text-white shadow-2xl scale-110'
-                      : 'border-gray-300 text-gray-400 bg-white hover:border-gray-400'
-                  }`}
-                >
-                  {step < currentStep ? (
-                    <CheckCircle2 className="w-8 h-8" />
-                  ) : (
-                    <span className="font-bold text-xl">{step}</span>
-                  )}
-                </div>
-                {index < 2 && (
-                  <div
-                    className={`w-24 h-2 mx-4 rounded-full transition-all duration-500 ${
-                      step < currentStep
-                        ? 'bg-gradient-to-r from-blue-500 to-blue-600'
-                        : 'bg-gray-200'
-                    }`}
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-center mt-6 space-x-20 text-base">
+          <div className="flex justify-center mt-8 space-x-24 text-lg">
             <span
-              className={`font-bold transition-all duration-300 ${currentStep >= 1 ? 'text-blue-600 text-lg' : 'text-gray-500'}`}
+              className={`font-display font-bold transition-all duration-300 ${currentStep >= 1 ? 'text-brand-primary text-xl' : 'text-neutral-500'}`}
             >
-              📍 Shipping Details
+              🚚 Shipping Details
             </span>
             <span
-              className={`font-bold transition-all duration-300 ${currentStep >= 2 ? 'text-blue-600 text-lg' : 'text-gray-500'}`}
+              className={`font-display font-bold transition-all duration-300 ${currentStep >= 2 ? 'text-brand-primary text-xl' : 'text-neutral-500'}`}
             >
               💳 Payment Method
             </span>
             <span
-              className={`font-bold transition-all duration-300 ${currentStep >= 3 ? 'text-blue-600 text-lg' : 'text-gray-500'}`}
+              className={`font-display font-bold transition-all duration-300 ${currentStep >= 3 ? 'text-brand-primary text-xl' : 'text-neutral-500'}`}
             >
               ✅ Confirm Order
             </span>
@@ -423,20 +392,20 @@ export default function CheckoutPage() {
 
             {/* Step 1: Shipping Address */}
             {currentStep === 1 && (
-              <Card className="shadow-xl border-2 border-blue-100 rounded-2xl overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-green-50 border-b-2 border-blue-100 pb-6">
-                  <CardTitle className="flex items-center gap-3 text-2xl">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Truck className="w-6 h-6 text-blue-600" />
+              <Card className="shadow-futuristic border border-neutral-200 rounded-3xl overflow-hidden">
+                <CardHeader className="bg-neutral-50 border-b border-neutral-200 text-neutral-900 p-8">
+                  <CardTitle className="flex items-center gap-4 text-3xl font-display font-bold">
+                    <div className="w-12 h-12 bg-neutral-100 rounded-2xl flex items-center justify-center">
+                      <Truck className="w-7 h-7 text-brand-primary" />
                     </div>
                     Shipping Address
                   </CardTitle>
-                  <p className="text-gray-600 mt-2">Where should we deliver your items?</p>
+                  <p className="text-neutral-600 mt-3 text-lg">Where should we deliver your items?</p>
                 </CardHeader>
-                <CardContent className="space-y-8 p-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <Label htmlFor="firstName" className="text-base font-semibold text-gray-700">
+                <CardContent className="space-y-10 p-10">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                      <Label htmlFor="firstName" className="text-lg font-semibold text-neutral-800">
                         First Name *
                       </Label>
                       <Input
@@ -444,11 +413,11 @@ export default function CheckoutPage() {
                         value={shippingAddress.firstName}
                         onChange={(e) => handleAddressChange('firstName', e.target.value)}
                         placeholder="Enter first name"
-                        className="h-12 text-lg border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
+                        className="h-14 text-lg border-2 border-neutral-300 rounded-2xl focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 transition-all duration-300 bg-surface-elevated"
                       />
                     </div>
-                    <div className="space-y-3">
-                      <Label htmlFor="lastName" className="text-base font-semibold text-gray-700">
+                    <div className="space-y-4">
+                      <Label htmlFor="lastName" className="text-lg font-semibold text-neutral-800">
                         Last Name *
                       </Label>
                       <Input
@@ -456,7 +425,7 @@ export default function CheckoutPage() {
                         value={shippingAddress.lastName}
                         onChange={(e) => handleAddressChange('lastName', e.target.value)}
                         placeholder="Enter last name"
-                        className="h-12 text-lg border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
+                        className="h-14 text-lg border-2 border-neutral-300 rounded-2xl focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 transition-all duration-300 bg-surface-elevated"
                       />
                     </div>
                   </div>
@@ -596,15 +565,15 @@ export default function CheckoutPage() {
 
             {/* Step 2: Payment Method */}
             {currentStep === 2 && (
-              <Card className="shadow-xl border-2 border-green-100 rounded-2xl overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 border-b-2 border-green-100 pb-6">
+              <Card className="shadow-futuristic border border-neutral-200 rounded-3xl overflow-hidden">
+                <CardHeader className="bg-neutral-50 border-b border-neutral-200 pb-6">
                   <CardTitle className="flex items-center gap-3 text-2xl">
-                    <div className="p-2 bg-green-100 rounded-lg">
-                      <CreditCard className="w-6 h-6 text-green-600" />
+                    <div className="p-2 bg-neutral-100 rounded-lg">
+                      <CreditCard className="w-6 h-6 text-brand-primary" />
                     </div>
                     Payment Method
                   </CardTitle>
-                  <p className="text-gray-600 mt-2">Choose your preferred payment option</p>
+                  <p className="text-neutral-600 mt-2">Choose your preferred payment option</p>
                 </CardHeader>
                 <CardContent className="space-y-8 p-8">
                   <RadioGroup value={selectedPayment} onValueChange={setSelectedPayment}>
@@ -613,8 +582,8 @@ export default function CheckoutPage() {
                         key={method.id}
                         className={`relative flex items-center space-x-4 p-6 border-2 rounded-2xl transition-all duration-300 cursor-pointer ${
                           selectedPayment === method.id
-                            ? 'border-green-500 bg-gradient-to-r from-green-50 to-blue-50 shadow-lg'
-                            : 'border-gray-200 hover:border-green-300 hover:bg-gray-50'
+                            ? 'border-brand-primary bg-neutral-50 shadow-sm'
+                            : 'border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50'
                         }`}
                       >
                         <RadioGroupItem
@@ -626,18 +595,10 @@ export default function CheckoutPage() {
                           <div className="flex items-center gap-4">
                             <div className="text-3xl flex-shrink-0">{method.icon}</div>
                             <div className="min-w-0">
-                              <Label
-                                htmlFor={method.id}
-                                className="text-lg font-bold cursor-pointer flex items-center gap-3"
-                              >
+                              <Label htmlFor={method.id} className="font-semibold text-neutral-900 cursor-pointer">
                                 {method.name}
-                                {method.popular && (
-                                  <Badge className="bg-green-500 text-white text-sm px-3 py-1">
-                                    Most Popular
-                                  </Badge>
-                                )}
                               </Label>
-                              <p className="text-base text-gray-600 mt-1">{method.description}</p>
+                              <p className="text-sm text-neutral-600">{method.description}</p>
                             </div>
                           </div>
                         </div>
@@ -654,8 +615,8 @@ export default function CheckoutPage() {
                   {(selectedPayment === 'mpesa' ||
                     selectedPayment === 'airtel' ||
                     selectedPayment === 'mixx') && (
-                    <div className="p-6 bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl border-2 border-blue-200 mt-6">
-                      <h3 className="text-xl font-bold text-blue-900 mb-4 flex items-center gap-2">
+                    <div className="p-6 bg-neutral-50 rounded-2xl border border-neutral-200 mt-6">
+                      <h3 className="text-xl font-bold text-neutral-900 mb-4 flex items-center gap-2">
                         📱 Mobile Money Details
                       </h3>
                       <div className="space-y-4">
@@ -677,18 +638,18 @@ export default function CheckoutPage() {
                               }))
                             }
                             placeholder={selectedCountryData?.phoneCode + ' 700 123 456'}
-                            className="h-12 text-lg border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 mt-2"
+                            className="h-12 text-lg border-2 border-neutral-300 rounded-xl focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 transition-all duration-200 mt-2"
                           />
-                          <p className="text-sm text-blue-700 mt-2">
+                          <p className="text-sm text-neutral-700 mt-2">
                             📞 Enter the mobile number registered with{' '}
                             {paymentMethods.find((p) => p.id === selectedPayment)?.name}
                           </p>
                         </div>
-                        <div className="bg-white p-4 rounded-xl border-2 border-blue-300">
-                          <h4 className="font-semibold text-blue-900 mb-2">
+                        <div className="bg-white p-4 rounded-xl border-2 border-neutral-200">
+                          <h4 className="font-semibold text-neutral-900 mb-2">
                             💡 Payment Instructions:
                           </h4>
-                          <ul className="space-y-1 text-sm text-blue-800">
+                          <ul className="space-y-1 text-sm text-neutral-700">
                             <li>• You'll receive a payment prompt on your phone</li>
                             <li>• Enter your mobile money PIN to complete payment</li>
                             <li>• Payment confirmation will be sent via SMS</li>
@@ -700,8 +661,8 @@ export default function CheckoutPage() {
 
                   {/* Credit/Debit Card Payment Details */}
                   {selectedPayment === 'card' && (
-                    <div className="p-6 bg-gradient-to-r from-purple-50 to-blue-50 rounded-2xl border-2 border-purple-200 mt-6">
-                      <h3 className="text-xl font-bold text-purple-900 mb-4 flex items-center gap-2">
+                    <div className="p-6 bg-neutral-50 rounded-2xl border border-neutral-200 mt-6">
+                      <h3 className="text-xl font-bold text-neutral-900 mb-4 flex items-center gap-2">
                         💳 Card Details
                       </h3>
                       <div className="space-y-4">
@@ -722,7 +683,7 @@ export default function CheckoutPage() {
                               }))
                             }
                             placeholder="John Doe"
-                            className="h-12 text-lg border-2 border-purple-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 mt-2"
+                            className="h-12 text-lg border-2 border-neutral-300 rounded-xl focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 transition-all duration-200 mt-2"
                           />
                         </div>
                         <div>
@@ -739,7 +700,7 @@ export default function CheckoutPage() {
                               setPaymentDetails((prev) => ({ ...prev, cardNumber: e.target.value }))
                             }
                             placeholder="1234 5678 9012 3456"
-                            className="h-12 text-lg border-2 border-purple-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 mt-2"
+                            className="h-12 text-lg border-2 border-neutral-300 rounded-xl focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 transition-all duration-200 mt-2"
                           />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
@@ -760,7 +721,7 @@ export default function CheckoutPage() {
                                 }))
                               }
                               placeholder="MM/YY"
-                              className="h-12 text-lg border-2 border-purple-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 mt-2"
+                              className="h-12 text-lg border-2 border-neutral-300 rounded-xl focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 transition-all duration-200 mt-2"
                             />
                           </div>
                           <div>
@@ -774,13 +735,13 @@ export default function CheckoutPage() {
                                 setPaymentDetails((prev) => ({ ...prev, cvv: e.target.value }))
                               }
                               placeholder="123"
-                              className="h-12 text-lg border-2 border-purple-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-100 transition-all duration-200 mt-2"
+                              className="h-12 text-lg border-2 border-neutral-300 rounded-xl focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 transition-all duration-200 mt-2"
                             />
                           </div>
                         </div>
-                        <div className="bg-white p-4 rounded-xl border-2 border-purple-300">
-                          <h4 className="font-semibold text-purple-900 mb-2">🔒 Secure Payment:</h4>
-                          <ul className="space-y-1 text-sm text-purple-800">
+                        <div className="bg-white p-4 rounded-xl border-2 border-neutral-200">
+                          <h4 className="font-semibold text-neutral-900 mb-2">🔒 Secure Payment:</h4>
+                          <ul className="space-y-1 text-sm text-neutral-700">
                             <li>• Your card details are encrypted and secure</li>
                             <li>• We accept Visa, Mastercard, and local bank cards</li>
                             <li>• Payment is processed by our secure payment partner</li>
@@ -791,7 +752,7 @@ export default function CheckoutPage() {
                   )}
 
                   {/* Terms and Conditions */}
-                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 p-6 rounded-2xl border-2 border-amber-200 mt-6">
+                  <div className="bg-neutral-50 p-6 rounded-2xl border border-neutral-200 mt-6">
                     <div className="flex items-start space-x-4">
                       <Checkbox
                         id="terms"
@@ -804,14 +765,14 @@ export default function CheckoutPage() {
                           I agree to the{' '}
                           <Link
                             href="/terms"
-                            className="text-blue-600 hover:text-blue-800 underline font-semibold"
+                            className="text-brand-primary hover:text-brand-primary/80 underline font-semibold"
                           >
                             Terms & Conditions
                           </Link>{' '}
                           and{' '}
                           <Link
                             href="/privacy"
-                            className="text-blue-600 hover:text-blue-800 underline font-semibold"
+                            className="text-brand-primary hover:text-brand-primary/80 underline font-semibold"
                           >
                             Privacy Policy
                           </Link>
@@ -894,7 +855,7 @@ export default function CheckoutPage() {
             )}
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between items-center mt-12 p-6 bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl border-2 border-gray-200">
+            <div className="flex justify-between items-center mt-12 p-6 bg-neutral-50 rounded-2xl border border-neutral-200">
               <Button
                 variant="outline"
                 onClick={handlePrevStep}
@@ -911,7 +872,7 @@ export default function CheckoutPage() {
                   onClick={handleNextStep}
                   disabled={!validateStep(currentStep)}
                   size="lg"
-                  className="px-10 py-4 text-lg font-bold bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-10 py-4 text-lg font-bold bg-brand-primary hover:bg-brand-primary/90 text-white rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Continue to {currentStep === 1 ? 'Payment' : 'Review'}
                   <ArrowLeft className="w-5 h-5 ml-3 rotate-180" />
@@ -921,7 +882,7 @@ export default function CheckoutPage() {
                   onClick={handlePlaceOrder}
                   disabled={!agreeToTerms || isProcessing}
                   size="lg"
-                  className="px-12 py-4 text-xl font-bold bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-12 py-4 text-xl font-bold bg-brand-primary hover:bg-brand-primary/90 text-white rounded-xl shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isProcessing ? (
                     <>
@@ -942,22 +903,22 @@ export default function CheckoutPage() {
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-1">
             <div className="sticky top-6">
-              <Card className="shadow-2xl border-4 border-blue-200 rounded-2xl overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-blue-100 via-green-50 to-blue-100 border-b-4 border-blue-200 p-6">
+              <Card className="shadow-futuristic border border-neutral-200 rounded-3xl overflow-hidden">
+                <CardHeader className="bg-neutral-50 border-b border-neutral-200 p-6">
                   <CardTitle className="flex items-center gap-3 text-2xl">
-                    <div className="p-2 bg-blue-200 rounded-full">
+                    <div className="p-2 bg-neutral-100 rounded-full">
                       <span className="text-2xl">🛒</span>
                     </div>
                     Order Summary
                   </CardTitle>
                   <div className="flex items-center gap-2 mt-3">
-                    <div className="bg-white px-3 py-1 rounded-full border-2 border-blue-300">
-                      <span className="text-sm font-bold text-blue-700">
+                    <div className="bg-white px-3 py-1 rounded-full border-2 border-neutral-200">
+                      <span className="text-sm font-bold text-neutral-700">
                         {checkoutItems.length} item{checkoutItems.length !== 1 ? 's' : ''}
                       </span>
                     </div>
-                    <div className="bg-white px-3 py-1 rounded-full border-2 border-green-300">
-                      <span className="text-sm font-bold text-green-700">
+                    <div className="bg-white px-3 py-1 rounded-full border-2 border-neutral-200">
+                      <span className="text-sm font-bold text-neutral-700">
                         {selectedCountryData?.flag} {selectedCountryData?.name}
                       </span>
                     </div>
@@ -967,7 +928,7 @@ export default function CheckoutPage() {
                   <div className="space-y-4">
                     <div className="flex justify-between text-lg p-3 bg-gray-50 rounded-xl">
                       <span className="font-medium">Subtotal ({checkoutItems.length} items)</span>
-                      <span className="font-bold text-blue-600">
+                      <span className="font-bold text-neutral-900">
                         {formatPrice(checkoutSubtotal)}
                       </span>
                     </div>
@@ -976,7 +937,7 @@ export default function CheckoutPage() {
                         <span className="text-xl">{selectedShippingOption?.icon}</span>
                         Shipping ({selectedShippingOption?.name})
                       </span>
-                      <span className="font-bold text-green-600">
+                      <span className="font-bold text-neutral-900">
                         {shippingCost === 0 ? 'Free' : formatPrice(shippingCost)}
                       </span>
                     </div>
@@ -984,32 +945,32 @@ export default function CheckoutPage() {
 
                   <Separator className="my-6 border-2" />
 
-                  <div className="bg-gradient-to-r from-green-100 to-blue-100 p-6 rounded-2xl border-4 border-green-200">
+                  <div className="bg-neutral-50 p-6 rounded-2xl border border-neutral-200">
                     <div className="flex justify-between items-center">
                       <span className="text-xl font-bold text-gray-800">Total</span>
-                      <span className="text-3xl font-bold text-green-700">
+                      <span className="text-3xl font-bold text-brand-primary">
                         {formatPrice(totalAmount)}
                       </span>
                     </div>
                   </div>
 
                   {/* Security Info */}
-                  <div className="bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-2xl border-2 border-blue-200">
-                    <h4 className="font-bold text-blue-900 mb-4 text-lg flex items-center gap-2">
+                  <div className="bg-neutral-50 p-6 rounded-2xl border border-neutral-200">
+                    <h4 className="font-bold text-neutral-900 mb-4 text-lg flex items-center gap-2">
                       <Shield className="w-5 h-5" />
                       🔐 Secure Payment
                     </h4>
                     <div className="space-y-3">
-                      <div className="flex items-center gap-3 text-blue-800">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <div className="flex items-center gap-3 text-neutral-700">
+                        <div className="w-2 h-2 bg-brand-primary rounded-full"></div>
                         <span className="font-medium">SSL encrypted transactions</span>
                       </div>
-                      <div className="flex items-center gap-3 text-blue-800">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <div className="flex items-center gap-3 text-neutral-700">
+                        <div className="w-2 h-2 bg-brand-primary rounded-full"></div>
                         <span className="font-medium">Buyer protection guarantee</span>
                       </div>
-                      <div className="flex items-center gap-3 text-blue-800">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <div className="flex items-center gap-3 text-neutral-700">
+                        <div className="w-2 h-2 bg-brand-primary rounded-full"></div>
                         <span className="font-medium">Verified seller network</span>
                       </div>
                     </div>

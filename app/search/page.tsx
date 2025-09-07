@@ -41,7 +41,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useSearch, type SearchProduct } from '@/hooks/use-search'
 import { useCart } from '@/hooks/use-cart'
 import { formatPrice } from '@/lib/utils'
-import Breadcrumb from '@/components/breadcrumb'
 
 function SearchPageContent() {
   const {
@@ -104,8 +103,8 @@ function SearchPageContent() {
       originalPrice: product.originalPrice,
       image: product.images[0],
       condition: product.condition,
-      sellerId: product.sellerId,
-      sellerName: product.sellerName,
+      expatId: product.sellerId,
+      expatName: product.sellerName,
       category: product.category,
       location: product.location,
       verified: product.sellerVerified,
@@ -437,13 +436,6 @@ function SearchPageContent() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Breadcrumb */}
-      <div className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-3">
-          <Breadcrumb />
-        </div>
-      </div>
-
       <div className="container mx-auto px-4 py-6">
         {/* Search Header */}
         <div className="mb-6">

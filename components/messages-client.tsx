@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Badge } from '@/components/ui/badge'
 import { getInitials } from '@/lib/utils'
 import type { Conversation, Message, Product, ChatData, MessagesData } from '@/lib/types'
 import { ConversationsList } from './messages/ConversationsList'
@@ -23,6 +24,8 @@ const conversations: Conversation[] = [
     unread: 2,
     product: 'iPhone 15 Pro Max',
     online: true,
+    isLoading: false,
+    error: null,
   },
   {
     id: 2,
@@ -33,6 +36,8 @@ const conversations: Conversation[] = [
     unread: 0,
     product: 'MacBook Air M2',
     online: false,
+    isLoading: false,
+    error: null,
   },
   {
     id: 3,
@@ -43,6 +48,8 @@ const conversations: Conversation[] = [
     unread: 1,
     product: 'iPad Pro 12.9"',
     online: true,
+    isLoading: false,
+    error: null,
   },
   {
     id: 4,
@@ -53,6 +60,8 @@ const conversations: Conversation[] = [
     unread: 0,
     product: 'Gaming Setup',
     online: false,
+    isLoading: false,
+    error: null,
   },
 ]
 
@@ -91,6 +100,8 @@ const messagesData: MessagesData = {
         time: '10:45 AM',
       },
     ],
+    isLoading: false,
+    error: null,
   },
   2: {
     product: {
@@ -103,6 +114,8 @@ const messagesData: MessagesData = {
       { sender: 'Ahmed Hassan', text: 'Thanks for the quick delivery!', time: '1 hour ago' },
       { sender: 'me', text: "You're welcome! Enjoy the new MacBook.", time: '1 hour ago' },
     ],
+    isLoading: false,
+    error: null,
   },
   3: {
     product: {
@@ -112,6 +125,8 @@ const messagesData: MessagesData = {
       image: '/images/items/ipad.jpg',
     },
     messages: [{ sender: 'Lisa Wang', text: "What's the battery health?", time: '3 hours ago' }],
+    isLoading: false,
+    error: null,
   },
   4: {
     product: {
@@ -123,6 +138,8 @@ const messagesData: MessagesData = {
     messages: [
       { sender: 'David Rodriguez', text: 'Can we meet tomorrow at 3 PM?', time: '1 day ago' },
     ],
+    isLoading: false,
+    error: null,
   },
 }
 
@@ -131,6 +148,8 @@ export function MessagesClient() {
   const activeChat: ChatData = messagesData[selectedConversation.id] || {
     product: {},
     messages: [],
+    isLoading: false,
+    error: null,
   }
 
   return (

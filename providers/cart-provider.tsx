@@ -90,17 +90,17 @@ export interface CartItem {
   images?: string[]
   /** Product condition (new, used, etc.) */
   condition: string
-  /** Seller's unique identifier */
-  sellerId: string
-  /** Seller's display name */
-  sellerName: string
+  /** Expat's unique identifier */
+  expatId: string
+  /** Expat's display name */
+  expatName: string
   /** Quantity of this item in cart */
   quantity: number
   /** Product category for organization */
   category: string
-  /** Seller's location */
+  /** Expat's location */
   location: string
-  /** Whether the seller is verified */
+  /** Whether the expat is verified */
   verified: boolean
   /** Currency code (TZS, USD, etc.) */
   currency?: string
@@ -141,12 +141,12 @@ interface CartContextType extends CartState {
   originalTotal: number
   /** Total savings from discounts */
   savings: number
-  /** Whether cart contains items from verified sellers */
-  hasVerifiedSellers: boolean
+  /** Whether cart contains items from verified expats */
+  hasVerifiedExpats: boolean
   /** Whether the cart is empty */
   isEmpty: boolean
-  /** Unique seller count in cart */
-  sellerCount: number
+  /** Unique expat count in cart */
+  expatCount: number
   /** Whether cart has mixed currencies */
   hasMixedCurrencies: boolean
   /** Selected items data for checkout */
@@ -169,8 +169,8 @@ interface CartContextType extends CartState {
   clearCart: () => Promise<void>
   /** Sync cart with backend */
   syncCart: () => Promise<void>
-  /** Contact seller for a specific item */
-  contactSeller: (itemId: string) => void
+  /** Contact expat for a specific item */
+  contactExpat: (itemId: string) => void
   /** Toggle item selection for checkout */
   toggleItemSelection: (itemId: string) => void
   /** Select all items */
@@ -389,8 +389,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       0
     )
     const savings = originalTotal - subtotal
-    const hasVerifiedSellers = cart.items.some((item) => item.verified)
-    const sellerCount = new Set(cart.items.map((item) => item.sellerId)).size
+    const hasVerifiedExpats = cart.items.some((item) => item.verified)
+    const expatCount = new Set(cart.items.map((item) => item.expatId)).size
     const currencies = new Set(cart.items.map((item) => item.currency || 'TZS'))
     const hasMixedCurrencies = currencies.size > 1
 
@@ -411,9 +411,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       subtotal,
       originalTotal,
       savings,
-      hasVerifiedSellers,
+      hasVerifiedExpats,
       isEmpty: cart.items.length === 0,
-      sellerCount,
+      expatCount,
       hasMixedCurrencies,
       selectedItemsData,
       selectedSubtotal,
@@ -667,24 +667,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [])
 
   /**
-   * Contact seller for a specific item
+   * Contact expat for a specific item
    */
-  const contactSeller = useCallback(
+  const contactExpat = useCallback(
     (itemId: string) => {
       const item = cart.items.find((i) => i.id === itemId)
       if (!item) {
         toast({
           title: 'Item not found',
-          description: 'Unable to find the item to contact seller.',
+          description: 'Unable to find the item to contact expat.',
           variant: 'destructive',
         })
         return
       }
 
-      // Navigate to messages with seller and product information
-      const encodedSeller = encodeURIComponent(item.sellerName)
+      // Navigate to messages with expat and product information
+      const encodedExpat = encodeURIComponent(item.expatName)
       const encodedProduct = encodeURIComponent(item.title)
-      window.location.href = `/messages?seller=${encodedSeller}&product=${encodedProduct}`
+      window.location.href = `/messages?expat=${encodedExpat}&product=${encodedProduct}`
     },
     [cart.items]
   )
@@ -721,7 +721,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       toggleItemSelection,
       selectAllItems,
       deselectAllItems,
-      contactSeller,
+      contactExpat,
     }),
     [
       cart,
@@ -738,7 +738,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       toggleItemSelection,
       selectAllItems,
       deselectAllItems,
-      contactSeller,
+      contactExpat,
     ]
   )
 

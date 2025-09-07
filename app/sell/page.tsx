@@ -14,10 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import SellerLayout from '@/components/seller-layout'
 import { RouteGuard } from '@/components/route-guard'
 import {
   SELLING_CATEGORIES,
@@ -157,38 +155,41 @@ function SellPageContent() {
   }
 
   return (
-    <SellerLayout>
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Sparkles className="h-6 w-6 text-blue-600" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-surface-secondary to-neutral-100 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="w-16 h-16 bg-gradient-to-br from-brand-primary to-brand-accent rounded-3xl flex items-center justify-center shadow-futuristic">
+              <Sparkles className="h-8 w-8 text-white" />
+            </div>
+            <h1 className="text-6xl font-display font-bold bg-gradient-to-r from-brand-primary to-brand-accent bg-clip-text text-transparent tracking-tight">
               List Your Item
             </h1>
           </div>
-          <p className="text-xl text-neutral-600 max-w-2xl mx-auto">
-            Create a professional listing and reach thousands of potential buyers
+          <p className="text-2xl text-neutral-600 max-w-3xl mx-auto font-medium">
+            Create a professional listing and reach thousands of potential buyers in our global
+            expat community
           </p>
         </div>
 
-        {/* Step Indicator */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between max-w-2xl mx-auto mb-8">
+        {/* Modern Step Indicator */}
+        <div className="mb-16">
+          <div className="flex items-center justify-between max-w-3xl mx-auto mb-10">
             {[1, 2, 3].map((step, index) => (
               <div key={step} className="flex items-center">
                 <div className="flex flex-col items-center">
                   <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300 ${
+                    className={`w-20 h-20 rounded-3xl flex items-center justify-center text-xl font-display font-bold transition-all duration-500 transform ${
                       step <= currentStep
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
-                        : 'bg-gray-200 text-gray-500'
+                        ? 'bg-gradient-to-br from-brand-primary to-brand-accent text-white shadow-futuristic scale-110'
+                        : 'bg-surface-elevated text-neutral-400 border-2 border-neutral-300 shadow-card'
                     }`}
                   >
-                    {step < currentStep ? <CheckCircle2 className="h-6 w-6" /> : step}
+                    {step < currentStep ? <CheckCircle2 className="h-8 w-8" /> : step}
                   </div>
                   <span
-                    className={`mt-2 text-sm font-medium ${
-                      step <= currentStep ? 'text-blue-600' : 'text-gray-500'
+                    className={`mt-4 text-lg font-display font-semibold transition-all duration-300 ${
+                      step <= currentStep ? 'text-brand-primary' : 'text-neutral-500'
                     }`}
                   >
                     {STEP_TITLES[step - 1]}
@@ -196,10 +197,10 @@ function SellPageContent() {
                 </div>
                 {index < 2 && (
                   <div
-                    className={`w-24 h-1 mx-4 rounded-full transition-all duration-300 ${
+                    className={`w-32 h-3 mx-8 rounded-full transition-all duration-500 ${
                       step < currentStep
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-500'
-                        : 'bg-gray-200'
+                        ? 'bg-gradient-to-r from-brand-primary to-brand-accent shadow-card'
+                        : 'bg-neutral-200'
                     }`}
                   />
                 )}
@@ -243,7 +244,7 @@ function SellPageContent() {
               {currentStep < 3 ? (
                 <Button
                   onClick={nextStep}
-                  className="px-8 py-3 h-auto text-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  className="px-8 py-3 h-auto text-lg bg-gradient-to-r from-brand-primary to-brand-accent hover:from-blue-800 hover:to-cyan-600"
                 >
                   Next Step
                 </Button>
@@ -261,7 +262,7 @@ function SellPageContent() {
           <SellingSidebar currentStep={currentStep} />
         </div>
       </div>
-    </SellerLayout>
+    </div>
   )
 }
 
@@ -297,17 +298,17 @@ function StepContent({
   const config = stepConfig[currentStep as keyof typeof stepConfig]
 
   return (
-    <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-      <CardHeader className="pb-6">
-        <CardTitle className="flex items-center gap-3 text-2xl">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white flex items-center justify-center text-sm font-bold">
+    <Card className="shadow-futuristic border border-neutral-200 bg-surface-elevated rounded-3xl overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-brand-primary to-brand-accent text-white p-8">
+        <CardTitle className="flex items-center gap-4 text-3xl font-display font-bold">
+          <div className="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center text-lg font-bold">
             {currentStep}
           </div>
           {config.title}
         </CardTitle>
-        <p className="text-neutral-600 mt-2">{config.description}</p>
+        <p className="text-white/90 mt-3 text-lg">{config.description}</p>
       </CardHeader>
-      <CardContent className="space-y-8">
+      <CardContent className="space-y-10 p-10">
         {currentStep === 1 && <Step1Content formData={formData} updateFormData={updateFormData} />}
         {currentStep === 2 && (
           <Step2Content
@@ -340,7 +341,7 @@ function Step1Content({
         <Input
           id="title"
           placeholder="e.g., MacBook Pro 14″ M2, iPhone 15 Pro Max"
-          className="h-14 text-lg border-2 focus:border-blue-500 transition-colors"
+          className="h-14 text-lg border-2 border-neutral-300 rounded-2xl focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 transition-all duration-300 bg-surface-elevated"
           value={formData.title}
           onChange={(e) => updateFormData({ title: e.target.value })}
         />
@@ -354,7 +355,7 @@ function Step1Content({
             onValueChange={(value) => updateFormData({ category: value })}
             value={formData.category}
           >
-            <SelectTrigger className="h-14 border-2 focus:border-blue-500">
+            <SelectTrigger className="h-14 border-2 border-neutral-300 rounded-2xl focus:border-brand-primary bg-surface-elevated">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
@@ -373,7 +374,7 @@ function Step1Content({
             onValueChange={(value) => updateFormData({ condition: value })}
             value={formData.condition}
           >
-            <SelectTrigger className="h-14 border-2 focus:border-blue-500">
+            <SelectTrigger className="h-14 border-2 border-neutral-300 rounded-2xl focus:border-brand-primary bg-surface-elevated">
               <SelectValue placeholder="Select condition" />
             </SelectTrigger>
             <SelectContent>
@@ -393,7 +394,7 @@ function Step1Content({
           onValueChange={(value) => updateFormData({ location: value })}
           value={formData.location}
         >
-          <SelectTrigger className="h-14 border-2 focus:border-blue-500">
+          <SelectTrigger className="h-14 border-2 border-neutral-300 rounded-2xl focus:border-brand-primary bg-surface-elevated">
             <SelectValue placeholder="Select your location" />
           </SelectTrigger>
           <SelectContent>
@@ -494,7 +495,7 @@ function Step2Content({
           id="description"
           rows={8}
           placeholder="Describe your item in detail..."
-          className="text-base border-2 focus:border-blue-500 transition-colors resize-none"
+          className="text-base border-2 border-neutral-300 rounded-2xl focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 transition-all duration-300 resize-none bg-surface-elevated"
           value={formData.description}
           onChange={(e) => updateFormData({ description: e.target.value })}
         />
@@ -519,7 +520,7 @@ function Step3Content({
           value={formData.currency}
           onValueChange={(value) => updateFormData({ currency: value })}
         >
-          <SelectTrigger className="h-14 border-2 focus:border-blue-500">
+          <SelectTrigger className="h-14 border-2 border-neutral-300 rounded-2xl focus:border-brand-primary bg-surface-elevated">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -543,7 +544,7 @@ function Step3Content({
               id="price"
               type="number"
               placeholder="2500000"
-              className="pl-12 h-14 text-lg border-2 focus:border-blue-500 transition-colors"
+              className="pl-12 h-14 text-lg border-2 border-neutral-300 rounded-2xl focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 transition-all duration-300 bg-surface-elevated"
               value={formData.price}
               onChange={(e) => updateFormData({ price: e.target.value })}
             />
@@ -560,7 +561,7 @@ function Step3Content({
               id="originalPrice"
               type="number"
               placeholder="3000000"
-              className="pl-12 h-14 text-lg border-2 focus:border-blue-500 transition-colors"
+              className="pl-12 h-14 text-lg border-2 border-neutral-300 rounded-2xl focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 transition-all duration-300 bg-surface-elevated"
               value={formData.originalPrice}
               onChange={(e) => updateFormData({ originalPrice: e.target.value })}
             />
@@ -568,46 +569,12 @@ function Step3Content({
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-6">
-        <div className="flex items-start space-x-4">
-          <Checkbox
-            id="premium"
-            checked={formData.isPremium}
-            onCheckedChange={(checked) => updateFormData({ isPremium: !!checked })}
-            className="mt-1 h-5 w-5"
-          />
-          <div className="flex-1">
-            <Label
-              htmlFor="premium"
-              className="text-lg font-semibold text-amber-900 flex items-center gap-2 cursor-pointer"
-            >
-              <Sparkles className="h-5 w-5" />
-              Premium Listing
-            </Label>
-            <p className="text-amber-700 mt-2">
-              Get 3x more visibility with featured placement and priority ranking.
-            </p>
-            <div className="flex flex-wrap gap-2 mt-3">
-              <Badge variant="secondary" className="bg-amber-100 text-amber-800">
-                Featured
-              </Badge>
-              <Badge variant="secondary" className="bg-amber-100 text-amber-800">
-                Priority
-              </Badge>
-              <Badge variant="secondary" className="bg-amber-100 text-amber-800">
-                Premium Badge
-              </Badge>
-            </div>
-          </div>
+      <div className="bg-gradient-to-r from-status-success/10 to-brand-primary/10 border-2 border-status-success/20 rounded-2xl p-8 shadow-card">
+        <div className="flex items-center gap-3 mb-4">
+          <CheckCircle2 className="h-8 w-8 text-status-success" />
+          <h3 className="text-xl font-display font-bold text-neutral-900">Ready to Publish!</h3>
         </div>
-      </div>
-
-      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <CheckCircle2 className="h-6 w-6 text-green-600" />
-          <h3 className="text-lg font-semibold text-green-900">Ready to Publish!</h3>
-        </div>
-        <p className="text-green-700">
+        <p className="text-neutral-700 text-lg">
           Your listing will be reviewed and go live within a few minutes.
         </p>
       </div>
@@ -619,22 +586,24 @@ function Step3Content({
 function SellingSidebar({ currentStep }: { currentStep: number }) {
   return (
     <aside className="lg:col-span-1">
-      <div className="sticky top-8 space-y-6">
-        <Card className="shadow-xl border-0 bg-gradient-to-br from-blue-50 via-white to-purple-50">
-          <CardHeader>
-            <CardTitle className="text-blue-900 flex items-center gap-2">💡 Pro Tips</CardTitle>
+      <div className="sticky top-8 space-y-8">
+        <Card className="border border-neutral-200 bg-white rounded-lg overflow-hidden">
+          <CardHeader className="bg-brand-primary text-white p-4">
+            <CardTitle className="text-white flex items-center gap-2 text-lg font-semibold">
+              💡 Pro Tips
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 p-6">
             {SELLING_TIPS.map((tip, index) => {
-              const Icon = tip.icon as any
+              const Icon = tip.icon
               return (
-                <div key={index} className="flex gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 text-blue-600 flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-6 h-6" />
+                <div key={index} className="flex gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-brand-primary/10 text-brand-primary flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-blue-900">{tip.title}</h4>
-                    <p className="text-sm text-blue-700 mt-1">{tip.description}</p>
+                    <h4 className="font-semibold text-neutral-900 mb-1">{tip.title}</h4>
+                    <p className="text-neutral-600 text-sm">{tip.description}</p>
                   </div>
                 </div>
               )
@@ -642,21 +611,23 @@ function SellingSidebar({ currentStep }: { currentStep: number }) {
           </CardContent>
         </Card>
 
-        <Card className="shadow-xl border-0 bg-gradient-to-br from-purple-50 to-pink-50">
+        <Card className="border border-neutral-200 bg-white rounded-lg">
           <CardContent className="p-6">
-            <h3 className="font-semibold text-purple-900 mb-4">Your Progress</h3>
+            <h3 className="font-semibold text-neutral-900 mb-4 text-lg">Your Progress</h3>
             <div className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span>Completion</span>
-                <span className="font-medium">{Math.round((currentStep / 3) * 100)}%</span>
+              <div className="flex justify-between">
+                <span className="text-neutral-600">Completion</span>
+                <span className="font-semibold text-brand-primary">
+                  {Math.round((currentStep / 3) * 100)}%
+                </span>
               </div>
-              <div className="w-full bg-purple-200 rounded-full h-2">
+              <div className="w-full bg-neutral-200 rounded-full h-2">
                 <div
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-500"
+                  className="bg-brand-primary h-2 rounded-full transition-all duration-300"
                   style={{ width: `${(currentStep / 3) * 100}%` }}
                 />
               </div>
-              <p className="text-xs text-purple-700">Step {currentStep} of 3 completed</p>
+              <p className="text-neutral-500 text-sm">Step {currentStep} of 3 completed</p>
             </div>
           </CardContent>
         </Card>

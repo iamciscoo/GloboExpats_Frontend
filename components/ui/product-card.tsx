@@ -2,9 +2,8 @@
 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Star, MapPin, Shield, Crown, ArrowRight } from 'lucide-react'
+import { Star, MapPin, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { FeaturedItem } from '@/lib/types'
@@ -35,8 +34,8 @@ export function ProductCard({
   return (
     <Card
       className={cn(
-        'group cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2',
-        'bg-white border-slate-200 rounded-2xl overflow-hidden h-full flex flex-col',
+        'group cursor-pointer transition-all duration-300 hover:shadow-card-modern hover:-translate-y-1 focus-within:ring-2 focus-within:ring-brand-primary focus-within:ring-offset-2',
+        'bg-surface-primary border-neutral-300 rounded-2xl overflow-hidden h-full flex flex-col',
         className
       )}
       role="article"
@@ -72,44 +71,34 @@ export function ProductCard({
               placeholder="blur"
               blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
             />
-
-            {/* Badges */}
-            <div className="absolute top-3 left-3 flex flex-col gap-2" aria-label="Product badges">
-              {product.isVerified && (
-                <Badge
-                  className="bg-green-500 text-white flex items-center gap-1 shadow-lg"
-                  aria-label="Verified seller"
-                >
-                  <Shield className="w-3 h-3" aria-hidden="true" />
-                  Verified
-                </Badge>
-              )}
-            </div>
           </div>
 
           {/* Content */}
-          <div className="p-5 flex-1 flex flex-col h-full">
+          <div className="p-3 flex-1 flex flex-col h-full">
             {/* Title - Fixed height with line clamping */}
-            <div className="mb-3">
+            <div className="mb-1.5">
               <h3
                 id={`product-title-${product.id}`}
-                className="font-semibold text-slate-900 line-clamp-2 group-hover:text-blue-900 transition-colors text-lg leading-6 min-h-[3rem]"
+                className="font-semibold text-neutral-900 line-clamp-2 group-hover:text-brand-primary transition-colors text-sm leading-4 min-h-[2rem]"
               >
                 {product.title}
               </h3>
             </div>
 
             {/* Price - Fixed height */}
-            <div className="flex items-center gap-2 mb-4 min-h-[2rem]" aria-label="Product pricing">
+            <div
+              className="flex items-center gap-2 mb-2 min-h-[1.5rem]"
+              aria-label="Product pricing"
+            >
               <span
-                className="text-2xl font-bold text-amber-600"
+                className="text-lg font-bold text-brand-secondary"
                 aria-label={`Current price ${product.price}`}
               >
                 {product.price}
               </span>
               {product.originalPrice && (
                 <span
-                  className="text-sm text-slate-500 line-through"
+                  className="text-sm text-neutral-500 line-through"
                   aria-label={`Original price ${product.originalPrice}`}
                 >
                   {product.originalPrice}
@@ -118,46 +107,36 @@ export function ProductCard({
             </div>
 
             {/* Seller Info - Fixed height */}
-            <div className="flex items-center justify-between mb-3 min-h-[1.5rem]">
+            <div className="flex items-center justify-between mb-1.5 min-h-[1rem]">
               <div
                 className="flex items-center gap-1"
                 aria-label={`Rating ${product.rating} out of 5 stars with ${product.reviews} reviews`}
               >
-                <Star className="w-4 h-4 fill-amber-400 text-amber-400" aria-hidden="true" />
+                <Star className="w-4 h-4 fill-brand-secondary text-brand-secondary" aria-hidden="true" />
                 <span className="text-sm font-medium">{product.rating}</span>
-                <span className="text-sm text-slate-500">({product.reviews})</span>
+                <span className="text-sm text-neutral-500">({product.reviews})</span>
               </div>
               <span
-                className="text-sm text-slate-600 truncate max-w-[120px]"
-                aria-label={`Sold by ${product.seller}`}
+                className="text-sm text-neutral-600 truncate max-w-[120px]"
+                aria-label={`Listed by ${product.listedBy}`}
               >
-                {product.seller}
+                {product.listedBy}
               </span>
             </div>
 
             {/* Location - Fixed height */}
             <div
-              className="flex items-center gap-1 mb-4 min-h-[1.5rem]"
+              className="flex items-center gap-1 mb-2 min-h-[1rem]"
               aria-label={`Location: ${product.location}`}
             >
-              <MapPin className="w-4 h-4 text-slate-400" aria-hidden="true" />
-              <span className="text-sm text-slate-600">{product.location}</span>
+              <MapPin className="w-4 h-4 text-neutral-400" aria-hidden="true" />
+              <span className="text-sm text-neutral-600">{product.location}</span>
             </div>
 
             {/* Bottom Section - Pushed to bottom */}
             <div className="mt-auto">
-              <div className="bg-gradient-to-r from-slate-50 to-blue-50/50 rounded-xl p-4 mb-4">
-                <div className="flex items-center justify-between text-xs text-slate-600">
-                  <span className="flex items-center gap-1">
-                    <Shield className="w-3 h-3" />
-                    Secure Purchase
-                  </span>
-                  <span>Fast Delivery</span>
-                </div>
-              </div>
-
               <Button
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-xl shadow-lg shadow-blue-600/25 hover:shadow-xl hover:shadow-blue-600/30 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-300 group/btn"
+                className="w-full bg-gradient-to-r from-brand-primary to-brand-accent hover:from-blue-800 hover:to-cyan-600 text-white font-semibold py-2 rounded-lg shadow-futuristic hover:shadow-xl focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 transition-all duration-300 group/btn text-sm"
                 onClick={(e) => {
                   e.stopPropagation()
                   handleViewDetails()

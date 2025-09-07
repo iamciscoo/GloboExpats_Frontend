@@ -55,7 +55,7 @@ const notifications = [
     itemId: 1,
     itemTitle: 'iPhone 15 Pro Max 256GB - Natural Titanium',
     itemImage: '/images/iphone-15-pro.jpg',
-    actionUrl: '/seller/dashboard',
+    actionUrl: '/expat/dashboard',
   },
   {
     id: 2,
@@ -83,7 +83,7 @@ const notifications = [
     itemId: 3,
     itemTitle: 'Herman Miller Aeron Chair - Size B',
     itemImage: '/images/herman-miller-chair.jpg',
-    actionUrl: '/seller/dashboard',
+    actionUrl: '/expat/dashboard',
   },
   {
     id: 4,
@@ -100,7 +100,7 @@ const notifications = [
     itemId: 4,
     itemTitle: 'BMW X5 2022 - Expat Owned',
     itemImage: '/images/bmw-x5.jpg',
-    actionUrl: '/seller/dashboard',
+    actionUrl: '/expat/dashboard',
   },
   {
     id: 5,
@@ -140,7 +140,7 @@ const notifications = [
     itemId: 6,
     itemTitle: 'Canon EOS R5 + 24-70mm Lens Kit',
     itemImage: '/images/canon-camera.jpg',
-    actionUrl: '/seller/dashboard',
+    actionUrl: '/expat/dashboard',
   },
 ]
 
@@ -319,19 +319,6 @@ function NotificationsPageContent() {
 
   return (
     <div className="bg-neutral-50 min-h-screen">
-      {/* Breadcrumb Navigation */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center gap-2 text-sm text-neutral-600">
-            <Link href="/" className="hover:text-brand-primary">
-              Home
-            </Link>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-neutral-800">Notifications</span>
-          </div>
-        </div>
-      </div>
-
       <div className="bg-brand-primary">
         <div className="container mx-auto px-4 py-8">
           {/* Header */}

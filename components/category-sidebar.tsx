@@ -13,41 +13,90 @@ export default function CategorySidebar() {
   return (
     <aside className="w-64 bg-white border-r border-slate-200 min-h-screen sticky top-16 lg:block overflow-hidden">
       <div className="h-screen">
-        {/* Fixed Selling CTA Section */}
+        {/* Unified Expat Dashboard Section */}
         <div className="p-4 border-b border-slate-100">
-          <Card className="bg-gradient-to-br from-blue-50 to-green-50 border-blue-200 shadow-sm">
+          <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-brand-primary/20 shadow-futuristic">
             <CardContent className="p-4">
-              <div className="text-center space-y-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
-                  <Plus className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 text-sm">Start Selling</h3>
-                  <p className="text-xs text-gray-600 mt-1">
-                    Turn your items into cash with verified expat buyers
-                  </p>
-                </div>
-                {isLoggedIn ? (
+              {isLoggedIn ? (
+                <div className="space-y-3">
+                  <div className="text-center">
+                    <div className="w-10 h-10 bg-gradient-to-r from-brand-primary to-brand-accent rounded-full flex items-center justify-center mx-auto mb-2">
+                      <Plus className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="font-semibold text-gray-800 text-sm">Expat Dashboard</h3>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Manage your listings, profile & community connections
+                    </p>
+                  </div>
+
+                  {/* Quick Actions Grid */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      asChild
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 h-auto"
+                    >
+                      <Link href="/sell" className="flex flex-col items-center gap-1">
+                        <Plus className="w-3 h-3" />
+                        <span>New Listing</span>
+                      </Link>
+                    </Button>
+
+                    <Button
+                      asChild
+                      size="sm"
+                      variant="outline"
+                      className="border-blue-200 hover:bg-blue-50 text-blue-700 text-xs py-2 h-auto"
+                    >
+                      <Link href="/expat/dashboard" className="flex flex-col items-center gap-1">
+                        <svg
+                          className="w-3 h-3"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                          />
+                        </svg>
+                        <span>My Listings</span>
+                      </Link>
+                    </Button>
+                  </div>
+
+                  {/* Full Dashboard Link */}
                   <Button
                     asChild
                     size="sm"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    variant="ghost"
+                    className="w-full text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-xs"
                   >
-                    <Link href="/sell">
-                      <Plus className="w-4 h-4 mr-1" />
-                      List Item
-                    </Link>
+                    <Link href="/expat/dashboard">View Full Dashboard →</Link>
                   </Button>
-                ) : (
+                </div>
+              ) : (
+                <div className="text-center space-y-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-brand-primary to-brand-accent rounded-full flex items-center justify-center mx-auto">
+                    <Plus className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-800 text-sm">Join Expat Community</h3>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Connect, trade & build relationships with expats worldwide
+                    </p>
+                  </div>
                   <Button
                     asChild
                     size="sm"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    className="w-full bg-gradient-to-r from-brand-primary to-brand-accent hover:from-blue-800 hover:to-cyan-600 text-white"
                   >
-                    <Link href="/register">Join & Sell</Link>
+                    <Link href="/register">Join Community</Link>
                   </Button>
-                )}
-              </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

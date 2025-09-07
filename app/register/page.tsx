@@ -233,9 +233,9 @@ export default function RegisterPage() {
                     <Shield className="w-6 h-6 text-green-400" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg mb-2">Verified Sellers</h3>
+                    <h3 className="font-semibold text-lg mb-2">Verified Expats</h3>
                     <p className="text-blue-100 text-sm">
-                      All sellers are identity and organization verified
+                      All expats are identity and organization verified
                     </p>
                   </div>
                 </div>
@@ -247,7 +247,7 @@ export default function RegisterPage() {
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Professional Network</h3>
                     <p className="text-blue-100 text-sm">
-                      Buy and sell within your professional community
+                      Connect and trade within your professional expat community
                     </p>
                   </div>
                 </div>

@@ -65,14 +65,23 @@ const CartMenuItem = React.memo(() => {
 CartMenuItem.displayName = 'CartMenuItem'
 
 export const MobileMenu = React.memo<MobileMenuProps>(
-  ({ isLoggedIn, isAdmin, isAuthPage, user, currency, currencies, setCurrency, handleLogout }) => {
+  ({
+    isLoggedIn,
+    isAdmin,
+    isAuthPage,
+    user: _user,
+    currency,
+    currencies,
+    setCurrency,
+    handleLogout,
+  }) => {
     const pathname = usePathname()
     const isBrowsePage = pathname.startsWith('/browse')
 
     return (
       <>
         {/* Mobile Search Toggle */}
-        {!isLoggedIn && !isAuthPage && !isBrowsePage && (
+        {!isAuthPage && !isBrowsePage && (
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
@@ -136,22 +145,14 @@ export const MobileMenu = React.memo<MobileMenuProps>(
 
                 <CartMenuItem />
 
-                <Link
-                  href="/community"
-                  className="text-neutral-200 hover:text-white transition-colors flex items-center gap-2 py-2"
-                >
-                  <UserIcon className="h-4 w-4" />
-                  Community
-                </Link>
-
                 {isLoggedIn ? (
                   <>
                     <Link
-                      href="/seller/dashboard"
+                      href="/expat/dashboard"
                       className="text-neutral-200 hover:text-white transition-colors flex items-center gap-2 py-2"
                     >
                       <Package className="h-4 w-4" />
-                      Sell
+                      My Listings
                     </Link>
                     <Link
                       href="/notifications"
@@ -258,7 +259,7 @@ export const MobileMenu = React.memo<MobileMenuProps>(
                           className="w-full border-2 border-white/60 text-white bg-transparent hover:bg-white hover:text-slate-900 hover:border-white"
                         >
                           <UserPlus className="mr-2 h-4 w-4" />
-                          Join as Expert
+                          Join as Expat
                         </Button>
                       </Link>
                     </>

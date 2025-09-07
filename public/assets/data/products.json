@@ -1,0 +1,43 @@
+{
+  "meta": {
+    "total": 31,
+    "lastUpdated": "2024-01-15T10:30:00Z",
+    "version": "1.0"
+  },
+  "products": [
+    {
+      "id": 1,
+      "title": "MacBook Pro 14\" M2",
+      "price": "3,500,000 TZS",
+      "originalPrice": "4,200,000 TZS",
+      "image": "/assets/images/products/macbook-pro.jpg",
+      "listedBy": "Sarah M.",
+      "rating": 4.9,
+      "reviews": 88,
+      "location": "Dar es Salaam, TZ",
+      "isVerified": true,
+      "isPremium": true,
+      "categorySlug": "electronics-tech",
+      "description": "Excellent condition MacBook Pro with M2 chip, perfect for professionals.",
+      "condition": "like-new",
+      "datePosted": "2024-01-10T08:00:00Z"
+    },
+    {
+      "id": 2,
+      "title": "Toyota Rav4 2021 - Expat Owned",
+      "price": "85,000,000 TZS",
+      "originalPrice": "95,000,000 TZS",
+      "image": "/assets/images/products/bmw-x5.jpg",
+      "listedBy": "Michael K.",
+      "rating": 4.8,
+      "reviews": 45,
+      "location": "Dar es Salaam, TZ",
+      "isVerified": true,
+      "isPremium": true,
+      "categorySlug": "automotive",
+      "description": "Well-maintained SUV, perfect for East African roads.",
+      "condition": "excellent",
+      "datePosted": "2024-01-08T14:30:00Z"
+    }
+  ]
+}

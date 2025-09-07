@@ -1,0 +1,65 @@
+{
+  "meta": {
+    "total": 8,
+    "lastUpdated": "2024-01-15T10:30:00Z",
+    "version": "1.0"
+  },
+  "categories": [
+    {
+      "id": 1,
+      "name": "Automotive",
+      "slug": "automotive",
+      "count": "2,847 items",
+      "description": "Cars, motorcycles, and automotive accessories"
+    },
+    {
+      "id": 2,
+      "name": "Electronics & Tech",
+      "slug": "electronics-tech",
+      "count": "4,521 items",
+      "description": "Computers, phones, cameras, and tech gadgets"
+    },
+    {
+      "id": 3,
+      "name": "Home & Furniture",
+      "slug": "home-furniture",
+      "count": "3,189 items",
+      "description": "Furniture, home decor, and household items"
+    },
+    {
+      "id": 4,
+      "name": "Fashion & Style",
+      "slug": "fashion-style",
+      "count": "1,967 items",
+      "description": "Clothing, accessories, and fashion items"
+    },
+    {
+      "id": 5,
+      "name": "Sports & Fitness",
+      "slug": "sports",
+      "count": "892 items",
+      "description": "Sports equipment, fitness gear, and outdoor items"
+    },
+    {
+      "id": 6,
+      "name": "Books & Media",
+      "slug": "books-media",
+      "count": "1,234 items",
+      "description": "Books, movies, music, and educational materials"
+    },
+    {
+      "id": 7,
+      "name": "Games & Toys",
+      "slug": "games-toys",
+      "count": "756 items",
+      "description": "Video games, board games, and toys"
+    },
+    {
+      "id": 8,
+      "name": "Arts & Crafts",
+      "slug": "arts-crafts",
+      "count": "445 items",
+      "description": "Art supplies, handmade items, and craft materials"
+    }
+  ]
+}

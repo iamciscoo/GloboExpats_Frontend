@@ -31,15 +31,24 @@ const config: Config = {
           warning: '#f97316', // orange-500
         },
         neutral: {
-          900: '#1e293b', // slate-800
-          800: '#334155', // slate-700
-          700: '#475569', // slate-600
-          600: '#64748b', // slate-500
-          500: '#94a3b8', // slate-400
-          400: '#cbd5e1', // slate-300
-          300: '#e2e8f0', // slate-200
-          200: '#f1f5f9', // slate-100
-          100: '#f8fafc', // slate-50
+          950: '#0f172a', // slate-900 - Deep space
+          900: '#1e293b', // slate-800 - Dark charcoal
+          800: '#334155', // slate-700 - Medium charcoal
+          700: '#475569', // slate-600 - Light charcoal
+          600: '#64748b', // slate-500 - Cool gray
+          500: '#94a3b8', // slate-400 - Medium gray
+          400: '#cbd5e1', // slate-300 - Light gray
+          300: '#e2e8f0', // slate-200 - Very light gray
+          200: '#f1f5f9', // slate-100 - Off white
+          100: '#f8fafc', // slate-50 - Near white
+          50: '#ffffff', // Pure white
+        },
+        surface: {
+          primary: '#ffffff',
+          secondary: '#f8fafc',
+          tertiary: '#f1f5f9',
+          elevated: '#ffffff',
+          overlay: 'rgba(15, 23, 42, 0.8)',
         },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
@@ -125,6 +134,8 @@ const config: Config = {
         'card-hover': '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1)',
         premium:
           '0 20px 25px -5px rgba(30, 58, 138, 0.1), 0 10px 10px -5px rgba(245, 158, 11, 0.04)',
+        futuristic: '0 8px 32px rgba(30, 64, 175, 0.12), 0 4px 16px rgba(6, 182, 212, 0.08)',
+        'card-modern': '0 4px 24px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04)',
       },
     },
   },

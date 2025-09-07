@@ -27,7 +27,7 @@ const conversations: Conversation[] = [
   {
     id: 1,
     name: 'Sarah Mitchell',
-    avatar: '/images/seller-avatar-1.jpg',
+    avatar: '/images/expat-avatar-1.jpg',
     lastMessage: 'Is the iPhone still available?',
     time: '2 min ago',
     unread: 2,
@@ -40,7 +40,7 @@ const conversations: Conversation[] = [
   {
     id: 2,
     name: 'Ahmed Hassan',
-    avatar: '/images/seller-avatar-2.jpg',
+    avatar: '/images/expat-avatar-2.jpg',
     lastMessage: 'Thanks for the quick delivery!',
     time: '1 hour ago',
     unread: 0,
@@ -53,7 +53,7 @@ const conversations: Conversation[] = [
   {
     id: 3,
     name: 'Lisa Wang',
-    avatar: '/images/seller-avatar-3.jpg',
+    avatar: '/images/expat-avatar-3.jpg',
     lastMessage: "What's the battery health?",
     time: '3 hours ago',
     unread: 1,
@@ -66,7 +66,7 @@ const conversations: Conversation[] = [
   {
     id: 4,
     name: 'David Rodriguez',
-    avatar: '/images/seller-avatar-4.jpg',
+    avatar: '/images/expat-avatar-4.jpg',
     lastMessage: 'Can we meet tomorrow at 3 PM?',
     time: '1 day ago',
     unread: 0,
@@ -231,16 +231,16 @@ function MessagesPageContent() {
   const inputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
 
-  // Handle new contact seller flow and notification links
+  // Handle new contact expat flow and notification links
   useEffect(() => {
-    const seller = searchParams.get('seller')
+    const expat = searchParams.get('expat')
     const product = searchParams.get('product')
 
-    if (seller && product) {
+    if (expat && product) {
       // Check if conversation already exists (improved matching)
       const existingConvo = allConversations.find(
         (conv) =>
-          (conv.name === seller || conv.name.toLowerCase().includes(seller.toLowerCase())) &&
+          (conv.name === expat || conv.name.toLowerCase().includes(expat.toLowerCase())) &&
           (conv.product === product || conv.product.toLowerCase().includes(product.toLowerCase()))
       )
 
@@ -248,8 +248,8 @@ function MessagesPageContent() {
         // Create new conversation
         const newConvo: Conversation = {
           id: allConversations.length + 1,
-          name: seller,
-          avatar: '/images/seller-avatar-1.jpg',
+          name: expat,
+          avatar: '/images/expat-avatar-1.jpg',
           lastMessage: 'Start your conversation...',
           time: 'now',
           unread: 0,
@@ -273,10 +273,10 @@ function MessagesPageContent() {
           )
         }
       }
-    } else if (seller) {
-      // Handle case where only seller is specified (from some notifications)
+    } else if (expat) {
+      // Handle case where only expat is specified (from some notifications)
       const existingConvo = allConversations.find(
-        (conv) => conv.name === seller || conv.name.toLowerCase().includes(seller.toLowerCase())
+        (conv) => conv.name === expat || conv.name.toLowerCase().includes(expat.toLowerCase())
       )
 
       if (existingConvo) {
@@ -292,7 +292,7 @@ function MessagesPageContent() {
         // Show toast if conversation not found
         toast({
           title: 'Conversation not found',
-          description: `Could not find conversation with ${seller}`,
+          description: `Could not find conversation with ${expat}`,
           variant: 'destructive',
         })
       }

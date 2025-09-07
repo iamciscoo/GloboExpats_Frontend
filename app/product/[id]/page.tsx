@@ -382,11 +382,13 @@ export default function ProductPage() {
                   <Avatar className="w-16 h-16 border-2 border-blue-100 shadow-lg">
                     <AvatarImage src={sellerInfo?.avatar || '/placeholder.svg'} alt={sellerName} />
                     <AvatarFallback className="bg-gradient-to-br from-blue-400 to-cyan-500 text-white font-semibold">
-                      {sellerName.slice(0, 2)}
+                      {sellerName?.slice(0, 2) || 'UN'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg text-gray-800 truncate">{sellerName}</h3>
+                    <h3 className="font-semibold text-lg text-gray-800 truncate">
+                      {sellerName || 'Unknown Seller'}
+                    </h3>
                     <div className="flex items-center gap-1 text-sm mb-1">
                       <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
                       <span className="font-medium text-gray-700">
@@ -426,8 +428,8 @@ export default function ProductPage() {
                 <Link
                   href={
                     sellerInfo?.profileSlug
-                      ? `/seller/profile/${sellerInfo.profileSlug}`
-                      : `/seller/profile/1`
+                      ? `/expat/profile/${sellerInfo.profileSlug}`
+                      : `/expat/profile/1`
                   }
                 >
                   <Button
