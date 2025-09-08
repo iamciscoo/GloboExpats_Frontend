@@ -1,9 +1,8 @@
-# Dockerfile for Next.js App
+# Dockerfile for Next.js App - Full Development-like Production
 
-# 1. Base image for dependencies and building
+# 1. Base image
 FROM node:20-alpine AS base
 LABEL maintainer="Your Name <you@example.com>"
-LABEL stage="base"
 
 # Install pnpm globally
 RUN npm i -g pnpm
@@ -11,47 +10,40 @@ RUN npm i -g pnpm
 # Set working directory
 WORKDIR /app
 
-
-# 2. Builder stage - copy everything and build
-FROM base AS builder
-LABEL stage="builder"
-
-# Copy entire project (except what's in .dockerignore)
-COPY . .
-
-# Install ALL dependencies and build
+# 2. Install all dependencies
+FROM base AS dependencies
+COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install --no-frozen-lockfile
+
+# 3. Build stage
+FROM base AS builder
+COPY --from=dependencies /app/node_modules ./node_modules
+COPY . .
 RUN pnpm build
 
-# Remove dev dependencies after build
-RUN pnpm prune --prod
-
-
-# 3. Runner stage for the final image
-FROM base AS runner
-LABEL stage="runner"
+# 4. Final production image - KEEP EVERYTHING
+FROM base AS production
 WORKDIR /app
+
+# Copy EVERYTHING from builder
+COPY --from=builder /app/ ./
 
 # Set production environment
 ENV NODE_ENV=production
-# Disable telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create a non-root user for security
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# Create a non-root user (optional but recommended)
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-# Copy the entire built project
-COPY --from=builder /app/ ./
-
-# Set correct ownership for the app files
+# Set ownership (optional)
 RUN chown -R nextjs:nodejs /app
 
-# Switch to the non-root user
+# Switch to non-root user (optional)
 USER nextjs
 
-# Expose the port the app runs on
+# Expose port
 EXPOSE 3000
 
-# Set the command to run with pnpm start
+# Start the application
 CMD ["pnpm", "start"]
