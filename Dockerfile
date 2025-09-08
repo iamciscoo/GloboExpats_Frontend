@@ -14,7 +14,6 @@ WORKDIR /app
 # Copy package.json and lock files (optional copies won't break if missing)
 COPY package.json ./
 COPY pnpm-lock.yaml ./
-COPY yarn.lock ./
 COPY package-lock.json ./
 
 # Install dependencies (choose based on available lockfile)
