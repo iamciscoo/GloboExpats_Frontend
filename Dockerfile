@@ -54,8 +54,9 @@ RUN pnpm run build
 FROM node:18-alpine AS runner
 WORKDIR /app
 
-# Install curl for health checks
+# Install curl for health checks and pnpm
 RUN apk add --no-cache curl
+RUN npm install -g pnpm
 
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs
@@ -67,13 +68,17 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Copy package.json for the start command
+# Copy package.json and next.config.mjs for the start command
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=nextjs:nodejs /app/next.config.mjs ./next.config.mjs
 
 # Copy built application and dependencies from builder stage
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+
+# Ensure proper permissions
+RUN chown -R nextjs:nodejs /app
 
 # Expose port
 EXPOSE 3000
@@ -86,4 +91,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start the Next.js production server
-CMD ["./node_modules/.bin/next", "start"]
+CMD ["pnpm", "start"]
