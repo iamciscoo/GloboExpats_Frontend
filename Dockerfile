@@ -67,14 +67,13 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Install only production dependencies
-COPY package*.json pnpm-lock.yaml* ./
-RUN npm install -g pnpm && pnpm install --prod --frozen-lockfile
+# Copy package.json for the start command
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 
-# Copy built application
+# Copy built application and dependencies from builder stage
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
 # Expose port
 EXPOSE 3000
@@ -87,4 +86,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000/api/health || exit 1
 
 # Start the Next.js production server
-CMD ["pnpm", "start"]
+CMD ["./node_modules/.bin/next", "start"]
