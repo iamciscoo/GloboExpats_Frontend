@@ -22,7 +22,10 @@
 // ============================================================================
 
 /** Base API URL from environment or fallback */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api').replace(
+  /\/$/,
+  ''
+)
 
 /**
  * Standard API response wrapper
@@ -69,6 +72,20 @@ class ApiClient {
     this.headers = {
       'Content-Type': 'application/json',
     }
+    // Attempt immediate token rehydration on the client (prevents first-request 401 after refresh)
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('expat_auth_token')
+        if (stored) {
+          this.setAuthToken(stored)
+          if (process.env.NODE_ENV === 'development') {
+            console.debug('[ApiClient] Rehydrated auth token from localStorage during construction')
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+    }
   }
 
   /**
@@ -96,7 +113,11 @@ class ApiClient {
    * @param options - Fetch options (method, body, etc.)
    * @returns Promise resolving to API response
    */
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {},
+    _retry: boolean = true
+  ): Promise<ApiResponse<T>> {
     const url = `${this.baseURL}${endpoint}`
 
     try {
@@ -106,7 +127,55 @@ class ApiClient {
       })
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        // If unauthorized, attempt a one-time silent token rehydration + retry
+        if (response.status === 401 && _retry && typeof window !== 'undefined') {
+          try {
+            const stored = localStorage.getItem('expat_auth_token')
+            const currentAuth = (this.headers as any).Authorization
+            if (stored && !currentAuth) {
+              this.setAuthToken(stored)
+              if (process.env.NODE_ENV === 'development') {
+                console.debug('[ApiClient] 401 encountered – rehydrated token and retrying request')
+              }
+              return this.request<T>(endpoint, options, false)
+            }
+          } catch {
+            // ignore and fall through to normal error handling
+          }
+        }
+        // Try to extract error message from response body
+        let errorMessage = `HTTP error! status: ${response.status}`
+        try {
+          const errorData = await response.json()
+          // Check for common error message formats from backend
+          if (errorData.message) {
+            errorMessage = errorData.message
+          } else if (errorData.error) {
+            errorMessage = errorData.error
+          } else if (errorData.errors && Array.isArray(errorData.errors)) {
+            errorMessage = errorData.errors.join(', ')
+          }
+
+          // Add context for common status codes
+          if (response.status === 409) {
+            errorMessage =
+              errorData.message ||
+              'This email or username is already registered. Please use a different one or try logging in.'
+          } else if (response.status === 400) {
+            errorMessage =
+              errorData.message || 'Invalid request. Please check your input and try again.'
+          } else if (response.status === 401) {
+            errorMessage =
+              errorData.message || 'Authentication failed. Please check your credentials.'
+          } else if (response.status === 500) {
+            errorMessage = 'Server error. Please try again later.'
+          }
+        } catch (jsonError) {
+          // If response body is not JSON, use the status code message
+          console.warn('Could not parse error response:', jsonError)
+        }
+
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
@@ -150,15 +219,99 @@ class ApiClient {
   }
 
   /**
-   * Creates a new product listing
-   * @param productData - Product information
-   * @returns Promise resolving to created product
+   * Creates a new product listing with images
+   * @param productData - Product information object
+   * @param images - Array of image files
+   * @returns Promise resolving to created product with productId and imageIds
+   *
+   * Backend expects multipart/form-data with:
+   * - product: JSON string with product details
+   * - images: One or more image files
    */
-  async createProduct(productData: any): Promise<ApiResponse<any>> {
-    return this.request('/products', {
-      method: 'POST',
-      body: JSON.stringify(productData),
+  async createProduct(
+    productData: {
+      productName: string
+      categoryId: number
+      condition: string
+      location: string
+      productDescription: string
+      currency: string
+      askingPrice: number
+      originalPrice: number
+      productWarranty: string
+    },
+    images: File[]
+  ): Promise<{ productId: number; imageIds: number[] }> {
+    const formData = new FormData()
+
+    // Add product data as JSON string
+    formData.append('product', JSON.stringify(productData))
+
+    // Add images
+    images.forEach((image) => {
+      formData.append('images', image)
     })
+
+    const response = await fetch(`${this.baseURL}/products/post-product`, {
+      method: 'POST',
+      headers: {
+        Authorization: (this.headers as any)['Authorization'] || '',
+      },
+      body: formData,
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    return response.json()
+  }
+
+  /**
+   * Fetches all available product categories
+   * @returns Promise resolving to categories list
+   */
+  async getCategories(): Promise<Array<{ categoryId: number; categoryName: string }>> {
+    const response = await this.request('/products/categories')
+    return (response as any).data || response
+  }
+
+  /**
+   * Fetches all products with pagination
+   * @param page - Page number (0-indexed)
+   * @returns Promise resolving to paginated products
+   */
+  async getAllProducts(page: number = 0): Promise<any> {
+    return this.request(`/products/get-all-products?page=${page}`)
+  }
+
+  /**
+   * Fetches top picks (featured products)
+   * @param page - Page number (0-indexed)
+   * @param size - Number of items per page
+   * @returns Promise resolving to paginated top picks
+   */
+  async getTopPicks(page: number = 0, size: number = 12): Promise<any> {
+    return this.request(`/displayItem/top-picks?page=${page}&size=${size}`)
+  }
+
+  /**
+   * Fetches newest listings
+   * @param page - Page number (0-indexed)
+   * @param size - Number of items per page
+   * @returns Promise resolving to paginated newest listings
+   */
+  async getNewestListings(page: number = 0, size: number = 12): Promise<any> {
+    return this.request(`/displayItem/newest?page=${page}&size=${size}`)
+  }
+
+  /**
+   * Fetches detailed product information by ID
+   * @param productId - Product identifier
+   * @returns Promise resolving to detailed product data
+   */
+  async getProductDetails(productId: number): Promise<any> {
+    return this.request(`/displayItem/itemDetails/${productId}`)
   }
 
   /**
@@ -188,6 +341,32 @@ class ApiClient {
   // ============================================================================
   // USER ENDPOINTS
   // ============================================================================
+
+  /**
+   * Fetches current user details using the authorization token
+   * @returns Promise resolving to user data
+   */
+  async getUserDetails(): Promise<{
+    firstName: string
+    lastName: string
+    loggingEmail: string
+    organizationalEmail: string
+    position: string
+    aboutMe: string
+    phoneNumber: string
+    organization: string
+    location: string
+    verificationStatus: 'VERIFIED' | 'PENDING' | 'REJECTED'
+    passportVerificationStatus: 'VERIFIED' | 'PENDING' | 'REJECTED'
+    addressVerificationStatus: 'VERIFIED' | 'PENDING' | 'REJECTED'
+    roles: Array<{
+      roleId: number
+      roleName: string
+    }>
+  }> {
+    const response = await this.request('/userManagement/user-details')
+    return response as any
+  }
 
   /**
    * Fetches user profile information
@@ -222,6 +401,7 @@ class ApiClient {
    * @returns Promise resolving to authentication data
    */
   async login(email: string, password: string): Promise<ApiResponse<any>> {
+    // Backend expects { email, password, username? }, map email accordingly
     return this.request('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
@@ -238,6 +418,32 @@ class ApiClient {
       method: 'POST',
       body: JSON.stringify(userData),
     })
+  }
+
+  /**
+   * Sends organization email OTP to user email (requires Authorization header)
+   * @param organizationalEmail - Organization email to send OTP to
+   */
+  async sendEmailOtp(organizationalEmail: string): Promise<ApiResponse<any>> {
+    const qs = `?organizationalEmail=${encodeURIComponent(organizationalEmail)}`
+    return this.request(`/email/sendOTP${qs}`, { method: 'POST' })
+  }
+
+  /**
+   * Verifies organization email OTP
+   * @param organizationalEmail - Organization email used
+   * @param otp - One-time password received in email
+   * @param userRoles - Role to assign, e.g., 'SELLER' or 'USER'
+   */
+  async verifyEmailOtp(
+    organizationalEmail: string,
+    otp: string,
+    userRoles: 'SELLER' | 'USER' | string
+  ): Promise<ApiResponse<any>> {
+    const qs = `?organizationalEmail=${encodeURIComponent(
+      organizationalEmail
+    )}&otp=${encodeURIComponent(otp)}&userRoles=${encodeURIComponent(userRoles)}`
+    return this.request(`/email/verifyOTP${qs}`, { method: 'POST' })
   }
 
   /**
@@ -372,7 +578,7 @@ export const api = {
   products: {
     list: (params?: ProductListParams) => apiClient.getProducts(params),
     get: (id: string) => apiClient.getProduct(id),
-    create: (data: any) => apiClient.createProduct(data),
+    create: (data: any, images: File[]) => apiClient.createProduct(data, images),
     update: (id: string, data: any) => apiClient.updateProduct(id, data),
     delete: (id: string) => apiClient.deleteProduct(id),
   },

@@ -60,6 +60,11 @@ export interface VerificationStatus {
   /** Whether user can list items (requires full verification) */
   canList: boolean
 
+  /**
+   * @deprecated Use `canList` instead. Backward-compat alias used by existing components.
+   */
+  canSell?: boolean
+
   /** Whether user can contact other expats */
   canContact: boolean
 
@@ -73,27 +78,45 @@ export interface VerificationStatus {
 // Simplified User interface with essential information only
 export interface User {
   id: string
-  name: string
+  firstName: string
+  lastName: string
+  name: string // Computed from firstName + lastName
   email: string
+  loggingEmail: string
+  organizationEmail?: string
   avatar?: string
   createdAt: Date
   preferences?: UserPreferences
 
-  // Simplified verification - use VerificationStatus for detailed info
-  /** @deprecated Use verificationStatus instead */
-  isVerified?: boolean
+  // Profile information
+  position?: string
+  aboutMe?: string
+  phoneNumber?: string
+  organization?: string
+  location?: string
 
-  /** Comprehensive verification status */
+  // Backend verification statuses (simple strings)
+  backendVerificationStatus?: 'VERIFIED' | 'PENDING' | 'REJECTED'
+  passportVerificationStatus?: 'VERIFIED' | 'PENDING' | 'REJECTED'
+  addressVerificationStatus?: 'VERIFIED' | 'PENDING' | 'REJECTED'
+
+  // Frontend verification status (complex object for UI logic)
   verificationStatus: VerificationStatus
 
-  /** Organization email (separate from personal email) */
-  organizationEmail?: string
+  // User roles from backend
+  roles?: Array<{
+    roleId: number
+    roleName: string
+  }>
+
+  // Computed role for compatibility
+  role: 'user' | 'admin' | 'moderator'
 
   /** How the user signed up (for different verification flows) */
   signupMethod?: 'email' | 'google' | 'facebook' | 'apple'
 
-  /** User role */
-  role: 'user' | 'admin' | 'moderator'
+  /** @deprecated Use verificationStatus instead */
+  isVerified?: boolean
 }
 
 /**
@@ -363,7 +386,7 @@ export interface ItemCondition {
 
 // Selling tips for users
 export interface SellingTip {
-  icon: React.ComponentType
+  icon: React.ComponentType<{ className?: string }>
   title: string
   description: string
 }

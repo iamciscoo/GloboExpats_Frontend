@@ -118,11 +118,7 @@ export default function LoginPage() {
       //   body: JSON.stringify({ email, password, rememberMe })
       // })
 
-      await login({
-        name: email.split('@')[0],
-        email,
-        isVerified: false,
-      })
+      await login({ name: email.split('@')[0], email, password })
 
       // Store remember me preference
       if (rememberMe) {

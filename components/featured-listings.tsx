@@ -11,35 +11,122 @@
  * - Interactive product cards with hover effects
  * - Priority focus on listings as requested
  * - Mobile-responsive grid layout
+ * - Real-time backend data integration
  *
  * User Experience:
  * - Listings remain the main focus and priority
  * - Added engaging sections without overwhelming content
  * - Clear trust signals for expat community
+ * - Live data from backend API
  */
 
-import { useState } from 'react'
-import { Clock, Crown, TrendingUp } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Clock, Crown, TrendingUp, Loader2 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { featuredItems } from '@/lib/constants'
-import type { FeaturedItem } from '@/lib/types'
+import { apiClient } from '@/lib/api'
+import type { FeaturedItem, ListingItem } from '@/lib/types'
+import { transformBackendProduct, extractContentFromResponse } from '@/lib/image-utils'
 import { ProductCard } from '@/components/ui/product-card'
 
 export default function FeaturedListings() {
   const [activeTab, setActiveTab] = useState('new')
+  const [newListings, setNewListings] = useState<FeaturedItem[]>([])
+  const [featuredListings, setFeaturedListings] = useState<FeaturedItem[]>([])
+  const [topPicks, setTopPicks] = useState<FeaturedItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // Optimized data for different tabs - exactly 3 rows (9 items) per section
-  // New Listings: Most recent additions (9 items = 3 rows)
-  const newListings = featuredItems.slice(0, 9)
+  // Transform backend ListingItem to FeaturedItem format
+  const transformToFeaturedItem = (item: any): FeaturedItem => {
+    console.log('🔄 Transforming item:', item)
+    const transformed = transformBackendProduct(item)
+    console.log('✅ Transformed to:', transformed)
+    return transformed
+  }
 
-  // Featured: Premium items (9 items = 3 rows)
-  const featuredListings = featuredItems.slice(0, 9)
+  // Fetch data from backend APIs
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
 
-  // Top Picks: High-rated and trending items (9 items = 3 rows)
-  const topPicks = featuredItems
-    .filter((item) => item.rating >= 4.7) // High-rated items
-    .concat(featuredItems.filter((item) => item.isPremium)) // Premium items
-    .slice(0, 9) // Take first 9 unique items
+        console.log('🔥 FETCHING FROM BACKEND - NO DUMMY DATA!')
+        console.log('API Base URL:', '/api/backend/v1')
+
+        // Fetch data for all tabs in parallel
+        const [newResponse, topResponse, allResponse] = await Promise.all([
+          apiClient.getNewestListings(0, 9),
+          apiClient.getTopPicks(0, 9),
+          apiClient.getAllProducts(0),
+        ])
+
+        console.log('🚀 Backend Responses:')
+        console.log('Newest:', newResponse)
+        console.log('Top Picks:', topResponse)
+        console.log('All Products:', allResponse)
+
+        // Process newest listings - use centralized content extraction
+        const newest = extractContentFromResponse(newResponse)
+        console.log('📦 Newest Products Count:', newest.length)
+        setNewListings(newest.slice(0, 9).map(transformToFeaturedItem))
+
+        // Process top picks - use centralized content extraction
+        const top = extractContentFromResponse(topResponse)
+        console.log('⭐ Top Picks Count:', top.length)
+        setTopPicks(top.slice(0, 9).map(transformToFeaturedItem))
+
+        // Process featured listings - use centralized content extraction
+        const all = extractContentFromResponse(allResponse)
+        console.log('🔥 All Products Count:', all.length)
+        setFeaturedListings(all.slice(0, 9).map(transformToFeaturedItem))
+      } catch (err) {
+        console.error('Error fetching listings:', err)
+        setError(err instanceof Error ? err.message : 'Failed to fetch listings')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  // Loading state
+  if (loading) {
+    return (
+      <section className="py-16 bg-gradient-to-br from-neutral-50 to-blue-50/30">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="text-center">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-brand-primary" />
+              <p className="text-gray-600">Loading featured listings...</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <section className="py-16 bg-gradient-to-br from-neutral-50 to-blue-50/30">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">Error loading listings: {error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="py-16 bg-gradient-to-br from-neutral-50 to-blue-50/30">
@@ -86,7 +173,6 @@ export default function FeaturedListings() {
                 </div>
               ))}
             </div>
-
           </TabsContent>
 
           <TabsContent value="featured" className="space-y-0">
@@ -107,7 +193,6 @@ export default function FeaturedListings() {
                 </div>
               ))}
             </div>
-
           </TabsContent>
         </Tabs>
       </div>

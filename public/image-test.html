@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Image Test</title>
+  </head>
+  <body>
+    <h1>Direct Image Tests</h1>
+
+    <h2>Test 1: Direct backend image URL</h2>
+    <img
+      src="http://10.123.22.21:8081/uploads/products/drug_store/pain_reliever.jpg"
+      alt="Pain reliever"
+      style="max-width: 200px"
+      onload="console.log('✅ Backend image loaded successfully')"
+      onerror="console.error('❌ Backend image failed to load')"
+    />
+
+    <h2>Test 2: Local placeholder</h2>
+    <img
+      src="/assets/images/products/placeholder.svg"
+      alt="Placeholder"
+      style="max-width: 200px"
+      onload="console.log('✅ Placeholder loaded successfully')"
+      onerror="console.error('❌ Placeholder failed to load')"
+    />
+
+    <h2>Test 3: Another backend image</h2>
+    <img
+      src="http://10.123.22.21:8081/uploads/products/electronics/iphone13pro.jpg"
+      alt="iPhone"
+      style="max-width: 200px"
+      onload="console.log('✅ iPhone image loaded successfully')"
+      onerror="console.error('❌ iPhone image failed to load')"
+    />
+  </body>
+</html>

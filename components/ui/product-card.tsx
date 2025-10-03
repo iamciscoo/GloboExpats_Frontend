@@ -23,6 +23,14 @@ export function ProductCard({
 }: ProductCardProps) {
   const router = useRouter()
 
+  console.log('🎴 [PRODUCT-CARD] Rendering product:', {
+    id: product.id,
+    title: product.title,
+    image: product.image,
+    images: product.images,
+    fullImageCheck: product.image ? 'HAS IMAGE' : 'NO IMAGE',
+  })
+
   const handleViewDetails = () => {
     if (onViewDetails) {
       onViewDetails(product.id)
@@ -59,7 +67,7 @@ export function ProductCard({
             )}
           >
             <Image
-              src={product.image || '/placeholder.svg'}
+              src={product.image || '/assets/images/products/placeholder.svg'}
               alt={`${product.title} product image`}
               width={viewMode === 'list' ? 192 : 300}
               height={viewMode === 'list' ? 192 : 200}
@@ -112,7 +120,10 @@ export function ProductCard({
                 className="flex items-center gap-1"
                 aria-label={`Rating ${product.rating} out of 5 stars with ${product.reviews} reviews`}
               >
-                <Star className="w-4 h-4 fill-brand-secondary text-brand-secondary" aria-hidden="true" />
+                <Star
+                  className="w-4 h-4 fill-brand-secondary text-brand-secondary"
+                  aria-hidden="true"
+                />
                 <span className="text-sm font-medium">{product.rating}</span>
                 <span className="text-sm text-neutral-500">({product.reviews})</span>
               </div>

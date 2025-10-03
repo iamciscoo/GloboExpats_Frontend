@@ -14,6 +14,7 @@ import { validateEmail } from '@/lib/utils'
 export default function VerificationPage() {
   const {
     user,
+    requestOrganizationEmailOtp,
     verifyOrganizationEmail,
     completeVerificationForTesting,
     verificationStatus,
@@ -47,8 +48,7 @@ export default function VerificationPage() {
 
     setIsSubmitting(true)
     try {
-      // Simulate OTP sending
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await requestOrganizationEmailOtp(organizationEmail)
       setOtpSent(true)
       setError('')
     } catch (error) {
@@ -66,9 +66,7 @@ export default function VerificationPage() {
 
     setIsSubmitting(true)
     try {
-      // Simulate OTP verification and update user
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-      await verifyOrganizationEmail(organizationEmail)
+      await verifyOrganizationEmail(organizationEmail, otp, 'SELLER')
       setError('')
       setOtpSent(false)
       setOtp('')

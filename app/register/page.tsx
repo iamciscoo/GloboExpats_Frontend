@@ -55,7 +55,7 @@ import { validateEmail } from '@/lib/utils'
 
 export default function RegisterPage() {
   const router = useRouter()
-  const { login, isLoggedIn, isLoading: authLoading } = useAuth()
+  const { login, register, isLoggedIn, isLoading: authLoading } = useAuth()
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -100,13 +100,13 @@ export default function RegisterPage() {
     setPasswordStrength(newStrength)
 
     const isValid =
-      formData.firstName.trim() &&
-      formData.lastName.trim() &&
+      formData.firstName.trim().length > 0 &&
+      formData.lastName.trim().length > 0 &&
       formData.personalEmail.includes('@') &&
       formData.password.length >= 6 &&
       formData.password === formData.confirmPassword &&
-      formData.acceptTerms &&
-      formData.acceptPrivacy
+      formData.acceptTerms === true &&
+      formData.acceptPrivacy === true
 
     setIsFormValid(isValid)
   }, [formData, formData.acceptTerms, formData.acceptPrivacy])
@@ -180,20 +180,20 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      const userData = {
-        name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.personalEmail,
-        organizationEmail: formData.organizationEmail,
-        isVerified: false,
-        isOrganizationEmailVerified: false,
-      }
-
-      await login(userData)
-      setSuccess('Account created successfully! Redirecting...')
+      // Call backend register
+      await register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        password: formData.password,
+        emailAddress: formData.personalEmail,
+        agreeToTerms: formData.acceptTerms,
+        agreeToPrivacyPolicy: formData.acceptPrivacy,
+      })
+      setSuccess('Account created! Please log in to continue with email verification.')
 
       setTimeout(() => {
-        router.push('/account/verification')
-      }, 1500)
+        router.push('/login')
+      }, 1200)
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Registration failed')
     } finally {

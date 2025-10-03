@@ -19,14 +19,12 @@ import {
 } from '@/components/ui/select'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Separator } from '@/components/ui/separator'
-import {
-  featuredItems as products,
-  CATEGORIES,
-  ITEM_CONDITIONS,
-  EXPAT_LOCATIONS,
-} from '@/lib/constants'
+import { CATEGORIES, ITEM_CONDITIONS, EXPAT_LOCATIONS } from '@/lib/constants'
 import { debounce, generateSlug } from '@/lib/utils'
 import { ProductCard } from '@/components/ui/product-card'
+import { apiClient } from '@/lib/api'
+import { transformBackendProduct, extractContentFromResponse } from '@/lib/image-utils'
+import type { FeaturedItem } from '@/lib/types'
 import {
   Search,
   Filter,
@@ -42,6 +40,7 @@ import {
   ChevronRight,
   MoreHorizontal,
   ChevronDown,
+  Loader2,
 } from 'lucide-react'
 
 const categories = CATEGORIES.map((c) => ({
@@ -367,6 +366,11 @@ export default function BrowsePage() {
   const [itemsPerPage] = useState(12) // Fixed items per page
   const isApplyingUrlParams = useRef(false)
 
+  // Backend data state
+  const [products, setProducts] = useState<FeaturedItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
   // Debounce updates to the actual search query to reduce re-renders and URL churn
   const debouncedUpdateQuery = useMemo(
     () =>
@@ -384,6 +388,44 @@ export default function BrowsePage() {
     timePosted: '',
     location: '',
   })
+
+  // Transform backend ListingItem to FeaturedItem format
+  const transformToFeaturedItem = (item: any): FeaturedItem => {
+    console.log('🔄 BROWSE: Transforming item:', item)
+    const transformed = transformBackendProduct(item)
+    console.log('✅ BROWSE: Transformed to:', transformed)
+    return transformed
+  }
+
+  // Fetch products from backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        console.log('🔥 BROWSE PAGE: Fetching ALL products from backend - NO DUMMY DATA!')
+        const response = await apiClient.getAllProducts(0)
+        // Use centralized content extraction
+        const productsData = extractContentFromResponse(response)
+        console.log('🚀 BROWSE PAGE: Backend response:', response)
+        console.log('📦 BROWSE PAGE: Products count:', productsData.length)
+        setProducts(productsData.map(transformToFeaturedItem))
+        console.log(
+          '✅ BROWSE PAGE: Successfully loaded',
+          productsData.length,
+          'products from backend'
+        )
+      } catch (err) {
+        console.error('🚨 BROWSE PAGE: Error fetching products:', err)
+        setError(err instanceof Error ? err.message : 'Failed to fetch products')
+        // NO FALLBACK TO DUMMY DATA - IF BACKEND FAILS, SHOW ERROR
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProducts()
+  }, [])
 
   // Sync state FROM URL (supports back/forward navigation & direct linking)
   useEffect(() => {
@@ -444,8 +486,9 @@ export default function BrowsePage() {
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory =
-      !filters.selectedCategory || product.categorySlug === filters.selectedCategory
+    // Note: FeaturedItem doesn't have categorySlug, so we'll skip category filtering for now
+    // This could be enhanced by adding categorySlug to the FeaturedItem type or using a different approach
+    const matchesCategory = !filters.selectedCategory // Skip category filtering until we have proper category data
 
     // Convert price string to number for comparison
     const priceNumber = parseInt(product.price.replace(/[^\d]/g, ''))
@@ -522,7 +565,7 @@ export default function BrowsePage() {
   return (
     <div className="bg-gray-50 min-h-screen">
       <header className="bg-white shadow-sm sticky top-16 z-30 border-b border-gray-200">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="w-full md:w-auto md:flex-1">
               <div className="relative">
@@ -614,7 +657,7 @@ export default function BrowsePage() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex gap-8">
           {/* Desktop Filters */}
           <aside className="hidden md:block w-72 lg:w-80 flex-shrink-0">
@@ -653,7 +696,28 @@ export default function BrowsePage() {
               </div>
             </div>
 
-            {filteredProducts.length > 0 ? (
+            {/* Loading state */}
+            {loading ? (
+              <div className="flex justify-center items-center min-h-[400px]">
+                <div className="text-center">
+                  <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-brand-primary" />
+                  <p className="text-gray-600">Loading products...</p>
+                </div>
+              </div>
+            ) : error ? (
+              /* Error state */
+              <div className="flex justify-center items-center min-h-[400px]">
+                <div className="text-center">
+                  <p className="text-red-600 mb-4">Error loading products: {error}</p>
+                  <Button
+                    onClick={() => window.location.reload()}
+                    className="bg-brand-primary text-white hover:bg-brand-primary/90"
+                  >
+                    Retry
+                  </Button>
+                </div>
+              </div>
+            ) : filteredProducts.length > 0 ? (
               <>
                 <div
                   className={

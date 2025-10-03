@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
@@ -19,6 +19,7 @@ import {
   Eye,
   TrendingUp,
   Clock,
+  Loader2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -27,35 +28,111 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ProductActions } from '@/components/product-actions'
 import { useParams, useRouter } from 'next/navigation'
-import { featuredItems } from '@/lib/constants'
+import { apiClient } from '@/lib/api'
 import { getSellerInfo } from '@/lib/seller-data'
+import { transformBackendProduct } from '@/lib/image-utils'
+import type { FeaturedItem } from '@/lib/types'
 
 export default function ProductPage() {
   const params = useParams()
   const router = useRouter()
   const id = params?.id as string
-  const product = featuredItems.find((item) => item.id === Number(id)) || featuredItems[0]
-  const sellerName = product.seller
 
-  // Get dynamic seller information
-  const sellerInfo = getSellerInfo(sellerName)
-
-  // Multiple product images for gallery
-  const productImages = [
-    product.image,
-    '/images/macbook-pro.jpg',
-    '/images/iphone-15-pro.jpg',
-    '/images/canon-camera.jpg',
-    '/images/ipad-pro.jpg',
-  ]
+  const [product, setProduct] = useState<FeaturedItem | null>(null)
+  const [similarProducts, setSimilarProducts] = useState<FeaturedItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [currentImage, setCurrentImage] = useState(0)
   const [isSaved, setIsSaved] = useState(false)
 
-  const similarProducts = featuredItems.filter((item) => item.id !== product.id).slice(0, 4)
+  // Transform backend data to FeaturedItem format
+  const transformToFeaturedItem = (item: any): FeaturedItem => {
+    return transformBackendProduct(item)
+  }
 
-  if (!product) {
-    router.push('/browse')
-    return null
+  // Fetch product details and similar products
+  useEffect(() => {
+    const fetchProductData = async () => {
+      if (!id) return
+
+      try {
+        setLoading(true)
+        setError(null)
+
+        console.log('🔥 PRODUCT PAGE: Fetching product details for ID:', id, '- NO DUMMY DATA!')
+
+        // Fetch product details and all products in parallel
+        const [productResponse, allProductsResponse] = await Promise.all([
+          apiClient.getProductDetails(Number(id)),
+          apiClient.getAllProducts(0),
+        ])
+
+        console.log('🚀 PRODUCT PAGE: Backend responses:')
+        console.log('Product Details:', productResponse)
+        console.log('All Products:', allProductsResponse)
+
+        // Process product details
+        const productData = productResponse.data || productResponse
+        if (productData && productData.productId) {
+          const transformedProduct = transformToFeaturedItem(productData)
+          setProduct(transformedProduct)
+        } else {
+          throw new Error('Product not found')
+        }
+
+        // Process similar products (exclude current product)
+        const allProducts = allProductsResponse.data?.content || allProductsResponse.data || []
+        const similar = allProducts
+          .filter((item: any) => (item.productId || item.id) !== Number(id))
+          .slice(0, 4)
+          .map(transformToFeaturedItem)
+        setSimilarProducts(similar)
+      } catch (err) {
+        console.error('Error fetching product:', err)
+        setError(err instanceof Error ? err.message : 'Failed to fetch product')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProductData()
+  }, [id])
+
+  // Get dynamic seller information
+  const sellerInfo = product ? getSellerInfo(product.listedBy) : null
+
+  // Multiple product images for gallery
+  const productImages = product
+    ? [product.image, ...(product.images || [])]
+    : ['/assets/images/products/placeholder.jpg']
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-brand-primary" />
+          <p className="text-gray-600">Loading product details...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error || !product) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Error: {error || 'Product not found'}</p>
+          <Button
+            onClick={() => router.push('/browse')}
+            className="bg-brand-primary text-white hover:bg-brand-primary/90"
+          >
+            Back to Browse
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   const nextImage = () => {
@@ -334,7 +411,7 @@ export default function ProductPage() {
                 {/* Action Buttons */}
                 <div className="space-y-4 mb-6">
                   <ProductActions
-                    sellerName={sellerName}
+                    sellerName={product.listedBy}
                     productTitle={product.title}
                     productPrice={product.price}
                     productImage={product.image}
@@ -364,7 +441,7 @@ export default function ProductPage() {
                       asChild
                     >
                       <Link
-                        href={`/messages?seller=${encodeURIComponent(sellerName)}&product=${encodeURIComponent(product.title)}`}
+                        href={`/messages?seller=${encodeURIComponent(product.listedBy)}&product=${encodeURIComponent(product.title)}`}
                       >
                         <MessageCircle className="w-5 h-5 mr-2" />
                         Message
@@ -380,14 +457,17 @@ export default function ProductPage() {
               <CardContent className="p-6">
                 <div className="flex items-center gap-4 mb-4">
                   <Avatar className="w-16 h-16 border-2 border-blue-100 shadow-lg">
-                    <AvatarImage src={sellerInfo?.avatar || '/placeholder.svg'} alt={sellerName} />
+                    <AvatarImage
+                      src={sellerInfo?.avatar || '/placeholder.svg'}
+                      alt={product.listedBy}
+                    />
                     <AvatarFallback className="bg-gradient-to-br from-blue-400 to-cyan-500 text-white font-semibold">
-                      {sellerName?.slice(0, 2) || 'UN'}
+                      {product.listedBy?.slice(0, 2) || 'UN'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-lg text-gray-800 truncate">
-                      {sellerName || 'Unknown Seller'}
+                      {product.listedBy || 'Unknown Seller'}
                     </h3>
                     <div className="flex items-center gap-1 text-sm mb-1">
                       <Star className="w-4 h-4 text-amber-400 fill-amber-400" />

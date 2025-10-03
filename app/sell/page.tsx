@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Plus, DollarSign, AlertCircle, CheckCircle2, Camera, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -17,6 +17,8 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { RouteGuard } from '@/components/route-guard'
+import { useAuth } from '@/hooks/use-auth'
+import { apiClient } from '@/lib/api'
 import {
   SELLING_CATEGORIES,
   ITEM_CONDITIONS,
@@ -27,7 +29,8 @@ import {
 import Image from 'next/image'
 
 interface FormData {
-  images: string[]
+  images: File[]
+  imageUrls: string[]
   mainImage: string
   title: string
   category: string
@@ -42,6 +45,7 @@ interface FormData {
 
 const INITIAL_FORM_DATA: FormData = {
   images: [],
+  imageUrls: [],
   mainImage: '',
   title: '',
   category: '',
@@ -69,29 +73,130 @@ export default function SellPage() {
 }
 
 function SellPageContent() {
+  const { user, isLoggedIn } = useAuth()
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA)
   const [currentStep, setCurrentStep] = useState(1)
   const [errors, setErrors] = useState<string[]>([])
+  const [backendCategories, setBackendCategories] = useState<
+    Array<{ categoryId: number; categoryName: string }>
+  >([])
+
+  // Debug logging
+  console.log('🖼️ SELL PAGE - FormData:', {
+    imageUrls: formData.imageUrls,
+    mainImage: formData.mainImage,
+    imagesCount: formData.images.length,
+  })
+  console.log('🔐 AUTH STATE:', { user: user?.email, isLoggedIn })
+
+  // Fetch categories from backend on component mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        console.log('📋 Fetching categories from backend...')
+        const categories = await apiClient.getCategories()
+        console.log('📋 Categories fetched:', categories)
+        setBackendCategories(categories)
+      } catch (error) {
+        console.error('❌ Failed to fetch categories:', error)
+        // Fallback to empty array if backend fails
+        setBackendCategories([])
+      }
+    }
+    fetchCategories()
+  }, [])
 
   const updateFormData = (updates: Partial<FormData>) => {
+    console.log('📝 UPDATE FORM DATA:', updates)
     setFormData((prev) => ({ ...prev, ...updates }))
   }
 
-  const addImage = (type: string) => {
-    const newImageUrl = `/placeholder.svg?height=400&width=400&text=${type}`
-    if (type === 'main') {
-      updateFormData({ mainImage: newImageUrl })
+  // Handle real file upload
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('📸 HANDLE IMAGE UPLOAD TRIGGERED')
+    const files = event.target.files
+    if (!files) {
+      console.log('❌ No files selected')
+      return
     }
-    if (!formData.images.includes(newImageUrl)) {
-      updateFormData({ images: [...formData.images, newImageUrl] })
-    }
+
+    console.log('📁 Files selected:', files.length)
+    const newFiles = Array.from(files)
+    const newImageUrls: string[] = []
+
+    newFiles.forEach((file, index) => {
+      console.log(`📷 Processing file ${index + 1}:`, {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+      })
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        console.log('❌ Invalid file type:', file.type)
+        setErrors(['Please upload only image files'])
+        return
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        console.log('❌ File too large:', file.size)
+        setErrors(['Image file size must be less than 5MB'])
+        return
+      }
+
+      // Create preview URL
+      const imageUrl = URL.createObjectURL(file)
+      console.log('✅ Created preview URL:', imageUrl)
+      newImageUrls.push(imageUrl)
+    })
+
+    // Update form data
+    const updatedImages = [...formData.images, ...newFiles]
+    const updatedImageUrls = [...formData.imageUrls, ...newImageUrls]
+    const newMainImage = formData.mainImage || newImageUrls[0] || ''
+
+    console.log('💾 Updating form data:', {
+      totalImages: updatedImages.length,
+      totalUrls: updatedImageUrls.length,
+      newMainImage,
+    })
+
+    updateFormData({
+      images: updatedImages,
+      imageUrls: updatedImageUrls,
+      mainImage: newMainImage,
+    })
+
+    // Clear the input
+    event.target.value = ''
+    console.log('🔄 Input cleared')
   }
 
-  const removeImage = (imageUrl: string) => {
+  const removeImage = (index: number) => {
+    const imageUrl = formData.imageUrls[index]
+
+    // Revoke object URL to prevent memory leaks
+    URL.revokeObjectURL(imageUrl)
+
+    const updatedImages = formData.images.filter((_, i) => i !== index)
+    const updatedImageUrls = formData.imageUrls.filter((_, i) => i !== index)
+
+    // If removing main image, set new main image
+    let newMainImage = formData.mainImage
     if (imageUrl === formData.mainImage) {
-      updateFormData({ mainImage: '' })
+      newMainImage = updatedImageUrls[0] || ''
     }
-    updateFormData({ images: formData.images.filter((img) => img !== imageUrl) })
+
+    updateFormData({
+      images: updatedImages,
+      imageUrls: updatedImageUrls,
+      mainImage: newMainImage,
+    })
+  }
+
+  const setMainImage = (imageUrl: string) => {
+    updateFormData({ mainImage: imageUrl })
   }
 
   const validateStep = (step: number) => {
@@ -105,7 +210,7 @@ function SellPageContent() {
         if (!formData.location) newErrors.push('Please choose location')
         break
       case 2:
-        if (!formData.mainImage) newErrors.push('Please upload at least one image')
+        if (formData.images.length === 0) newErrors.push('Please upload at least one image')
         if (!formData.description.trim()) newErrors.push('Please add description')
         break
       case 3:
@@ -134,23 +239,84 @@ function SellPageContent() {
   const publishListing = async () => {
     if (!validateStep(3)) return
 
-    const payload = {
-      ...formData,
-      title: formData.title.trim(),
-      description: formData.description.trim(),
-      price: `${parseFloat(formData.price).toLocaleString()} ${formData.currency}`,
-      originalPrice: formData.originalPrice
-        ? `${parseFloat(formData.originalPrice).toLocaleString()} ${formData.currency}`
-        : undefined,
-    }
-
     try {
-      // TODO: Replace with actual API call
-      console.log('Publishing listing:', payload)
-      alert('Listing published successfully!')
+      setErrors([])
+      console.log('🚀 Starting product creation...')
+
+      // Debug authentication
+      console.log('🔐 API Client headers:', apiClient)
+
+      // Validate we have images
+      if (formData.images.length === 0) {
+        setErrors(['Please upload at least one image for your product'])
+        return
+      }
+
+      // Find the selected category ID from backend categories
+      const selectedCategory = backendCategories.find(
+        (cat) =>
+          cat.categoryName.toLowerCase() === formData.category.toLowerCase() ||
+          cat.categoryId.toString() === formData.category
+      )
+
+      if (!selectedCategory) {
+        setErrors(['Please select a valid category'])
+        return
+      }
+
+      const categoryId = selectedCategory.categoryId
+
+      // Transform form data to match backend expectations
+      const productData = {
+        productName: formData.title.trim(),
+        categoryId: categoryId,
+        condition: formData.condition,
+        location: formData.location,
+        productDescription: formData.description.trim(),
+        currency: formData.currency,
+        askingPrice: parseFloat(formData.price),
+        originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : 0,
+        productWarranty: '1 year manufacturer warranty', // Default warranty
+      }
+
+      console.log('📦 Product data prepared:', productData)
+      console.log('🖼️ Images to upload:', formData.images.length, 'files')
+
+      // Log individual image details
+      formData.images.forEach((file, index) => {
+        console.log(`📸 Image ${index + 1}:`, {
+          name: file.name,
+          size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
+          type: file.type,
+        })
+      })
+
+      console.log('🚀 FINAL PAYLOAD TO BACKEND:')
+      console.log('- Endpoint: POST /api/backend/v1/products/post-product')
+      console.log('- Product Data:', JSON.stringify(productData, null, 2))
+      console.log(
+        '- Image Files:',
+        formData.images.map((f) => f.name)
+      )
+      console.log('- Form Data Structure:', {
+        product: JSON.stringify(productData),
+        images: formData.images.length + ' files',
+      })
+
+      // Call the backend API
+      const result = await apiClient.createProduct(productData, formData.images)
+
+      console.log('✅ Product created successfully:', result)
+      alert(`Listing published successfully! Product ID: ${result.productId}`)
+
+      // Reset form
+      setFormData(INITIAL_FORM_DATA)
+      setCurrentStep(1)
     } catch (error) {
-      console.error('Failed to publish listing:', error)
-      setErrors(['Failed to publish listing. Please try again.'])
+      console.error('❌ Failed to publish listing:', error)
+      setErrors([
+        error instanceof Error ? error.message : 'Failed to publish listing. Please try again.',
+      ])
     }
   }
 
@@ -228,8 +394,10 @@ function SellPageContent() {
               currentStep={currentStep}
               formData={formData}
               updateFormData={updateFormData}
-              addImage={addImage}
+              handleImageUpload={handleImageUpload}
               removeImage={removeImage}
+              setMainImage={setMainImage}
+              backendCategories={backendCategories}
             />
 
             <div className="flex justify-between mt-12">
@@ -271,14 +439,18 @@ function StepContent({
   currentStep,
   formData,
   updateFormData,
-  addImage,
+  handleImageUpload,
   removeImage,
+  setMainImage,
+  backendCategories,
 }: {
   currentStep: number
   formData: FormData
   updateFormData: (updates: Partial<FormData>) => void
-  addImage: (type: string) => void
-  removeImage: (imageUrl: string) => void
+  handleImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void
+  removeImage: (index: number) => void
+  setMainImage: (imageUrl: string) => void
+  backendCategories: Array<{ categoryId: number; categoryName: string }>
 }) {
   const stepConfig = {
     1: {
@@ -309,13 +481,20 @@ function StepContent({
         <p className="text-white/90 mt-3 text-lg">{config.description}</p>
       </CardHeader>
       <CardContent className="space-y-10 p-10">
-        {currentStep === 1 && <Step1Content formData={formData} updateFormData={updateFormData} />}
+        {currentStep === 1 && (
+          <Step1Content
+            formData={formData}
+            updateFormData={updateFormData}
+            backendCategories={backendCategories}
+          />
+        )}
         {currentStep === 2 && (
           <Step2Content
             formData={formData}
             updateFormData={updateFormData}
-            addImage={addImage}
+            handleImageUpload={handleImageUpload}
             removeImage={removeImage}
+            setMainImage={setMainImage}
           />
         )}
         {currentStep === 3 && <Step3Content formData={formData} updateFormData={updateFormData} />}
@@ -328,9 +507,11 @@ function StepContent({
 function Step1Content({
   formData,
   updateFormData,
+  backendCategories,
 }: {
   formData: FormData
   updateFormData: (updates: Partial<FormData>) => void
+  backendCategories: Array<{ categoryId: number; categoryName: string }>
 }) {
   return (
     <>
@@ -359,11 +540,17 @@ function Step1Content({
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
-              {SELLING_CATEGORIES.map((cat) => (
-                <SelectItem key={cat.value} value={cat.value}>
-                  {cat.label}
+              {backendCategories.length > 0 ? (
+                backendCategories.map((cat) => (
+                  <SelectItem key={cat.categoryId} value={cat.categoryName}>
+                    {cat.categoryName}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem disabled value="loading">
+                  Loading categories...
                 </SelectItem>
-              ))}
+              )}
             </SelectContent>
           </Select>
         </div>
@@ -414,13 +601,15 @@ function Step1Content({
 function Step2Content({
   formData,
   updateFormData,
-  addImage,
+  handleImageUpload,
   removeImage,
+  setMainImage,
 }: {
   formData: FormData
   updateFormData: (updates: Partial<FormData>) => void
-  addImage: (type: string) => void
-  removeImage: (imageUrl: string) => void
+  handleImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void
+  removeImage: (index: number) => void
+  setMainImage: (imageUrl: string) => void
 }) {
   return (
     <>
@@ -428,77 +617,96 @@ function Step2Content({
         <Label className="text-base font-semibold text-neutral-800 mb-4 block">
           Upload Photos *
         </Label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <div className="col-span-2 aspect-square border-2 border-dashed border-blue-300 rounded-xl flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 transition-colors cursor-pointer group">
-            {formData.mainImage ? (
-              <div className="relative w-full h-full">
+
+        {/* File Input */}
+        <div className="mb-6">
+          <input
+            type="file"
+            id="image-upload"
+            multiple
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+          <label
+            htmlFor="image-upload"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-primary text-white rounded-xl hover:bg-brand-primary/90 cursor-pointer transition-colors"
+          >
+            <Camera className="h-5 w-5" />
+            Upload Images
+          </label>
+          <p className="text-sm text-gray-500 mt-2">
+            Upload up to 10 images. Max 5MB per image. Supported: JPG, PNG, WebP
+          </p>
+        </div>
+
+        {/* Image Preview Grid */}
+        {formData.imageUrls.length > 0 && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6">
+            {formData.imageUrls.map((imageUrl, index) => (
+              <div key={index} className="relative aspect-square group">
                 <Image
-                  src={formData.mainImage}
-                  alt="Main"
+                  src={imageUrl}
+                  alt={`Upload ${index + 1}`}
                   fill
-                  className="object-cover rounded-lg"
+                  className="object-cover rounded-xl border-2 border-gray-200"
                 />
+
+                {/* Remove Button */}
                 <Button
                   size="icon"
                   variant="destructive"
-                  className="absolute -top-2 -right-2 h-8 w-8 rounded-full shadow-lg"
-                  onClick={() => removeImage(formData.mainImage)}
+                  className="absolute -top-2 -right-2 h-8 w-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => removeImage(index)}
                 >
                   <X className="h-4 w-4" />
                 </Button>
-                <Badge className="absolute bottom-2 left-2 bg-blue-600 text-white">
-                  Main Photo
-                </Badge>
-              </div>
-            ) : (
-              <Button
-                variant="ghost"
-                onClick={() => addImage('main')}
-                className="h-full w-full flex-col gap-3 hover:bg-transparent"
-              >
-                <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                  <Camera className="h-8 w-8 text-blue-600" />
-                </div>
-                <div className="text-center">
-                  <span className="font-medium text-blue-600">Main Photo</span>
-                  <p className="text-xs text-neutral-500 mt-1">Required</p>
-                </div>
-              </Button>
-            )}
-          </div>
 
-          {[1, 2, 3, 4].map((num) => (
-            <div
-              key={num}
-              className="aspect-square border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer group"
-            >
-              <Button
-                variant="ghost"
-                onClick={() => addImage(`detail-${num}`)}
-                className="h-full w-full flex-col gap-2 hover:bg-transparent"
-              >
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center group-hover:bg-gray-300 transition-colors">
-                  <Plus className="h-4 w-4 text-gray-600" />
-                </div>
-                <span className="text-xs text-gray-500">Add Photo</span>
-              </Button>
-            </div>
-          ))}
-        </div>
+                {/* Main Image Badge */}
+                {imageUrl === formData.mainImage && (
+                  <Badge className="absolute bottom-2 left-2 bg-blue-600 text-white">
+                    Main Photo
+                  </Badge>
+                )}
+
+                {/* Set as Main Button */}
+                {imageUrl !== formData.mainImage && (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => setMainImage(imageUrl)}
+                  >
+                    Set Main
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Upload Placeholder */}
+        {formData.imageUrls.length === 0 && (
+          <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
+            <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500 mb-2">No images uploaded yet</p>
+            <p className="text-sm text-gray-400">Click "Upload Images" to add photos</p>
+          </div>
+        )}
       </div>
 
       <div className="space-y-3">
         <Label htmlFor="description" className="text-base font-semibold text-neutral-800">
-          Description *
+          Item Description *
         </Label>
         <Textarea
           id="description"
-          rows={8}
-          placeholder="Describe your item in detail..."
-          className="text-base border-2 border-neutral-300 rounded-2xl focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 transition-all duration-300 resize-none bg-surface-elevated"
+          placeholder="Describe your item in detail. Include condition, features, reason for selling, etc."
+          className="min-h-32 text-base border-2 border-neutral-300 rounded-2xl focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 transition-all duration-300 bg-surface-elevated resize-none"
           value={formData.description}
           onChange={(e) => updateFormData({ description: e.target.value })}
         />
+        <p className="text-sm text-neutral-500">{formData.description.length}/500 characters</p>
       </div>
     </>
   )
@@ -595,11 +803,11 @@ function SellingSidebar({ currentStep }: { currentStep: number }) {
           </CardHeader>
           <CardContent className="space-y-6 p-6">
             {SELLING_TIPS.map((tip, index) => {
-              const Icon = tip.icon
+              const IconComponent = tip.icon
               return (
                 <div key={index} className="flex gap-3">
                   <div className="w-10 h-10 rounded-lg bg-brand-primary/10 text-brand-primary flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-5 h-5" />
+                    <IconComponent className="w-5 h-5" />
                   </div>
                   <div>
                     <h4 className="font-semibold text-neutral-900 mb-1">{tip.title}</h4>

@@ -6,13 +6,33 @@ import { Search, X, Tag } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { CATEGORIES, featuredItems as products } from '@/lib/constants'
+import { CATEGORIES } from '@/lib/constants'
+import { apiClient } from '@/lib/api'
 
 export default function SearchBar() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isExpanded, setIsExpanded] = useState(false)
+  const [products, setProducts] = useState<any[]>([])
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Fetch products from backend for search suggestions
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        console.log('🔍 SearchBar: Fetching products from backend for suggestions')
+        const response = await apiClient.getAllProducts(0)
+        // Access content directly from response (backend returns {content: Array, ...})
+        const productsData = response.content || response.data?.content || response.data || []
+        setProducts(productsData)
+        console.log('🔍 SearchBar: Loaded', productsData.length, 'products from backend')
+      } catch (error) {
+        console.error('🚨 SearchBar: Failed to fetch products:', error)
+        setProducts([]) // NO FALLBACK TO DUMMY DATA
+      }
+    }
+    fetchProducts()
+  }, [])
 
   type Suggestion = {
     id: string
@@ -36,18 +56,23 @@ export default function SearchBar() {
         href: `/browse?category=${c.slug}${searchQuery.trim() ? `&q=${encodeURIComponent(searchQuery.trim())}` : ''}`,
       }))
 
-    const uniqueProductsMap = new Map<string, (typeof products)[number]>()
+    const uniqueProductsMap = new Map<string, any>()
     for (const p of products) {
-      if (p.title.toLowerCase().includes(q) && !uniqueProductsMap.has(p.title.toLowerCase())) {
-        uniqueProductsMap.set(p.title.toLowerCase(), p)
+      const productTitle = p.productName || p.title || ''
+      const productId = p.productId || p.id || ''
+      if (
+        productTitle.toLowerCase().includes(q) &&
+        !uniqueProductsMap.has(productTitle.toLowerCase())
+      ) {
+        uniqueProductsMap.set(productTitle.toLowerCase(), p)
       }
       if (uniqueProductsMap.size >= 5) break
     }
     const productMatches: Suggestion[] = Array.from(uniqueProductsMap.values()).map((p) => ({
-      id: `prod-${p.id}`,
-      label: p.title,
+      id: `prod-${p.productId || p.id}`,
+      label: p.productName || p.title || 'Unknown Product',
       type: 'product' as const,
-      href: `/browse?q=${encodeURIComponent(p.title)}${p.categorySlug ? `&category=${p.categorySlug}` : ''}`,
+      href: `/browse?q=${encodeURIComponent(p.productName || p.title || '')}`,
     }))
 
     return [...categoryMatches, ...productMatches].slice(0, 8)
@@ -154,12 +179,7 @@ export default function SearchBar() {
   }
 
   return (
-    <form
-      onSubmit={handleSearch}
-      className="relative"
-      role="search"
-      aria-label="Search products"
-    >
+    <form onSubmit={handleSearch} className="relative" role="search" aria-label="Search products">
       <Label htmlFor="search-input" className="sr-only">
         Search for products in the global marketplace
       </Label>

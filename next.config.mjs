@@ -69,6 +69,14 @@ const nextConfig = {
     },
   },
 
+  // Allow development access from network IP addresses
+  allowedDevOrigins: [
+    'http://10.13.13.7:3001',
+    'http://localhost:3001',
+    'http://10.13.13.7:3000',
+    'http://localhost:3000',
+  ],
+
   /**
    * =============================================================================
    * IMAGE OPTIMIZATION
@@ -80,8 +88,8 @@ const nextConfig = {
       { protocol: 'http', hostname: 'localhost' },
       { protocol: 'http', hostname: '0.0.0.0' },
       { protocol: 'http', hostname: 'your-backend-domain.com' }, // Replace with actual backend domain
-      { protocol: 'http', hostname: '10.123.22.21:3000' }, // Replace with your CDN domain
-      { protocol: 'http', hostname: '10.123.22.21' }, // If using Unsplash for placeholder images
+      { protocol: 'http', hostname: '10.123.22.21', port: '8081' }, // Backend API with port
+      { protocol: 'http', hostname: '10.123.22.21' }, // Backend API without port
     ],
     // Disable optimization in development for faster builds
     unoptimized: process.env.NODE_ENV === 'development',
@@ -265,7 +273,10 @@ const nextConfig = {
    */
 
   // Use standalone build for optimized Docker deployment
-  output: 'standalone',
+  // On Windows creating symlinks during the standalone packaging can fail
+  // with EPERM for non-elevated shells. Only enable standalone output on
+  // non-Windows platforms; on Windows fallback to the default build output.
+  output: process.platform === 'win32' ? undefined : 'standalone',
 
   // Compress static assets
   compress: true,
