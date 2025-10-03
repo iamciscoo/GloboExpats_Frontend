@@ -19,6 +19,8 @@ IMAGE_NAME="expat-frontend"
 CONTAINER_NAME="expat-app"
 PORT="${PORT:-3000}"
 HOST_PORT="${HOST_PORT:-3000}"
+DOCKER_NETWORK="" # Optional docker network name to attach
+BACKEND_CONTAINER="" # Optional backend container name for auto network detection
 
 # Functions
 log() {
@@ -54,11 +56,13 @@ show_help() {
     echo "  clean         Remove container and image"
     echo "  deploy        Full deployment (build + run)"
     echo "  status        Show container status"
-    echo "  health        Check application health"
+    echo "  health        (Deprecated) Previously checked /api/health endpoint"
     echo ""
     echo "Options:"
     echo "  -p, --port PORT       Host port (default: 3000)"
     echo "  -d, --detach         Run in detached mode"
+    echo "  -n, --network NAME   Attach/create and attach to Docker network NAME"
+    echo "      --backend NAME   Auto-detect and use network(s) of backend container NAME"
     echo "  -h, --help           Show this help"
     echo ""
     echo "Environment Variables:"
@@ -124,6 +128,44 @@ run_container() {
         run_opts+=("-d")
     fi
     
+    # Auto-detect network from backend container if requested and no explicit network given
+    if [ -z "$DOCKER_NETWORK" ] && [ -n "$BACKEND_CONTAINER" ]; then
+        if docker ps -aq -f name="^${BACKEND_CONTAINER}$" | grep -q .; then
+            # Extract networks as JSON keys
+            local networks_json
+            networks_json=$(docker inspect --format '{{ json .NetworkSettings.Networks }}' "$BACKEND_CONTAINER" 2>/dev/null || true)
+            if [ -n "$networks_json" ] && [ "$networks_json" != "null" ]; then
+                # Pick first network key (avoid default 'bridge' if others exist)
+                local first_network
+                first_network=$(echo "$networks_json" | awk -F'"' '/":/{print $2}' | grep -v '^$' | {
+                    # If more than one and includes bridge, filter it
+                    mapfile -t arr
+                    printf '%s\n' "${arr[@]}" | grep -v '^bridge$' || printf '%s\n' "${arr[@]}"
+                } | head -n1)
+                if [ -n "$first_network" ]; then
+                    DOCKER_NETWORK="$first_network"
+                    log "Auto-detected backend network '$DOCKER_NETWORK' from container $BACKEND_CONTAINER"
+                else
+                    warn "Could not parse network name from backend container $BACKEND_CONTAINER"
+                fi
+            else
+                warn "No networks found on backend container $BACKEND_CONTAINER"
+            fi
+        else
+            warn "Backend container '$BACKEND_CONTAINER' not found for network auto-detect"
+        fi
+    fi
+
+    if [ -n "$DOCKER_NETWORK" ]; then
+        if ! docker network ls --format '{{.Name}}' | grep -Fxq "$DOCKER_NETWORK"; then
+            warn "Network '$DOCKER_NETWORK' not found. Creating it."
+            docker network create "$DOCKER_NETWORK" || error "Failed to create network $DOCKER_NETWORK"
+            log "Created network $DOCKER_NETWORK"
+        fi
+        run_opts+=(--network "$DOCKER_NETWORK")
+        log "Attaching container to network: $DOCKER_NETWORK"
+    fi
+
     docker run "${run_opts[@]}" \
         -p "$HOST_PORT:$PORT" \
         --name "$CONTAINER_NAME" \
@@ -222,27 +264,13 @@ show_status() {
     fi
 }
 
-# Health check
+# (Deprecated) health check function retained for backwards compat but simplified
 check_health() {
-    log "Checking application health"
-    
-    if ! docker ps -q -f name="$CONTAINER_NAME" | grep -q .; then
-        error "Container $CONTAINER_NAME is not running"
-    fi
-    
-    local health_url="http://localhost:$HOST_PORT/api/health"
-    
-    if command -v curl &> /dev/null; then
-        log "Testing health endpoint: $health_url"
-        if curl -f -s "$health_url" > /dev/null; then
-            log "✅ Application is healthy"
-            curl -s "$health_url" | python3 -m json.tool 2>/dev/null || curl -s "$health_url"
-        else
-            error "❌ Health check failed"
-        fi
+    warn "'health' command deprecated. Implement an app endpoint & curl it manually if needed."
+    if docker ps -q -f name="$CONTAINER_NAME" | grep -q .; then
+        log "Container $CONTAINER_NAME running. (No built-in HEALTHCHECK)"
     else
-        warn "curl not found. Cannot test health endpoint directly."
-        info "Manually test: $health_url"
+        error "Container $CONTAINER_NAME not running"
     fi
 }
 
@@ -263,6 +291,14 @@ while [[ $# -gt 0 ]]; do
         -h|--help)
             show_help
             exit 0
+            ;;
+        -n|--network)
+            DOCKER_NETWORK="$2"
+            shift 2
+            ;;
+        --backend)
+            BACKEND_CONTAINER="$2"
+            shift 2
             ;;
         build|run|stop|restart|logs|shell|clean|deploy|status|health)
             COMMAND="$1"
