@@ -14,9 +14,7 @@ export function useRenderTracker(componentName: string, enabled = false) {
 
       if (startTime.current > 0) {
         const renderTime = endTime - startTime.current
-        console.log(
-          `${componentName} rendered ${renderCount.current} times. Last render: ${renderTime.toFixed(2)}ms`
-        )
+        // ...existing code...
       }
 
       startTime.current = endTime
@@ -242,14 +240,12 @@ export function useComponentLifecycle(componentName: string, enabled = false) {
   useEffect(() => {
     if (enabled && process.env.NODE_ENV === 'development') {
       mountTime.current = performance.now()
-      console.log(`${componentName} mounted at ${mountTime.current.toFixed(2)}ms`)
+  // ...existing code...
 
       return () => {
         const unmountTime = performance.now()
         const totalLifetime = unmountTime - mountTime.current
-        console.log(
-          `${componentName} unmounted. Lifetime: ${totalLifetime.toFixed(2)}ms, Updates: ${updateCount.current}`
-        )
+        // ...existing code...
       }
     }
   }, [componentName, enabled])

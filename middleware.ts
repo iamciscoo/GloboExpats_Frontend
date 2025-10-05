@@ -12,6 +12,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next()
   }
   const token = request.cookies.get('expat_auth_token')?.value
+  // Log to verify if middleware sees the cookie
+  console.log('[MIDDLEWARE] Cookie token:', token)
   if (!token || token.length < 10) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('returnUrl', pathname)

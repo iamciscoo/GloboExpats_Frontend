@@ -38,9 +38,9 @@ export default function FeaturedListings() {
 
   // Transform backend ListingItem to FeaturedItem format
   const transformToFeaturedItem = (item: any): FeaturedItem => {
-    console.log('🔄 Transforming item:', item)
+    // ...existing code...
     const transformed = transformBackendProduct(item)
-    console.log('✅ Transformed to:', transformed)
+    // ...existing code...
     return transformed
   }
 
@@ -51,8 +51,6 @@ export default function FeaturedListings() {
         setLoading(true)
         setError(null)
 
-        console.log('🔥 FETCHING FROM BACKEND - NO DUMMY DATA!')
-        console.log('API Base URL:', '/api/backend/v1')
 
         // Fetch data for all tabs in parallel
         const [newResponse, topResponse, allResponse] = await Promise.all([
@@ -61,24 +59,17 @@ export default function FeaturedListings() {
           apiClient.getAllProducts(0),
         ])
 
-        console.log('🚀 Backend Responses:')
-        console.log('Newest:', newResponse)
-        console.log('Top Picks:', topResponse)
-        console.log('All Products:', allResponse)
 
         // Process newest listings - use centralized content extraction
         const newest = extractContentFromResponse(newResponse)
-        console.log('📦 Newest Products Count:', newest.length)
         setNewListings(newest.slice(0, 9).map(transformToFeaturedItem))
 
         // Process top picks - use centralized content extraction
         const top = extractContentFromResponse(topResponse)
-        console.log('⭐ Top Picks Count:', top.length)
         setTopPicks(top.slice(0, 9).map(transformToFeaturedItem))
 
         // Process featured listings - use centralized content extraction
         const all = extractContentFromResponse(allResponse)
-        console.log('🔥 All Products Count:', all.length)
 
         // Debug: Check for problematic objects in product data
         all.forEach((product, index) => {

@@ -25,16 +25,7 @@ export const getFullImageUrl = (imageUrl: string): string => {
  * @returns Transformed item with full image URLs
  */
 export const transformBackendProduct = (item: any) => {
-  console.log('🔄 [IMAGE-UTILS] Transforming item:', item)
-  console.log('🖼️ [IMAGE-UTILS] Raw images:', item.productImages)
-
-  // Debug: Check reviews data type and structure
-  console.log('📝 [IMAGE-UTILS] Reviews data:', {
-    reviews: item.reviews,
-    type: typeof item.reviews,
-    isArray: Array.isArray(item.reviews),
-    length: Array.isArray(item.reviews) ? item.reviews.length : 'N/A',
-  })
+  // ...existing code...
 
   const transformed = {
     id: item.productId || item.id,
@@ -64,12 +55,7 @@ export const transformBackendProduct = (item: any) => {
     isPremium: item.isPremium || false,
   }
 
-  console.log('✅ [IMAGE-UTILS] Transformed result:', {
-    id: transformed.id,
-    title: transformed.title,
-    image: transformed.image,
-    images: transformed.images,
-  })
+  return transformed
 
   return transformed
 }

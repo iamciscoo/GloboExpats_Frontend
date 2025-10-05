@@ -23,16 +23,8 @@ export function ProductCard({
 }: ProductCardProps) {
   const router = useRouter()
 
-  console.log('🎴 [PRODUCT-CARD] Rendering product:', {
-    id: product.id,
-    title: product.title,
-    image: product.image,
-    images: product.images,
-    fullImageCheck: product.image ? 'HAS IMAGE' : 'NO IMAGE',
-  })
 
   // Debug: Check if product contains any problematic nested objects
-  console.log('🔍 [PRODUCT-CARD-DEBUG] Full product object:', product)
 
   // Check for problematic review objects in product
   Object.keys(product).forEach((key) => {

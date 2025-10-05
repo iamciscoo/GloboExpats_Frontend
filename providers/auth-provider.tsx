@@ -434,7 +434,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             verificationStatus,
           })
 
-          console.log('User logged in successfully with backend data:', completeUser.email)
+          // ...existing code...
         } else {
           // Fallback to creating user from login response if backend fetch fails
           const user: User = {
@@ -464,7 +464,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             verificationStatus,
           })
 
-          console.log('User logged in with fallback data:', user.email)
+          // ...existing code...
         }
       } catch (error) {
         console.error('Login failed:', error)
@@ -525,7 +525,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem(SESSION_STORAGE_KEY)
       clearAuthToken()
 
-      console.log('User logged out successfully')
+  // ...existing code...
     } catch (error) {
       console.error('Logout failed:', error)
       // Continue with local logout even if server call fails
@@ -558,7 +558,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           verificationStatus: updatedVerificationStatus,
         }))
 
-        console.log('User profile updated successfully')
+  // ...existing code...
       } catch (error) {
         console.error('User update failed:', error)
         setAuthState((prev) => ({
@@ -635,7 +635,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const token = localStorage.getItem(SESSION_STORAGE_KEY)
       if (!token || !authState.isLoggedIn) return
 
-      console.log('🔄 Refreshing user session from backend...')
+  // ...existing code...
 
       // Fetch latest user details from backend
       const completeUser = await fetchUserDetails()
@@ -650,9 +650,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           verificationStatus,
         }))
 
-        console.log('✅ Session refreshed successfully with backend data')
+  // ...existing code...
       } else {
-        console.log('❌ Failed to refresh user details from backend')
+  // ...existing code...
       }
     } catch (error) {
       console.error('Session refresh failed:', error)
@@ -707,7 +707,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading: false,
       }))
 
-      console.log('Verification completed successfully for testing')
+  // ...existing code...
     } catch (error) {
       console.error('Verification completion failed:', error)
       setAuthState((prev) => ({

@@ -433,7 +433,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       try {
         // TODO: API call - POST /api/cart/sync { items }
         // await api.cart.sync(items)
-        console.log('Cart synced with backend:', items)
+  // ...existing code...
       } catch (error) {
         console.error('Failed to sync cart with backend:', error)
         // Don't throw error to avoid disrupting user experience
@@ -580,7 +580,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       // TODO: Implement backend sync
       // await api.cart.sync(cart.items)
-      console.log('Cart sync not yet implemented')
+  // ...existing code...
     } catch (error) {
       console.error('Failed to sync cart:', error)
     }
@@ -596,7 +596,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // if (unavailableItems.length > 0) {
       //   // Remove unavailable items and notify user
       // }
-      console.log('Cart validation not yet implemented')
+  // ...existing code...
     } catch (error) {
       console.error('Failed to validate cart items:', error)
     }
