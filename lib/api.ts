@@ -468,6 +468,17 @@ class ApiClient {
     })
   }
 
+  /**
+   * Exchanges Google OAuth auth code for JWT token
+   * @param authCode - Google OAuth authorization code
+   * @returns Promise resolving to authentication data
+   */
+  async exchangeOAuthCode(authCode: string): Promise<ApiResponse<any>> {
+    return this.request(`/oauth2/exchange?auth_code=${encodeURIComponent(authCode)}`, {
+      method: 'POST',
+    })
+  }
+
   // ============================================================================
   // MESSAGING ENDPOINTS
   // ============================================================================

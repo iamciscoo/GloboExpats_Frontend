@@ -152,15 +152,8 @@ export function redirectToGoogleLogin() {
 
 export async function exchangeAuthCode(authCode: string) {
   try {
-    const response = await fetch(
-      `https://dev.globoexpats.com/api/v1/oauth2/exchange?auth_code=${authCode}`
-    )
-    if (!response.ok) {
-      throw new Error('Failed to exchange auth code')
-    }
-
-    const data = await response.json()
-    const { token, firstName, lastName, email, profileImageUrl } = data
+    const response = await apiClient.exchangeOAuthCode(authCode)
+    const { token, firstName, lastName, email, profileImageUrl } = response.data
 
     if (token) {
       setAuthToken(token)
