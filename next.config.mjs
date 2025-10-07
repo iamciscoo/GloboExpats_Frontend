@@ -113,9 +113,9 @@ const nextConfig = {
 
   // Environment variables accessible to the frontend
   env: {
-    BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:8000',
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
-    NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/ws',
+    BACKEND_URL: process.env.BACKEND_URL || 'https://dev.globoexpats.com',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://dev.globoexpats.com/api',
+    NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || 'wss://dev.globoexpats.com/ws',
     NEXT_PUBLIC_CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || '',
     NEXT_PUBLIC_ENVIRONMENT: process.env.NODE_ENV || 'development',
   },
@@ -125,7 +125,7 @@ const nextConfig = {
     return [
       {
         source: '/api/backend/:path*',
-        destination: `${process.env.BACKEND_URL || 'http://localhost:8000'}/api/:path*`,
+        destination: `${process.env.BACKEND_URL || 'https://dev.globoexpats.com'}/api/:path*`,
       },
     ]
   },
