@@ -392,7 +392,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             userDetails.verificationStatus === 'VERIFIED' &&
             userDetails.passportVerificationStatus === 'VERIFIED' &&
             userDetails.addressVerificationStatus === 'VERIFIED',
-          isIdentityVerified: true,
+          isIdentityVerified: userDetails.passportVerificationStatus === 'VERIFIED',
           isOrganizationEmailVerified: !!userDetails.organizationalEmail,
           canBuy:
             userDetails.verificationStatus === 'VERIFIED' || !!userDetails.organizationalEmail,

@@ -41,7 +41,7 @@ ARG BACKEND_URL=http://10.123.22.21:8081
 ARG NEXT_PUBLIC_WS_URL=ws://localhost:8000/ws
 ARG NEXT_PUBLIC_CDN_URL=
 ARG NEXT_PUBLIC_ENVIRONMENT=production
-ARG NEXT_PUBLIC_BACKEND_URL=http://10.123.22.21:8081
+ARG NEXT_PUBLIC_BACKEND_URL=https://dev.globoexpats.com
 
 # Expose them to the build (Next.js inlines NEXT_PUBLIC_*)
 # NOTE:
