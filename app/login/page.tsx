@@ -19,7 +19,7 @@
  */
 
 import type React from 'react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Mail, Lock, AlertCircle, CheckCircle2, Eye, EyeOff, Loader2 } from 'lucide-react'
@@ -34,7 +34,8 @@ import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/providers/auth-provider'
 import { exchangeAuthCode, extractAuthCodeFromUrl } from '@/lib/auth-service'
 
-export default function LoginPage() {
+// Separate component that uses useSearchParams
+function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { login, isLoggedIn, isLoading } = useAuth()
@@ -462,5 +463,23 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+// Loading fallback for Suspense
+function LoginLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary"></div>
+    </div>
+  )
+}
+
+// Main export wrapped in Suspense
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginLoading />}>
+      <LoginContent />
+    </Suspense>
   )
 }
