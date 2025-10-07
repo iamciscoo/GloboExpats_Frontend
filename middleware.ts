@@ -1,11 +1,26 @@
 ﻿import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const PUBLIC_ROUTES = ['/', '/login', '/register', '/reset-password', '/privacy', '/terms', '/faq', '/help', '/contact']
+const PUBLIC_ROUTES = [
+  '/',
+  '/login',
+  '/register',
+  '/reset-password',
+  '/privacy',
+  '/terms',
+  '/faq',
+  '/help',
+  '/contact',
+]
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.startsWith('/static') || pathname.includes('.')) {
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/static') ||
+    pathname.includes('.')
+  ) {
     return NextResponse.next()
   }
   if (PUBLIC_ROUTES.includes(pathname)) {
@@ -23,5 +38,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+  ],
 }

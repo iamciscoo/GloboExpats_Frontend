@@ -240,7 +240,7 @@ export function useComponentLifecycle(componentName: string, enabled = false) {
   useEffect(() => {
     if (enabled && process.env.NODE_ENV === 'development') {
       mountTime.current = performance.now()
-  // ...existing code...
+      // ...existing code...
 
       return () => {
         const unmountTime = performance.now()

@@ -51,14 +51,12 @@ export default function FeaturedListings() {
         setLoading(true)
         setError(null)
 
-
         // Fetch data for all tabs in parallel
         const [newResponse, topResponse, allResponse] = await Promise.all([
           apiClient.getNewestListings(0, 9),
           apiClient.getTopPicks(0, 9),
           apiClient.getAllProducts(0),
         ])
-
 
         // Process newest listings - use centralized content extraction
         const newest = extractContentFromResponse(newResponse)

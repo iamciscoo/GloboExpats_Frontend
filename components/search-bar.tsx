@@ -20,12 +20,12 @@ export default function SearchBar() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-  // ...existing code...
+        // ...existing code...
         const response = await apiClient.getAllProducts(0)
         // Access content directly from response (backend returns {content: Array, ...})
         const productsData = response.content || response.data?.content || response.data || []
         setProducts(productsData)
-  // ...existing code...
+        // ...existing code...
       } catch (error) {
         console.error('🚨 SearchBar: Failed to fetch products:', error)
         setProducts([]) // NO FALLBACK TO DUMMY DATA

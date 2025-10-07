@@ -2,17 +2,41 @@ import { apiClient } from './api'
 
 // Simple token storage helpers
 const TOKEN_KEY = 'expat_auth_token'
+const TOKEN_EXPIRY_KEY = 'expat_auth_token_expiry'
+const TOKEN_EXPIRY_HOURS = 2 // Token expires after 2 hours
+
+// Auto logout timer
+let logoutTimer: NodeJS.Timeout | null = null
 
 export function setAuthToken(token: string) {
   try {
     localStorage.setItem(TOKEN_KEY, token)
+    // Set expiry time (2 hours from now)
+    const expiryTime = Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000
+    localStorage.setItem(TOKEN_EXPIRY_KEY, expiryTime.toString())
+
+    // Set up auto logout timer
+    setupAutoLogout()
   } catch {}
   apiClient.setAuthToken(token)
 }
 
 export function getAuthToken(): string | null {
   try {
-    return localStorage.getItem(TOKEN_KEY)
+    const token = localStorage.getItem(TOKEN_KEY)
+    const expiryTime = localStorage.getItem(TOKEN_EXPIRY_KEY)
+
+    // Check if token has expired
+    if (token && expiryTime) {
+      const now = Date.now()
+      if (now > parseInt(expiryTime)) {
+        // Token expired, clear it
+        clearAuthToken()
+        return null
+      }
+    }
+
+    return token
   } catch {
     return null
   }
@@ -21,7 +45,20 @@ export function getAuthToken(): string | null {
 export function clearAuthToken() {
   try {
     localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(TOKEN_EXPIRY_KEY)
   } catch {}
+
+  // Clear the cookie
+  if (typeof document !== 'undefined') {
+    document.cookie = `${TOKEN_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax; Secure`
+  }
+
+  // Clear auto logout timer
+  if (logoutTimer) {
+    clearTimeout(logoutTimer)
+    logoutTimer = null
+  }
+
   apiClient.clearAuthToken()
 }
 
@@ -58,14 +95,13 @@ export async function loginUser(payload: { email?: string; password: string; use
   const responseData = (res as any)?.data || res
   const token = responseData?.token
 
-
   // ...existing code...
   if (token) {
     setAuthToken(token)
-    // Also set token as a cookie (expires in 7 days, secure, sameSite=lax)
+    // Also set token as a cookie (expires in 2 hours, secure, sameSite=lax)
     if (typeof document !== 'undefined') {
-      const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString();
-      document.cookie = `${TOKEN_KEY}=${encodeURIComponent(token)}; expires=${expires}; path=/; SameSite=Lax; Secure`;
+      const expires = new Date(Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000).toUTCString()
+      document.cookie = `${TOKEN_KEY}=${encodeURIComponent(token)}; expires=${expires}; path=/; SameSite=Lax; Secure`
       // Log to verify cookie is set
       console.log('[AUTH] Set cookie:', document.cookie)
     }
@@ -78,6 +114,80 @@ export async function loginUser(payload: { email?: string; password: string; use
 
 export async function sendOrgEmailOtp(organizationalEmail: string) {
   return apiClient.sendEmailOtp(organizationalEmail)
+}
+
+// Setup auto logout timer
+function setupAutoLogout() {
+  const expiryTime = localStorage.getItem(TOKEN_EXPIRY_KEY)
+  if (expiryTime) {
+    const timeUntilExpiry = parseInt(expiryTime) - Date.now()
+    if (timeUntilExpiry > 0) {
+      logoutTimer = setTimeout(() => {
+        clearAuthToken()
+        // Trigger logout event for components to react
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('authTokenExpired'))
+        }
+      }, timeUntilExpiry)
+    }
+  }
+}
+
+// Initialize auto logout on app start
+export function initializeAutoLogout() {
+  if (typeof window !== 'undefined') {
+    const token = getAuthToken() // This will check expiry
+    if (token) {
+      setupAutoLogout()
+    }
+  }
+}
+
+// Google OAuth functions
+export function redirectToGoogleLogin() {
+  if (typeof window !== 'undefined') {
+    window.location.href = 'http://10.123.22.21:8081/api/v1/oauth2/login/google'
+  }
+}
+
+export async function exchangeAuthCode(authCode: string) {
+  try {
+    const response = await fetch(
+      `http://10.123.22.21:8081/api/v1/oauth2/exchange?auth_code=${authCode}`
+    )
+    if (!response.ok) {
+      throw new Error('Failed to exchange auth code')
+    }
+
+    const data = await response.json()
+    const { token, firstName, lastName, email, profileImageUrl } = data
+
+    if (token) {
+      setAuthToken(token)
+      // Also set token as a cookie (expires in 2 hours)
+      if (typeof document !== 'undefined') {
+        const expires = new Date(Date.now() + TOKEN_EXPIRY_HOURS * 60 * 60 * 1000).toUTCString()
+        document.cookie = `${TOKEN_KEY}=${encodeURIComponent(token)}; expires=${expires}; path=/; SameSite=Lax; Secure`
+        console.log('[AUTH] Google OAuth token set in cookie:', document.cookie)
+      }
+    } else {
+      throw new Error('No token received from server')
+    }
+
+    return { token, firstName, lastName, email, profileImageUrl }
+  } catch (error) {
+    console.error('[AUTH] Google OAuth exchange failed:', error)
+    throw error
+  }
+}
+
+export function extractAuthCodeFromUrl(url: string): string | null {
+  try {
+    const urlObj = new URL(url)
+    return urlObj.searchParams.get('auth_code')
+  } catch {
+    return null
+  }
 }
 
 export async function verifyOrgEmailOtp(

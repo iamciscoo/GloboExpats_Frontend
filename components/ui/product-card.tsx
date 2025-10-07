@@ -23,7 +23,6 @@ export function ProductCard({
 }: ProductCardProps) {
   const router = useRouter()
 
-
   // Debug: Check if product contains any problematic nested objects
 
   // Check for problematic review objects in product

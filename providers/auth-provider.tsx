@@ -55,6 +55,7 @@ import {
   clearAuthToken,
   getAuthToken,
   initializeAuthFromStorage,
+  initializeAutoLogout,
 } from '@/lib/auth-service'
 
 /**
@@ -318,7 +319,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Restore session on mount
   useEffect(() => {
     restoreSession()
+
+    // Initialize auto logout timer
+    initializeAutoLogout()
   }, [restoreSession])
+
+  // Handle token expiry events
+  useEffect(() => {
+    const handleTokenExpiry = () => {
+      // Clear user state and session data
+      setAuthState({
+        isLoggedIn: false,
+        user: null,
+        isLoading: false,
+        error: null,
+        verificationStatus: null,
+      })
+      clearAuthToken()
+      // Clear session storage
+      try {
+        sessionStorage.removeItem('expat_user')
+        localStorage.removeItem('expat_user')
+      } catch {}
+    }
+
+    window.addEventListener('authTokenExpired', handleTokenExpiry)
+
+    return () => {
+      window.removeEventListener('authTokenExpired', handleTokenExpiry)
+    }
+  }, [])
 
   /**
    * =============================================================================
@@ -525,7 +555,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem(SESSION_STORAGE_KEY)
       clearAuthToken()
 
-  // ...existing code...
+      // ...existing code...
     } catch (error) {
       console.error('Logout failed:', error)
       // Continue with local logout even if server call fails
@@ -558,7 +588,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           verificationStatus: updatedVerificationStatus,
         }))
 
-  // ...existing code...
+        // ...existing code...
       } catch (error) {
         console.error('User update failed:', error)
         setAuthState((prev) => ({
@@ -635,7 +665,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const token = localStorage.getItem(SESSION_STORAGE_KEY)
       if (!token || !authState.isLoggedIn) return
 
-  // ...existing code...
+      // ...existing code...
 
       // Fetch latest user details from backend
       const completeUser = await fetchUserDetails()
@@ -650,9 +680,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           verificationStatus,
         }))
 
-  // ...existing code...
+        // ...existing code...
       } else {
-  // ...existing code...
+        // ...existing code...
       }
     } catch (error) {
       console.error('Session refresh failed:', error)
@@ -707,7 +737,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading: false,
       }))
 
-  // ...existing code...
+      // ...existing code...
     } catch (error) {
       console.error('Verification completion failed:', error)
       setAuthState((prev) => ({

@@ -21,7 +21,7 @@
 import type React from 'react'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Mail, Lock, AlertCircle, CheckCircle2, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,9 +32,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/providers/auth-provider'
+import { exchangeAuthCode, extractAuthCodeFromUrl } from '@/lib/auth-service'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { login, isLoggedIn, isLoading } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -46,6 +48,40 @@ export default function LoginPage() {
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({})
   const [isFormValid, setIsFormValid] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Handle OAuth callback
+  useEffect(() => {
+    const handleOAuthCallback = async () => {
+      const authCode = searchParams.get('auth_code')
+      if (authCode) {
+        setSocialLoading('google')
+        try {
+          const userData = await exchangeAuthCode(authCode)
+          setSuccess('Google login successful! Redirecting...')
+
+          // Update auth context with user data
+          await login({
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            name: `${userData.firstName} ${userData.lastName}`,
+            email: userData.email,
+            avatar: userData.profileImageUrl,
+          })
+
+          // Clean up URL and redirect
+          setTimeout(() => {
+            router.replace('/')
+          }, 1000)
+        } catch (error) {
+          console.error('OAuth callback error:', error)
+          setError('Google login failed. Please try again.')
+          setSocialLoading(null)
+        }
+      }
+    }
+
+    handleOAuthCallback()
+  }, [searchParams, login, router])
 
   // Add redirect logic for already authenticated users
   useEffect(() => {
@@ -145,9 +181,13 @@ export default function LoginPage() {
     setSocialLoading(provider)
 
     try {
-      // TODO: Implement actual social authentication
-      // This would typically redirect to OAuth provider
-      // Example implementation:
+      if (provider === 'google') {
+        // Redirect to Google OAuth
+        window.location.href = 'http://10.123.22.21:8081/api/v1/oauth2/login/google'
+        return
+      }
+
+      // TODO: Implement Facebook and Apple authentication
 
       // For development, simulate successful login
       await new Promise((resolve) => setTimeout(resolve, 1500))
