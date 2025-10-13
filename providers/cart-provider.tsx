@@ -66,6 +66,9 @@
 import { createContext, useState, useEffect, useMemo, useCallback, ReactNode } from 'react'
 import { toast } from '@/components/ui/use-toast'
 import { useAuth } from '@/hooks/use-auth'
+import { apiClient } from '@/lib/api'
+import { backendCartToFrontendItems } from '@/lib/cart-utils'
+import type { BackendCartResponse, BackendCartItem } from '@/lib/types'
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -282,6 +285,45 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [isLoggedIn, user?.id, cart.selectedItems]
   )
 
+  /**
+   * Load cart data from backend and convert to frontend format
+   */
+  const loadCartFromBackend = useCallback(async () => {
+    if (!isLoggedIn) return
+
+    try {
+      setCart((prev) => ({ ...prev, isLoading: true, error: null }))
+      
+      const response = await apiClient.getUserCart()
+      
+      if (response.success || response.data) {
+        const backendCart: BackendCartResponse = response.data || response
+        
+        // Convert backend cart items to frontend format using utility function
+        const frontendItems = backendCartToFrontendItems(backendCart)
+
+        setCart((prev) => ({
+          ...prev,
+          items: frontendItems,
+          isLoading: false,
+          error: null,
+        }))
+
+        // Persist to localStorage
+        persistCart(frontendItems)
+      } else {
+        throw new Error(response.message || 'Failed to load cart')
+      }
+    } catch (error) {
+      console.error('Failed to load cart from backend:', error)
+      setCart((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Failed to load cart',
+      }))
+    }
+  }, [isLoggedIn, persistCart])
+
   // ============================================================================
   // INITIALIZATION & CLEANUP
   // ============================================================================
@@ -307,43 +349,51 @@ export function CartProvider({ children }: { children: ReactNode }) {
           return
         }
 
-        const savedCart = localStorage.getItem(CART_STORAGE_KEY)
+        // Load from backend first for authenticated users
+        try {
+          await loadCartFromBackend()
+        } catch (backendError) {
+          console.warn('Failed to load from backend, falling back to localStorage:', backendError)
+          
+          // Fallback to localStorage if backend fails
+          const savedCart = localStorage.getItem(CART_STORAGE_KEY)
 
-        if (!savedCart) {
-          setCart((prev) => ({
-            ...prev,
-            items: [],
+          if (!savedCart) {
+            setCart((prev) => ({
+              ...prev,
+              items: [],
+              isLoading: false,
+              isInitialized: true,
+              selectedItems: [],
+            }))
+            return
+          }
+
+          const cartData = JSON.parse(savedCart)
+
+          // Validate cart data and user association
+          if (!isCartDataValid(cartData) || cartData.userId !== user?.id) {
+            localStorage.removeItem(CART_STORAGE_KEY)
+            setCart((prev) => ({
+              ...prev,
+              items: [],
+              isLoading: false,
+              isInitialized: true,
+              selectedItems: [],
+            }))
+            return
+          }
+
+          setCart({
+            items: cartData.items || [],
             isLoading: false,
+            error: null,
             isInitialized: true,
-            selectedItems: [],
-          }))
-          return
+            selectedItems: cartData.selectedItems || [],
+          })
         }
-
-        const cartData = JSON.parse(savedCart)
-
-        // Validate cart data and user association
-        if (!isCartDataValid(cartData) || cartData.userId !== user?.id) {
-          localStorage.removeItem(CART_STORAGE_KEY)
-          setCart((prev) => ({
-            ...prev,
-            items: [],
-            isLoading: false,
-            isInitialized: true,
-            selectedItems: [],
-          }))
-          return
-        }
-
-        setCart({
-          items: cartData.items || [],
-          isLoading: false,
-          error: null,
-          isInitialized: true,
-          selectedItems: cartData.selectedItems || [],
-        })
       } catch (error) {
-        console.error('Failed to load cart from localStorage:', error)
+        console.error('Failed to load cart:', error)
         localStorage.removeItem(CART_STORAGE_KEY)
         setCart({
           items: [],
@@ -356,7 +406,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     loadCart()
-  }, [isLoggedIn, user?.id, isCartDataValid])
+  }, [isLoggedIn, user?.id, isCartDataValid, loadCartFromBackend])
 
   /**
    * Clear cart when user logs out
@@ -444,73 +494,98 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = useCallback(
     async (item: Omit<CartItem, 'quantity'>, quantity = 1) => {
+      if (!isLoggedIn) {
+        toast({
+          title: 'Login required',
+          description: 'Please login to add items to your cart.',
+          variant: 'destructive',
+        })
+        return
+      }
+
       try {
-        const existingItem = cart.items.find((cartItem) => cartItem.id === item.id)
+        setCart((prev) => ({ ...prev, isLoading: true, error: null }))
 
-        if (existingItem) {
-          // Update existing item quantity
-          const updatedItems = cart.items.map((cartItem) =>
-            cartItem.id === item.id
-              ? { ...cartItem, quantity: cartItem.quantity + quantity }
-              : cartItem
-          )
-          setCart((prev) => ({ ...prev, items: updatedItems }))
-
-          // TODO: API call - PATCH /api/cart/{itemId} { quantity: newQuantity }
-          // await api.cart.updateQuantity(item.id, existingItem.quantity + quantity)
-        } else {
-          // Add new item
-          const newItem: CartItem = { ...item, quantity }
-          const updatedItems = [...cart.items, newItem]
-          setCart((prev) => ({ ...prev, items: updatedItems }))
-
-          // TODO: API call - POST /api/cart { productId: item.id, quantity }
-          // await api.cart.add(item.id, quantity)
+        // Convert item.id (string) to productId (number) for backend
+        const productId = parseInt(item.id, 10)
+        if (isNaN(productId)) {
+          throw new Error('Invalid product ID')
         }
 
-        await syncWithBackend(cart.items)
-
-        toast({
-          title: 'Added to cart',
-          description: `${item.title} has been added to your cart.`,
-        })
+        // Call backend API to add to cart
+        const response = await apiClient.addToCart(productId, quantity)
+        
+        if (response.success || response.data) {
+          // Refresh cart from backend to get updated state
+          await loadCartFromBackend()
+          
+          toast({
+            title: 'Added to cart',
+            description: `${item.title} has been added to your cart.`,
+          })
+        } else {
+          throw new Error(response.message || 'Failed to add item to cart')
+        }
       } catch (error) {
         console.error('Failed to add item to cart:', error)
         toast({
           title: 'Error',
-          description: 'Failed to add item to cart. Please try again.',
+          description: error instanceof Error ? error.message : 'Failed to add item to cart. Please try again.',
           variant: 'destructive',
         })
+      } finally {
+        setCart((prev) => ({ ...prev, isLoading: false }))
       }
     },
-    [cart.items, syncWithBackend, toast]
+    [isLoggedIn]
   )
 
   const removeItem = useCallback(
     async (id: string) => {
-      try {
-        const updatedItems = cart.items.filter((item) => item.id !== id)
-        setCart((prev) => ({ ...prev, items: updatedItems }))
-
-        // TODO: API call - DELETE /api/cart/{itemId}
-        // await api.cart.remove(id)
-
-        await syncWithBackend(updatedItems)
-
+      if (!isLoggedIn) {
         toast({
-          title: 'Item removed',
-          description: 'Item has been removed from your cart.',
+          title: 'Login required',
+          description: 'Please login to modify your cart.',
+          variant: 'destructive',
         })
+        return
+      }
+
+      try {
+        setCart((prev) => ({ ...prev, isLoading: true, error: null }))
+
+        // Convert id (string) to itemId (number) for backend
+        const itemId = parseInt(id, 10)
+        if (isNaN(itemId)) {
+          throw new Error('Invalid item ID')
+        }
+
+        // Call backend API to remove from cart
+        const response = await apiClient.removeFromCart(itemId)
+        
+        if (response.success || response.data !== undefined) {
+          // Refresh cart from backend to get updated state
+          await loadCartFromBackend()
+          
+          toast({
+            title: 'Item removed',
+            description: 'Item has been removed from your cart.',
+          })
+        } else {
+          throw new Error(response.message || 'Failed to remove item from cart')
+        }
       } catch (error) {
         console.error('Failed to remove item from cart:', error)
         toast({
           title: 'Error',
-          description: 'Failed to remove item. Please try again.',
+          description: error instanceof Error ? error.message : 'Failed to remove item. Please try again.',
           variant: 'destructive',
         })
+      } finally {
+        setCart((prev) => ({ ...prev, isLoading: false }))
       }
     },
-    [cart.items, syncWithBackend, toast]
+    [isLoggedIn]
   )
 
   /**
@@ -518,6 +593,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
    */
   const updateQuantity = useCallback(
     async (itemId: string, quantity: number) => {
+      if (!isLoggedIn) {
+        toast({
+          title: 'Login required',
+          description: 'Please login to modify your cart.',
+          variant: 'destructive',
+        })
+        return
+      }
+
       try {
         if (quantity <= 0) {
           await removeItem(itemId)
@@ -533,58 +617,105 @@ export function CartProvider({ children }: { children: ReactNode }) {
           return
         }
 
-        setCart((prev) => {
-          const updatedItems = prev.items.map((item) =>
-            item.id === itemId ? { ...item, quantity } : item
-          )
-          return { ...prev, items: updatedItems }
-        })
+        setCart((prev) => ({ ...prev, isLoading: true, error: null }))
+
+        // Find the cart item to get cartId and productId
+        const cartItem = cart.items.find((item) => item.id === itemId)
+        if (!cartItem) {
+          throw new Error('Item not found in cart')
+        }
+
+        // Convert IDs to numbers for backend
+        const cartId = parseInt(cartItem.id, 10) // Assuming cartId matches item id
+        const productId = parseInt(cartItem.id, 10)
+        
+        if (isNaN(cartId) || isNaN(productId)) {
+          throw new Error('Invalid item or product ID')
+        }
+
+        // Call backend API to update cart item
+        const response = await apiClient.updateCartItem(cartId, productId, quantity)
+        
+        if (response.success || response.data) {
+          // Refresh cart from backend to get updated state
+          await loadCartFromBackend()
+        } else {
+          throw new Error(response.message || 'Failed to update quantity')
+        }
       } catch (error) {
         console.error('Failed to update quantity:', error)
         toast({
           title: 'Error',
-          description: 'Failed to update quantity. Please try again.',
+          description: error instanceof Error ? error.message : 'Failed to update quantity. Please try again.',
           variant: 'destructive',
         })
+      } finally {
+        setCart((prev) => ({ ...prev, isLoading: false }))
       }
     },
-    [removeItem]
+    [isLoggedIn, cart.items, removeItem]
   )
 
   /**
    * Clear all items from the cart
    */
   const clearCart = useCallback(async () => {
-    try {
-      setCart((prev) => ({ ...prev, items: [], selectedItems: [], error: null }))
-      localStorage.removeItem(CART_STORAGE_KEY)
-
+    if (!isLoggedIn) {
       toast({
-        title: 'Cart cleared',
-        description: 'All items have been removed from your cart.',
+        title: 'Login required',
+        description: 'Please login to modify your cart.',
+        variant: 'destructive',
       })
+      return
+    }
+
+    try {
+      setCart((prev) => ({ ...prev, isLoading: true, error: null }))
+
+      // Call backend API to clear cart
+      const response = await apiClient.clearCart()
+      
+      if (response.success || response.data !== undefined) {
+        // Update local state
+        setCart((prev) => ({ ...prev, items: [], selectedItems: [], error: null }))
+        localStorage.removeItem(CART_STORAGE_KEY)
+
+        toast({
+          title: 'Cart cleared',
+          description: 'All items have been removed from your cart.',
+        })
+      } else {
+        throw new Error(response.message || 'Failed to clear cart')
+      }
     } catch (error) {
       console.error('Failed to clear cart:', error)
       toast({
         title: 'Error',
-        description: 'Failed to clear cart. Please try again.',
+        description: error instanceof Error ? error.message : 'Failed to clear cart. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setCart((prev) => ({ ...prev, isLoading: false }))
+    }
+  }, [isLoggedIn])
+
+  /**
+   * Sync cart with backend
+   */
+  const syncCart = useCallback(async () => {
+    if (!isLoggedIn) return
+
+    try {
+      await loadCartFromBackend()
+    } catch (error) {
+      console.error('Failed to sync cart:', error)
+      toast({
+        title: 'Sync Error',
+        description: 'Failed to sync cart with server. Some changes may not be saved.',
         variant: 'destructive',
       })
     }
-  }, [])
-
-  /**
-   * Sync cart with backend (placeholder for future implementation)
-   */
-  const syncCart = useCallback(async () => {
-    try {
-      // TODO: Implement backend sync
-      // await api.cart.sync(cart.items)
-      // ...existing code...
-    } catch (error) {
-      console.error('Failed to sync cart:', error)
-    }
-  }, [])
+  }, [isLoggedIn, loadCartFromBackend])
 
   /**
    * Validate cart items availability

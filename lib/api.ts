@@ -571,6 +571,66 @@ class ApiClient {
       body: JSON.stringify({ status }),
     })
   }
+
+  // ============================================================================
+  // CART ENDPOINTS
+  // ============================================================================
+
+  /**
+   * Adds an item to the user's cart
+   * @param productId - Product identifier
+   * @param quantity - Quantity to add (default: 1)
+   * @returns Promise resolving to cart add result
+   */
+  async addToCart(productId: number, quantity: number = 1): Promise<ApiResponse<any>> {
+    return this.request('/cart/add', {
+      method: 'POST',
+      body: JSON.stringify({ productId, quantity }),
+    })
+  }
+
+  /**
+   * Fetches the user's cart contents
+   * @returns Promise resolving to cart data with items, totals, etc.
+   */
+  async getUserCart(): Promise<ApiResponse<any>> {
+    return this.request('/cart/User')
+  }
+
+  /**
+   * Updates an existing cart item
+   * @param cartId - Cart item identifier
+   * @param productId - Product identifier
+   * @param quantity - New quantity
+   * @returns Promise resolving to updated cart item
+   */
+  async updateCartItem(cartId: number, productId: number, quantity: number): Promise<ApiResponse<any>> {
+    return this.request(`/cart/item/${cartId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ productId, quantity }),
+    })
+  }
+
+  /**
+   * Removes an item from the cart
+   * @param itemId - Cart item identifier or product identifier
+   * @returns Promise resolving to removal confirmation
+   */
+  async removeFromCart(itemId: number): Promise<ApiResponse<any>> {
+    return this.request(`/cart/item/${itemId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  /**
+   * Clears all items from the user's cart
+   * @returns Promise resolving to clear confirmation
+   */
+  async clearCart(): Promise<ApiResponse<any>> {
+    return this.request('/cart/clear', {
+      method: 'DELETE',
+    })
+  }
 }
 
 // ============================================================================
@@ -623,6 +683,15 @@ export const api = {
     get: (id: string) => apiClient.getOrder(id),
     create: (data: any) => apiClient.createOrder(data),
     updateStatus: (id: string, status: string) => apiClient.updateOrderStatus(id, status),
+  },
+
+  /** Cart management operations */
+  cart: {
+    add: (productId: number, quantity?: number) => apiClient.addToCart(productId, quantity),
+    get: () => apiClient.getUserCart(),
+    update: (cartId: number, productId: number, quantity: number) => apiClient.updateCartItem(cartId, productId, quantity),
+    remove: (itemId: number) => apiClient.removeFromCart(itemId),
+    clear: () => apiClient.clearCart(),
   },
 }
 

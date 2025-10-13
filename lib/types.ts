@@ -544,3 +544,50 @@ export interface ProfileViewingRights {
   canSendMessage: boolean
   reason?: string // If access is denied
 }
+
+/**
+ * =============================================================================
+ * CART & SHOPPING TYPES
+ * =============================================================================
+ */
+
+/**
+ * Backend cart item response structure
+ * Matches the API response format from the cart endpoints
+ */
+export interface BackendCartItem {
+  cartId: number
+  productId: number
+  quantity: number
+  productName: string
+  price: number
+  currency: string
+  subtotal: number
+}
+
+/**
+ * Complete cart response from backend
+ * Includes items array and totals
+ */
+export interface BackendCartResponse {
+  items: BackendCartItem[]
+  totalItems: number
+  totalPrice: number
+  currency: string
+}
+
+/**
+ * Request payload for adding items to cart
+ */
+export interface AddToCartRequest {
+  productId: number
+  quantity: number
+}
+
+/**
+ * Request payload for updating cart items
+ */
+export interface UpdateCartItemRequest {
+  productId: number
+  quantity: number
+}
