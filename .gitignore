@@ -32,3 +32,6 @@ next-env.d.ts
 .vscode/
 .idea/
 .cursor/
+
+# Backend folder (prevent version control conflicts)
+Expat-Platform-main-Backend/
