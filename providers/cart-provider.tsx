@@ -293,12 +293,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     try {
       setCart((prev) => ({ ...prev, isLoading: true, error: null }))
-      
+
       const response = await apiClient.getUserCart()
-      
+
       if (response.success || response.data) {
         const backendCart: BackendCartResponse = response.data || response
-        
+
         // Convert backend cart items to frontend format using utility function
         const frontendItems = backendCartToFrontendItems(backendCart)
 
@@ -354,7 +354,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           await loadCartFromBackend()
         } catch (backendError) {
           console.warn('Failed to load from backend, falling back to localStorage:', backendError)
-          
+
           // Fallback to localStorage if backend fails
           const savedCart = localStorage.getItem(CART_STORAGE_KEY)
 
@@ -514,11 +514,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
         // Call backend API to add to cart
         const response = await apiClient.addToCart(productId, quantity)
-        
+
         if (response.success || response.data) {
           // Refresh cart from backend to get updated state
           await loadCartFromBackend()
-          
+
           toast({
             title: 'Added to cart',
             description: `${item.title} has been added to your cart.`,
@@ -530,7 +530,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         console.error('Failed to add item to cart:', error)
         toast({
           title: 'Error',
-          description: error instanceof Error ? error.message : 'Failed to add item to cart. Please try again.',
+          description:
+            error instanceof Error
+              ? error.message
+              : 'Failed to add item to cart. Please try again.',
           variant: 'destructive',
         })
       } finally {
@@ -562,11 +565,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
         // Call backend API to remove from cart
         const response = await apiClient.removeFromCart(itemId)
-        
+
         if (response.success || response.data !== undefined) {
           // Refresh cart from backend to get updated state
           await loadCartFromBackend()
-          
+
           toast({
             title: 'Item removed',
             description: 'Item has been removed from your cart.',
@@ -578,7 +581,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         console.error('Failed to remove item from cart:', error)
         toast({
           title: 'Error',
-          description: error instanceof Error ? error.message : 'Failed to remove item. Please try again.',
+          description:
+            error instanceof Error ? error.message : 'Failed to remove item. Please try again.',
           variant: 'destructive',
         })
       } finally {
@@ -628,14 +632,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         // Convert IDs to numbers for backend
         const cartId = parseInt(cartItem.id, 10) // Assuming cartId matches item id
         const productId = parseInt(cartItem.id, 10)
-        
+
         if (isNaN(cartId) || isNaN(productId)) {
           throw new Error('Invalid item or product ID')
         }
 
         // Call backend API to update cart item
         const response = await apiClient.updateCartItem(cartId, productId, quantity)
-        
+
         if (response.success || response.data) {
           // Refresh cart from backend to get updated state
           await loadCartFromBackend()
@@ -646,7 +650,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         console.error('Failed to update quantity:', error)
         toast({
           title: 'Error',
-          description: error instanceof Error ? error.message : 'Failed to update quantity. Please try again.',
+          description:
+            error instanceof Error ? error.message : 'Failed to update quantity. Please try again.',
           variant: 'destructive',
         })
       } finally {
@@ -674,7 +679,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       // Call backend API to clear cart
       const response = await apiClient.clearCart()
-      
+
       if (response.success || response.data !== undefined) {
         // Update local state
         setCart((prev) => ({ ...prev, items: [], selectedItems: [], error: null }))
@@ -691,7 +696,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       console.error('Failed to clear cart:', error)
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to clear cart. Please try again.',
+        description:
+          error instanceof Error ? error.message : 'Failed to clear cart. Please try again.',
         variant: 'destructive',
       })
     } finally {

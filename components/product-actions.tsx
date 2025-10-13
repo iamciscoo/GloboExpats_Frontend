@@ -69,7 +69,7 @@ export function ProductActions({
       })
 
       await addToCart(cartItem, 1)
-      
+
       toast({
         title: 'Added to cart',
         description: `${productTitle} has been added to your cart`,

@@ -1,6 +1,6 @@
 /**
  * Cart Utility Functions
- * 
+ *
  * Helper functions for cart operations and data transformations
  */
 
@@ -104,12 +104,15 @@ export function formatCurrency(
  */
 export function calculateCartSummary(items: CartItem[]) {
   const itemCount = items.reduce((total, item) => total + item.quantity, 0)
-  const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0)
-  const originalTotal = items.reduce((total, item) => total + ((item.originalPrice || item.price) * item.quantity), 0)
+  const subtotal = items.reduce((total, item) => total + item.price * item.quantity, 0)
+  const originalTotal = items.reduce(
+    (total, item) => total + (item.originalPrice || item.price) * item.quantity,
+    0
+  )
   const savings = originalTotal - subtotal
-  const currencies = [...new Set(items.map(item => item.currency || 'TZS'))]
+  const currencies = [...new Set(items.map((item) => item.currency || 'TZS'))]
   const hasMixedCurrencies = currencies.length > 1
-  
+
   return {
     itemCount,
     subtotal,
@@ -118,7 +121,7 @@ export function calculateCartSummary(items: CartItem[]) {
     currencies,
     hasMixedCurrencies,
     isEmpty: items.length === 0,
-    primaryCurrency: currencies[0] || 'TZS'
+    primaryCurrency: currencies[0] || 'TZS',
   }
 }
 
@@ -145,14 +148,17 @@ export function validateCartItem(item: any): item is CartItem {
  * @returns Object with expatId as key and items array as value
  */
 export function groupCartItemsByExpat(items: CartItem[]): Record<string, CartItem[]> {
-  return items.reduce((groups, item) => {
-    const expatId = item.expatId
-    if (!groups[expatId]) {
-      groups[expatId] = []
-    }
-    groups[expatId].push(item)
-    return groups
-  }, {} as Record<string, CartItem[]>)
+  return items.reduce(
+    (groups, item) => {
+      const expatId = item.expatId
+      if (!groups[expatId]) {
+        groups[expatId] = []
+      }
+      groups[expatId].push(item)
+      return groups
+    },
+    {} as Record<string, CartItem[]>
+  )
 }
 
 /**

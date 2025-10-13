@@ -1,6 +1,6 @@
 /**
  * Cart Header Component
- * 
+ *
  * Displays cart icon with item count for navigation header
  */
 
@@ -25,17 +25,15 @@ export function CartHeader({ className }: CartHeaderProps) {
         <div className="relative">
           <ShoppingCart className="h-5 w-5" />
           {itemCount > 0 && (
-            <Badge 
-              variant="destructive" 
+            <Badge
+              variant="destructive"
               className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
             >
               {itemCount > 99 ? '99+' : itemCount}
             </Badge>
           )}
         </div>
-        <span className="sr-only">
-          Shopping cart with {itemCount} items
-        </span>
+        <span className="sr-only">Shopping cart with {itemCount} items</span>
       </Button>
     </Link>
   )

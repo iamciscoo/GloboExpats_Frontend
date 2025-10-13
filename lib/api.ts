@@ -604,7 +604,11 @@ class ApiClient {
    * @param quantity - New quantity
    * @returns Promise resolving to updated cart item
    */
-  async updateCartItem(cartId: number, productId: number, quantity: number): Promise<ApiResponse<any>> {
+  async updateCartItem(
+    cartId: number,
+    productId: number,
+    quantity: number
+  ): Promise<ApiResponse<any>> {
     return this.request(`/cart/item/${cartId}`, {
       method: 'PUT',
       body: JSON.stringify({ productId, quantity }),
@@ -689,7 +693,8 @@ export const api = {
   cart: {
     add: (productId: number, quantity?: number) => apiClient.addToCart(productId, quantity),
     get: () => apiClient.getUserCart(),
-    update: (cartId: number, productId: number, quantity: number) => apiClient.updateCartItem(cartId, productId, quantity),
+    update: (cartId: number, productId: number, quantity: number) =>
+      apiClient.updateCartItem(cartId, productId, quantity),
     remove: (itemId: number) => apiClient.removeFromCart(itemId),
     clear: () => apiClient.clearCart(),
   },

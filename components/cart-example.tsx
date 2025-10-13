@@ -1,6 +1,6 @@
 /**
  * Example Cart Usage Component
- * 
+ *
  * This component demonstrates how to use the cart functionality
  * with the backend API integration.
  */
@@ -29,10 +29,10 @@ export function CartExample() {
   const { isLoggedIn } = useAuth()
   const [exampleProduct] = useState<Product>({
     id: 11,
-    title: "Macbook 2020 air",
+    title: 'Macbook 2020 air',
     price: 2355555,
-    image: "/placeholder.svg",
-    currency: "TZS"
+    image: '/placeholder.svg',
+    currency: 'TZS',
   })
 
   const handleAddToCart = async () => {
@@ -57,7 +57,7 @@ export function CartExample() {
       category: 'electronics',
       location: 'Dar es Salaam',
       verified: true,
-      condition: 'used'
+      condition: 'used',
     })
 
     await addToCart(cartItem, 1)
@@ -83,12 +83,12 @@ export function CartExample() {
   return (
     <div className="p-6 border rounded-lg space-y-6">
       <h3 className="text-lg font-semibold">Cart Integration Example</h3>
-      
+
       {/* Example Product */}
       <div className="flex items-center justify-between p-4 border rounded-lg">
         <div className="flex items-center space-x-4">
-          <img 
-            src={exampleProduct.image} 
+          <img
+            src={exampleProduct.image}
             alt={exampleProduct.title}
             className="w-16 h-16 object-cover rounded"
           />
@@ -99,7 +99,7 @@ export function CartExample() {
             </p>
           </div>
         </div>
-        <Button 
+        <Button
           onClick={handleAddToCart}
           disabled={isLoading}
           className="flex items-center space-x-2"
@@ -120,16 +120,17 @@ export function CartExample() {
         </div>
 
         {cart.items.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">
-            Your cart is empty
-          </p>
+          <p className="text-muted-foreground text-center py-8">Your cart is empty</p>
         ) : (
           <div className="space-y-2">
             {cart.items.map((item) => (
-              <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
+              <div
+                key={item.id}
+                className="flex items-center justify-between p-4 border rounded-lg"
+              >
                 <div className="flex items-center space-x-4">
-                  <img 
-                    src={item.image || '/placeholder.svg'} 
+                  <img
+                    src={item.image || '/placeholder.svg'}
                     alt={item.title}
                     className="w-12 h-12 object-cover rounded"
                   />
@@ -140,7 +141,7 @@ export function CartExample() {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="outline"
@@ -150,11 +151,9 @@ export function CartExample() {
                   >
                     <Minus className="w-3 h-3" />
                   </Button>
-                  
-                  <span className="px-3 py-1 bg-muted rounded text-sm">
-                    {item.quantity}
-                  </span>
-                  
+
+                  <span className="px-3 py-1 bg-muted rounded text-sm">{item.quantity}</span>
+
                   <Button
                     variant="outline"
                     size="sm"
@@ -163,7 +162,7 @@ export function CartExample() {
                   >
                     <Plus className="w-3 h-3" />
                   </Button>
-                  
+
                   <Button
                     variant="destructive"
                     size="sm"
@@ -175,7 +174,7 @@ export function CartExample() {
                 </div>
               </div>
             ))}
-            
+
             <div className="pt-4 border-t">
               <div className="flex justify-between items-center">
                 <span className="font-medium">Total:</span>
