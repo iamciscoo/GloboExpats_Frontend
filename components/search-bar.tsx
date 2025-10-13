@@ -9,9 +9,13 @@ import { Label } from '@/components/ui/label'
 import { CATEGORIES } from '@/lib/constants'
 import { apiClient } from '@/lib/api'
 
-export default function SearchBar() {
+interface SearchBarProps {
+  autoExpand?: boolean
+}
+
+export default function SearchBar({ autoExpand = false }: SearchBarProps) {
   const [searchQuery, setSearchQuery] = useState('')
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(autoExpand)
   const [products, setProducts] = useState<any[]>([])
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -112,8 +116,11 @@ export default function SearchBar() {
     }
   }, [isExpanded])
 
-  // Handle click outside to close
+  // Handle click outside to close (only when not auto-expanded in mobile sheet)
   useEffect(() => {
+    // Don't attach click-outside handler if auto-expanded (mobile sheet handles closing)
+    if (autoExpand) return
+
     const handleClickOutside = (event: MouseEvent) => {
       if (inputRef.current && !inputRef.current.closest('form')?.contains(event.target as Node)) {
         setIsExpanded(false)
@@ -126,10 +133,13 @@ export default function SearchBar() {
       document.addEventListener('mousedown', handleClickOutside)
       return () => document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [isExpanded])
+  }, [isExpanded, autoExpand])
 
-  // Keyboard shortcuts to open/close search
+  // Keyboard shortcuts to open/close search (only when not auto-expanded)
   useEffect(() => {
+    // Don't attach keyboard shortcuts if auto-expanded (mobile sheet handles its own)
+    if (autoExpand) return
+
     const onKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null
       const isEditable =
@@ -160,7 +170,7 @@ export default function SearchBar() {
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [isExpanded])
+  }, [isExpanded, autoExpand])
 
   if (!isExpanded) {
     return (
@@ -179,7 +189,7 @@ export default function SearchBar() {
   }
 
   return (
-    <form onSubmit={handleSearch} className="relative" role="search" aria-label="Search products">
+    <form onSubmit={handleSearch} className="relative w-full" role="search" aria-label="Search products">
       <Label htmlFor="search-input" className="sr-only">
         Search for products in the global marketplace
       </Label>
@@ -194,7 +204,7 @@ export default function SearchBar() {
             setSearchQuery(e.target.value)
             setActiveIndex(-1)
           }}
-          className="w-64 h-8 pl-3 pr-16 bg-white border-slate-300 rounded-full text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-neutral-900 placeholder-neutral-500"
+          className="w-full sm:w-64 h-10 sm:h-8 pl-4 pr-20 sm:pr-16 bg-white border-slate-300 rounded-full text-sm sm:text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-neutral-900 placeholder-neutral-500"
           autoComplete="off"
           role="combobox"
           aria-expanded={suggestions.length > 0}
@@ -227,32 +237,32 @@ export default function SearchBar() {
             }
           }}
         />
-        <div className="absolute right-1 flex items-center gap-1">
+        <div className="absolute right-1.5 flex items-center gap-1">
           {searchQuery && (
             <Button
               type="submit"
               size="icon"
-              className="h-6 w-6 bg-cyan-500 hover:bg-cyan-600 rounded-full"
+              className="h-7 w-7 sm:h-6 sm:w-6 bg-cyan-500 hover:bg-cyan-600 rounded-full flex items-center justify-center"
               aria-label="Search"
             >
-              <Search className="h-3 w-3" />
+              <Search className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
             </Button>
           )}
           <Button
             type="button"
             size="icon"
             onClick={handleClose}
-            className="h-6 w-6 bg-gray-400 hover:bg-gray-500 rounded-full"
+            className="h-7 w-7 sm:h-6 sm:w-6 bg-gray-400 hover:bg-gray-500 rounded-full flex items-center justify-center"
             aria-label="Close search"
           >
-            <X className="h-3 w-3" />
+            <X className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
           </Button>
         </div>
         {searchQuery.trim() && suggestions.length > 0 && (
           <ul
             id="search-suggestions"
             role="listbox"
-            className="absolute top-full left-0 mt-2 w-64 max-h-72 overflow-auto rounded-md border border-slate-200 bg-white shadow-lg z-50"
+            className="absolute top-full left-0 mt-2 w-full sm:w-64 max-h-72 overflow-auto rounded-lg border-2 border-slate-300 bg-white shadow-2xl z-[100]"
           >
             {suggestions.map((s, idx) => (
               <li
@@ -260,8 +270,8 @@ export default function SearchBar() {
                 id={`suggestion-${s.id}`}
                 role="option"
                 aria-selected={idx === activeIndex}
-                className={`flex items-center gap-2 px-3 py-2 cursor-pointer text-sm ${
-                  idx === activeIndex ? 'bg-cyan-50 text-cyan-700' : 'hover:bg-slate-50'
+                className={`flex items-center gap-2 px-4 py-3 cursor-pointer text-sm font-medium transition-colors ${
+                  idx === activeIndex ? 'bg-cyan-100 text-cyan-900' : 'bg-white text-slate-900 hover:bg-slate-100'
                 }`}
                 onMouseEnter={() => setActiveIndex(idx)}
                 onMouseDown={(e) => {
@@ -271,11 +281,11 @@ export default function SearchBar() {
                 }}
               >
                 {s.type === 'category' ? (
-                  <Tag className="h-4 w-4 text-cyan-600" />
+                  <Tag className="h-4 w-4 text-cyan-600 flex-shrink-0" />
                 ) : (
-                  <Search className="h-4 w-4 text-slate-500" />
+                  <Search className="h-4 w-4 text-slate-600 flex-shrink-0" />
                 )}
-                <span className="truncate">{s.label}</span>
+                <span className="truncate text-slate-900">{s.label}</span>
               </li>
             ))}
           </ul>

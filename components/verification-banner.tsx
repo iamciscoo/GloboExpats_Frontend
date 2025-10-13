@@ -1,10 +1,13 @@
 'use client'
 
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
-import { ShieldAlert, Mail } from 'lucide-react'
+import { ShieldAlert, Mail, X } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/use-auth'
 import { getUserCapabilities, getVerificationStatusMessage } from '@/lib/verification-utils'
+import { usePathname } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
 
 /**
  * Displays a dismiss-able banner prompting unverified users to verify their account.
@@ -12,38 +15,46 @@ import { getUserCapabilities, getVerificationStatusMessage } from '@/lib/verific
  */
 export const VerificationBanner = () => {
   const { isLoggedIn, user } = useAuth()
+  const pathname = usePathname()
+  const [isDismissed, setIsDismissed] = useState(false)
+
+  useEffect(() => {
+    // Check if banner was dismissed in this session
+    const dismissed = sessionStorage.getItem('verification_banner_dismissed')
+    if (dismissed === 'true') {
+      setIsDismissed(true)
+    }
+  }, [])
 
   if (!isLoggedIn || !user) return null
+
+  // Don't show on verification page itself (redundant)
+  if (pathname === '/account/verification') return null
+
+  // Don't show if dismissed this session
+  if (isDismissed) return null
 
   const capabilities = getUserCapabilities(user)
 
   // Don't show banner if user is fully verified
   if (capabilities.isFullyVerified) return null
 
-  // Determine appropriate message and icon based on verification status
-  let title = 'Account verification required'
-  let description = getVerificationStatusMessage(user)
-  let IconComponent = ShieldAlert
-  let linkText = 'Start verification'
-  let linkHref = '/account/verification'
+  // Simplified verification message
+  const title = 'Email verification required'
+  const description = 'Verify your email to unlock all platform features including buying, selling, and messaging.'
+  const IconComponent = Mail
+  const linkText = 'Verify Email'
+  const linkHref = '/account/verification'
 
-  // Customize based on what the user needs to do next
-  if (capabilities.nextStep === 'organization-email') {
-    title = 'Organization email verification required'
-    description =
-      'Verify your organization email to unlock buying, selling, and messaging features.'
-    IconComponent = Mail
-    linkText = 'Verify organization email'
-  } else if (capabilities.nextStep === 'identity') {
-    title = 'Complete identity verification'
-    description = 'Upload documents to unlock seller features and full platform access.'
-    linkText = 'Complete verification'
+  const handleDismiss = () => {
+    sessionStorage.setItem('verification_banner_dismissed', 'true')
+    setIsDismissed(true)
   }
 
   return (
-    <Alert className="rounded-none border-0 bg-yellow-50 dark:bg-yellow-900/20">
+    <Alert className="rounded-none border-0 bg-yellow-50 dark:bg-yellow-900/20 relative">
       <IconComponent className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-      <AlertTitle className="text-yellow-800 dark:text-yellow-100">{title}</AlertTitle>
+      <AlertTitle className="text-yellow-800 dark:text-yellow-100 pr-8">{title}</AlertTitle>
       <AlertDescription className="text-yellow-700 dark:text-yellow-200">
         {description}&nbsp;
         <Link
@@ -53,6 +64,15 @@ export const VerificationBanner = () => {
           {linkText}
         </Link>
       </AlertDescription>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleDismiss}
+        className="absolute right-2 top-2 h-6 w-6 p-0 text-yellow-600 hover:text-yellow-900 hover:bg-yellow-100"
+        aria-label="Dismiss banner"
+      >
+        <X className="h-4 w-4" />
+      </Button>
     </Alert>
   )
 }

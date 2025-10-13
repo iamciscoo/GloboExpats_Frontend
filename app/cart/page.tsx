@@ -14,8 +14,6 @@ import {
   ShoppingBag,
   Star,
   MapPin,
-  Users,
-  Truck,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -99,7 +97,7 @@ export default function CartPage() {
             </p>
 
             {/* Clean Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/browse">
                 <Button
                   size="lg"
@@ -119,43 +117,6 @@ export default function CartPage() {
                   Browse Featured
                 </Button>
               </Link>
-            </div>
-
-            {/* Clean Trust Indicators */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="p-6 bg-white rounded-lg border border-neutral-200">
-                <div className="w-12 h-12 bg-brand-primary/10 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                  <Shield className="w-6 h-6 text-brand-primary" />
-                </div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2 text-center">
-                  Secure Payments
-                </h3>
-                <p className="text-neutral-600 text-center text-sm">
-                  Your transactions are protected with bank-level security
-                </p>
-              </div>
-              <div className="p-6 bg-white rounded-lg border border-neutral-200">
-                <div className="w-12 h-12 bg-brand-primary/10 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                  <Users className="w-6 h-6 text-brand-primary" />
-                </div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2 text-center">
-                  Verified Sellers
-                </h3>
-                <p className="text-neutral-600 text-center text-sm">
-                  All sellers are verified members of the expat community
-                </p>
-              </div>
-              <div className="p-6 bg-white rounded-lg border border-neutral-200">
-                <div className="w-12 h-12 bg-brand-primary/10 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                  <Truck className="w-6 h-6 text-brand-primary" />
-                </div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2 text-center">
-                  Fast Delivery
-                </h3>
-                <p className="text-neutral-600 text-center text-sm">
-                  Quick and reliable delivery to your location
-                </p>
-              </div>
             </div>
           </div>
         </div>

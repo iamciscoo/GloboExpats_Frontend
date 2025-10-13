@@ -23,7 +23,7 @@ export function canUserBuy(user: any): boolean {
 
 /**
  * Check if a user can perform sell actions
- * Requires full verification (identity + organization email)
+ * Requires email verification
  */
 export function canUserSell(user: any): boolean {
   if (!user) return false
@@ -33,8 +33,9 @@ export function canUserSell(user: any): boolean {
     return user.verificationStatus.canSell === true
   }
 
-  // Fallback for legacy data
-  return user.isVerified === true && user.isOrganizationEmailVerified === true
+  // Simplified: Email verification = full access
+  return user.isVerified === true || user.isOrganizationEmailVerified === true || 
+         user.backendVerificationStatus === 'VERIFIED'
 }
 
 /**
@@ -67,35 +68,16 @@ export function isUserAdmin(user: any): boolean {
 export function getVerificationStatusMessage(user: any): string {
   if (!user) return 'Please log in to access this feature'
 
-  // Use new verification system
-  if (user.verificationStatus) {
-    const status = user.verificationStatus
+  // Simplified verification check
+  const isVerified = user.verificationStatus?.isFullyVerified || 
+                     user.isVerified || 
+                     user.backendVerificationStatus === 'VERIFIED'
 
-    if (status.isFullyVerified) {
-      return 'Account fully verified - access to all features'
-    }
-
-    if (!status.isOrganizationEmailVerified) {
-      return 'Please verify your organization email to access this feature'
-    }
-
-    if (!status.isIdentityVerified) {
-      return 'Please complete identity verification to access seller features'
-    }
-
-    return 'Verification in progress'
+  if (isVerified) {
+    return 'Account fully verified - access to all features'
   }
 
-  // Fallback for legacy data
-  if (!user.isOrganizationEmailVerified) {
-    return 'Please verify your organization email to access this feature'
-  }
-
-  if (!user.isVerified) {
-    return 'Please complete identity verification to access seller features'
-  }
-
-  return 'Account verified'
+  return 'Please verify your email to access all features'
 }
 
 /**
@@ -103,29 +85,15 @@ export function getVerificationStatusMessage(user: any): string {
  */
 export function getNextVerificationStep(
   user: any
-): 'login' | 'organization-email' | 'identity' | 'complete' {
+): 'login' | 'organization-email' | 'complete' {
   if (!user) return 'login'
 
-  // Use new verification system
-  if (user.verificationStatus) {
-    const status = user.verificationStatus
+  // Simplified: Only email verification needed
+  const isVerified = user.verificationStatus?.isFullyVerified || 
+                     user.isVerified || 
+                     user.backendVerificationStatus === 'VERIFIED'
 
-    if (status.isFullyVerified) return 'complete'
-    if (!status.isOrganizationEmailVerified) return 'organization-email'
-    if (!status.isIdentityVerified) return 'identity'
-    return 'complete'
-  }
-
-  // Fallback for legacy data
-  if (!user.isOrganizationEmailVerified) {
-    return 'organization-email'
-  }
-
-  if (!user.isVerified) {
-    return 'identity'
-  }
-
-  return 'complete'
+  return isVerified ? 'complete' : 'organization-email'
 }
 
 /**
@@ -137,14 +105,10 @@ export function getUserCapabilities(user: any) {
   const canContactUser = canUserContact(user)
   const isAdmin = isUserAdmin(user)
 
-  // Check if user is fully verified
-  let isFullyVerified = false
-  if (user?.verificationStatus) {
-    isFullyVerified = user.verificationStatus.isFullyVerified === true
-  } else {
-    // Fallback for legacy data
-    isFullyVerified = user?.isVerified === true && user?.isOrganizationEmailVerified === true
-  }
+  // Simplified verification check
+  const isFullyVerified = user?.verificationStatus?.isFullyVerified === true ||
+                          user?.isVerified === true ||
+                          user?.backendVerificationStatus === 'VERIFIED'
 
   return {
     canBuy: canBuyUser,

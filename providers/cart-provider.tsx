@@ -69,6 +69,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { apiClient } from '@/lib/api'
 import { backendCartToFrontendItems } from '@/lib/cart-utils'
 import type { BackendCartResponse, BackendCartItem } from '@/lib/types'
+import { setItemDebounced, getItem, removeItem as removeStorageItem, flushPendingWrites } from '@/lib/storage-utils'
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -260,7 +261,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [])
 
   /**
-   * Persists cart items to localStorage with timestamp
+   * Persists cart items to localStorage with timestamp (debounced)
    */
   const persistCart = useCallback(
     (items: CartItem[], selectedItems: string[] = []) => {
@@ -273,7 +274,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
           timestamp: Date.now(),
           userId: user?.id, // Associate cart with user
         }
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartData))
+        // Use debounced storage to prevent aggressive writes
+        setItemDebounced(CART_STORAGE_KEY, cartData, 500)
       } catch (error) {
         console.error('Failed to save cart to localStorage:', error)
         setCart((prev) => ({
@@ -306,7 +308,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             isInitialized: true,
             selectedItems: [],
           })
-          localStorage.removeItem(CART_STORAGE_KEY)
+          removeStorageItem(CART_STORAGE_KEY)
           return
         }
 
@@ -335,9 +337,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
           console.warn('Failed to load from backend, falling back to localStorage:', backendError)
 
           // Fallback to localStorage if backend fails
-          const savedCart = localStorage.getItem(CART_STORAGE_KEY)
+          const cartData = getItem(CART_STORAGE_KEY)
 
-          if (!savedCart) {
+          if (!cartData) {
             setCart((prev) => ({
               ...prev,
               items: [],
@@ -348,11 +350,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
             return
           }
 
-          const cartData = JSON.parse(savedCart)
-
           // Validate cart data and user association
           if (!isCartDataValid(cartData) || cartData.userId !== user?.id) {
-            localStorage.removeItem(CART_STORAGE_KEY)
+            removeStorageItem(CART_STORAGE_KEY)
             setCart((prev) => ({
               ...prev,
               items: [],
@@ -373,7 +373,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error('Failed to load cart:', error)
-        localStorage.removeItem(CART_STORAGE_KEY)
+        removeStorageItem(CART_STORAGE_KEY)
         setCart({
           items: [],
           isLoading: false,
@@ -392,15 +392,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
    */
   useEffect(() => {
     if (!isLoggedIn && cart.isInitialized) {
+      // Flush any pending writes before clearing
+      flushPendingWrites()
+      
       setCart((prev) => ({
         ...prev,
         items: [],
         error: null,
         selectedItems: [],
       }))
-      localStorage.removeItem(CART_STORAGE_KEY)
+      removeStorageItem(CART_STORAGE_KEY)
     }
   }, [isLoggedIn, cart.isInitialized])
+
+  /**
+   * Flush pending writes on unmount
+   */
+  useEffect(() => {
+    return () => {
+      flushPendingWrites()
+    }
+  }, [])
 
   // ============================================================================
   // CART CALCULATIONS & SUMMARY
@@ -704,7 +716,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (response.success || response.data !== undefined) {
         // Update local state
         setCart((prev) => ({ ...prev, items: [], selectedItems: [], error: null }))
-        localStorage.removeItem(CART_STORAGE_KEY)
+        removeStorageItem(CART_STORAGE_KEY)
 
         toast({
           title: 'Cart cleared',

@@ -486,7 +486,7 @@ function AdminDashboardContent() {
                                         value={notificationMessage}
                                         onChange={(e) => setNotificationMessage(e.target.value)}
                                         className="min-h-32"
-                                        defaultValue={`Dear ${item.seller.name},\n\nYour listing "${item.title}" has been active for ${item.daysListed} days. Please update the status of this item or it may be archived.\n\nThank you,\nGlobalExpat Admin Team`}
+                                        defaultValue={`Dear ${item.seller.name},\n\nYour listing "${item.title}" has been active for ${item.daysListed} days. Please update the status of this item or it may be archived.\n\nThank you,\nGloboexpat Admin Team`}
                                       />
                                     </div>
                                   </div>

@@ -1,5 +1,5 @@
 /**
- * API Client for GlobalExpat Platform
+ * API Client for Globoexpat Platform
  *
  * Centralized API client for communicating with the backend services.
  * Provides type-safe methods for all API endpoints with proper error handling,
@@ -23,7 +23,7 @@
 
 /** Base API URL from environment or fallback */
 const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_URL || 'http://10.123.22.21:8081/api/v1'
+  process.env.NEXT_PUBLIC_API_URL || 'http://10.123.22.21:8081'
 ).replace(/\/$/, '')
 
 /**
@@ -145,40 +145,67 @@ class ApiClient {
         // Try to extract error message from response body
         let errorMessage = `HTTP error! status: ${response.status}`
         try {
-          const errorData = await response.json()
-          // Check for common error message formats from backend
-          if (errorData.message) {
-            errorMessage = errorData.message
-          } else if (errorData.error) {
-            errorMessage = errorData.error
-          } else if (errorData.errors && Array.isArray(errorData.errors)) {
-            errorMessage = errorData.errors.join(', ')
-          }
+          const contentType = response.headers.get('content-type')
+          
+          if (contentType && contentType.includes('application/json')) {
+            // Try to parse as JSON
+            const errorData = await response.json()
+            // Check for common error message formats from backend
+            if (errorData.message) {
+              errorMessage = errorData.message
+            } else if (errorData.error) {
+              errorMessage = errorData.error
+            } else if (errorData.errors && Array.isArray(errorData.errors)) {
+              errorMessage = errorData.errors.join(', ')
+            }
 
-          // Add context for common status codes
-          if (response.status === 409) {
-            errorMessage =
-              errorData.message ||
-              'This email or username is already registered. Please use a different one or try logging in.'
-          } else if (response.status === 400) {
-            errorMessage =
-              errorData.message || 'Invalid request. Please check your input and try again.'
-          } else if (response.status === 401) {
-            errorMessage =
-              errorData.message || 'Authentication failed. Please check your credentials.'
-          } else if (response.status === 500) {
-            errorMessage = 'Server error. Please try again later.'
+            // Add context for common status codes
+            if (response.status === 409) {
+              errorMessage =
+                errorData.message ||
+                'This email or username is already registered. Please use a different one or try logging in.'
+            } else if (response.status === 400) {
+              errorMessage =
+                errorData.message || 'Invalid request. Please check your input and try again.'
+            } else if (response.status === 401) {
+              errorMessage =
+                errorData.message || 'Authentication failed. Please check your credentials.'
+            } else if (response.status === 500) {
+              errorMessage = 'Server error. Please try again later.'
+            }
+          } else {
+            // Plain text error response
+            const textError = await response.text()
+            if (textError && textError.trim()) {
+              errorMessage = textError
+            }
           }
-        } catch (jsonError) {
-          // If response body is not JSON, use the status code message
-          console.warn('Could not parse error response:', jsonError)
+        } catch (parseError) {
+          // If response body parsing fails, use the status code message
+          console.warn('Could not parse error response:', parseError)
         }
 
         throw new Error(errorMessage)
       }
 
-      const data = await response.json()
-      return data
+      // Check Content-Type to determine how to parse response
+      const contentType = response.headers.get('content-type')
+      
+      if (contentType && contentType.includes('application/json')) {
+        // Standard JSON response
+        const data = await response.json()
+        return data
+      } else {
+        // Plain text response (common for some backend endpoints like register)
+        const text = await response.text()
+        
+        // Wrap plain text in API response format
+        return {
+          success: true,
+          message: text,
+          data: { message: text }
+        } as ApiResponse<T>
+      }
     } catch (error) {
       console.error('API request failed:', error)
       throw error
@@ -205,7 +232,7 @@ class ApiClient {
       })
       queryString = searchParams.toString() ? `?${searchParams.toString()}` : ''
     }
-    return this.request(`/products${queryString}`)
+    return this.request(`/api/v1/products${queryString}`)
   }
 
   /**
@@ -214,7 +241,7 @@ class ApiClient {
    * @returns Promise resolving to product data
    */
   async getProduct(id: string): Promise<ApiResponse<any>> {
-    return this.request(`/products/${id}`)
+    return this.request(`/api/v1/products/${id}`)
   }
 
   /**
@@ -251,7 +278,7 @@ class ApiClient {
       formData.append('images', image)
     })
 
-    const response = await fetch(`${this.baseURL}/products/post-product`, {
+    const response = await fetch(`${this.baseURL}/api/v1/products/post-product`, {
       method: 'POST',
       headers: {
         Authorization: (this.headers as any)['Authorization'] || '',
@@ -263,7 +290,19 @@ class ApiClient {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    return response.json()
+    const contentType = response.headers.get('content-type')
+    if (contentType && contentType.includes('application/json')) {
+      return response.json()
+    } else {
+      const text = await response.text()
+      // Backend returned plain text, but we need to return expected format
+      // Parse product ID from text if possible or return a placeholder
+      return {
+        productId: 0,
+        imageIds: [],
+        message: text
+      } as any
+    }
   }
 
   /**
@@ -271,7 +310,7 @@ class ApiClient {
    * @returns Promise resolving to categories list
    */
   async getCategories(): Promise<Array<{ categoryId: number; categoryName: string }>> {
-    const response = await this.request('/products/categories')
+    const response = await this.request('/api/v1/products/categories')
     return (response as any).data || response
   }
 
@@ -281,7 +320,7 @@ class ApiClient {
    * @returns Promise resolving to paginated products
    */
   async getAllProducts(page: number = 0): Promise<any> {
-    return this.request(`/products/get-all-products?page=${page}`)
+    return this.request(`/api/v1/products/get-all-products?page=${page}`)
   }
 
   /**
@@ -291,7 +330,7 @@ class ApiClient {
    * @returns Promise resolving to paginated top picks
    */
   async getTopPicks(page: number = 0, size: number = 12): Promise<any> {
-    return this.request(`/displayItem/top-picks?page=${page}&size=${size}`)
+    return this.request(`/api/v1/displayItem/top-picks?page=${page}&size=${size}`)
   }
 
   /**
@@ -301,7 +340,7 @@ class ApiClient {
    * @returns Promise resolving to paginated newest listings
    */
   async getNewestListings(page: number = 0, size: number = 12): Promise<any> {
-    return this.request(`/displayItem/newest?page=${page}&size=${size}`)
+    return this.request(`/api/v1/displayItem/newest?page=${page}&size=${size}`)
   }
 
   /**
@@ -310,7 +349,7 @@ class ApiClient {
    * @returns Promise resolving to detailed product data
    */
   async getProductDetails(productId: number): Promise<any> {
-    return this.request(`/displayItem/itemDetails/${productId}`)
+    return this.request(`/api/v1/displayItem/itemDetails/${productId}`)
   }
 
   /**
@@ -320,7 +359,7 @@ class ApiClient {
    * @returns Promise resolving to updated product
    */
   async updateProduct(id: string, productData: any): Promise<ApiResponse<any>> {
-    return this.request(`/products/${id}`, {
+    return this.request(`/api/v1/products/${id}`, {
       method: 'PUT',
       body: JSON.stringify(productData),
     })
@@ -332,7 +371,7 @@ class ApiClient {
    * @returns Promise resolving to deletion confirmation
    */
   async deleteProduct(id: string): Promise<ApiResponse<any>> {
-    return this.request(`/products/${id}`, {
+    return this.request(`/api/v1/products/${id}`, {
       method: 'DELETE',
     })
   }
@@ -363,7 +402,7 @@ class ApiClient {
       roleName: string
     }>
   }> {
-    const response = await this.request('/userManagement/user-details')
+    const response = await this.request('/api/v1/userManagement/user-details')
     return response as any
   }
 
@@ -373,7 +412,7 @@ class ApiClient {
    * @returns Promise resolving to user data
    */
   async getUser(id: string): Promise<ApiResponse<any>> {
-    return this.request(`/users/${id}`)
+    return this.request(`/api/v1/users/${id}`)
   }
 
   /**
@@ -383,7 +422,7 @@ class ApiClient {
    * @returns Promise resolving to updated user
    */
   async updateUser(id: string, data: Partial<any>): Promise<ApiResponse<any>> {
-    return this.request(`/users/${id}`, {
+    return this.request(`/api/v1/users/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     })
@@ -401,7 +440,7 @@ class ApiClient {
    */
   async login(email: string, password: string): Promise<ApiResponse<any>> {
     // Backend expects { email, password, username? }, map email accordingly
-    return this.request('/auth/login', {
+    return this.request('/api/v1/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     })
@@ -413,7 +452,7 @@ class ApiClient {
    * @returns Promise resolving to registration result
    */
   async register(userData: any): Promise<ApiResponse<any>> {
-    return this.request('/auth/register', {
+    return this.request('/api/v1/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     })
@@ -425,7 +464,7 @@ class ApiClient {
    */
   async sendEmailOtp(organizationalEmail: string): Promise<ApiResponse<any>> {
     const qs = `?organizationalEmail=${encodeURIComponent(organizationalEmail)}`
-    return this.request(`/email/sendOTP${qs}`, { method: 'POST' })
+    return this.request(`/api/v1/email/sendOTP${qs}`, { method: 'POST' })
   }
 
   /**
@@ -442,7 +481,7 @@ class ApiClient {
     const qs = `?organizationalEmail=${encodeURIComponent(
       organizationalEmail
     )}&otp=${encodeURIComponent(otp)}&userRoles=${encodeURIComponent(userRoles)}`
-    return this.request(`/email/verifyOTP${qs}`, { method: 'POST' })
+    return this.request(`/api/v1/email/verifyOTP${qs}`, { method: 'POST' })
   }
 
   /**
@@ -451,7 +490,7 @@ class ApiClient {
    * @returns Promise resolving to reset confirmation
    */
   async resetPassword(email: string): Promise<ApiResponse<any>> {
-    return this.request('/auth/reset-password', {
+    return this.request('/api/v1/auth/reset-password', {
       method: 'POST',
       body: JSON.stringify({ email }),
     })
@@ -462,7 +501,7 @@ class ApiClient {
    * @returns Promise resolving to logout confirmation
    */
   async logout(): Promise<ApiResponse<any>> {
-    return this.request('/auth/logout', {
+    return this.request('/api/v1/auth/logout', {
       method: 'POST',
     })
   }
@@ -473,7 +512,7 @@ class ApiClient {
    * @returns Promise resolving to authentication data
    */
   async exchangeOAuthCode(authCode: string): Promise<ApiResponse<any>> {
-    return this.request(`/oauth2/exchange?auth_code=${encodeURIComponent(authCode)}`, {
+    return this.request(`/api/v1/oauth2/exchange?auth_code=${encodeURIComponent(authCode)}`, {
       method: 'POST',
     })
   }
@@ -487,7 +526,7 @@ class ApiClient {
    * @returns Promise resolving to conversations
    */
   async getConversations(): Promise<ApiResponse<any>> {
-    return this.request('/messages/conversations')
+    return this.request('/api/v1/messages/conversations')
   }
 
   /**
@@ -496,7 +535,7 @@ class ApiClient {
    * @returns Promise resolving to messages
    */
   async getMessages(conversationId: string): Promise<ApiResponse<any>> {
-    return this.request(`/messages/conversations/${conversationId}`)
+    return this.request(`/api/v1/messages/conversations/${conversationId}`)
   }
 
   /**
@@ -506,7 +545,7 @@ class ApiClient {
    * @returns Promise resolving to sent message
    */
   async sendMessage(conversationId: string, message: string): Promise<ApiResponse<any>> {
-    return this.request(`/messages/conversations/${conversationId}`, {
+    return this.request(`/api/v1/messages/conversations/${conversationId}`, {
       method: 'POST',
       body: JSON.stringify({ message }),
     })
@@ -519,7 +558,7 @@ class ApiClient {
    * @returns Promise resolving to new conversation
    */
   async createConversation(recipientId: string, initialMessage: string): Promise<ApiResponse<any>> {
-    return this.request('/messages/conversations', {
+    return this.request('/api/v1/messages/conversations', {
       method: 'POST',
       body: JSON.stringify({ recipientId, message: initialMessage }),
     })
@@ -534,7 +573,7 @@ class ApiClient {
    * @returns Promise resolving to orders list
    */
   async getOrders(): Promise<ApiResponse<any>> {
-    return this.request('/orders')
+    return this.request('/api/v1/orders')
   }
 
   /**
@@ -543,7 +582,7 @@ class ApiClient {
    * @returns Promise resolving to created order
    */
   async createOrder(orderData: any): Promise<ApiResponse<any>> {
-    return this.request('/orders', {
+    return this.request('/api/v1/orders', {
       method: 'POST',
       body: JSON.stringify(orderData),
     })
@@ -555,7 +594,7 @@ class ApiClient {
    * @returns Promise resolving to order details
    */
   async getOrder(orderId: string): Promise<ApiResponse<any>> {
-    return this.request(`/orders/${orderId}`)
+    return this.request(`/api/v1/orders/${orderId}`)
   }
 
   /**
@@ -565,7 +604,7 @@ class ApiClient {
    * @returns Promise resolving to updated order
    */
   async updateOrderStatus(orderId: string, status: string): Promise<ApiResponse<any>> {
-    return this.request(`/orders/${orderId}/status`, {
+    return this.request(`/api/v1/orders/${orderId}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
     })
@@ -582,7 +621,7 @@ class ApiClient {
    * @returns Promise resolving to cart add result
    */
   async addToCart(productId: number, quantity: number = 1): Promise<ApiResponse<any>> {
-    return this.request('/cart/add', {
+    return this.request('/api/v1/cart/add', {
       method: 'POST',
       body: JSON.stringify({ productId, quantity }),
     })
@@ -593,7 +632,7 @@ class ApiClient {
    * @returns Promise resolving to cart data with items, totals, etc.
    */
   async getUserCart(): Promise<ApiResponse<any>> {
-    return this.request('/cart/User')
+    return this.request('/api/v1/cart/User')
   }
 
   /**
@@ -608,7 +647,7 @@ class ApiClient {
     productId: number,
     quantity: number
   ): Promise<ApiResponse<any>> {
-    return this.request(`/cart/item/${cartId}`, {
+    return this.request(`/api/v1/cart/item/${cartId}`, {
       method: 'PUT',
       body: JSON.stringify({ productId, quantity }),
     })
@@ -620,7 +659,7 @@ class ApiClient {
    * @returns Promise resolving to removal confirmation
    */
   async removeFromCart(itemId: number): Promise<ApiResponse<any>> {
-    return this.request(`/cart/item/${itemId}`, {
+    return this.request(`/api/v1/cart/item/${itemId}`, {
       method: 'DELETE',
     })
   }
@@ -630,7 +669,7 @@ class ApiClient {
    * @returns Promise resolving to clear confirmation
    */
   async clearCart(): Promise<ApiResponse<any>> {
-    return this.request('/cart/clear', {
+    return this.request('/api/v1/cart/clear', {
       method: 'DELETE',
     })
   }

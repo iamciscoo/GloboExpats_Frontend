@@ -95,7 +95,7 @@ export default function AboutPage() {
               Bridging Distances, Connecting Lives
             </h1>
             <p className="text-xl mb-8 text-blue-100">
-              GlobalExpat is the trusted marketplace for expats worldwide, making it easy to buy and
+              Globoexpat is the trusted marketplace for expats worldwide, making it easy to buy and
               sell authentic products from home, wherever you are in the world.
             </p>
             <div className="flex gap-4 justify-center">
@@ -122,7 +122,7 @@ export default function AboutPage() {
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-neutral-800 mb-4">Why Join GlobalExpat?</h2>
+            <h2 className="text-3xl font-bold text-neutral-800 mb-4">Why Join Globoexpat?</h2>
             <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
               We're just getting started—here's what makes our community special from day one.
             </p>
@@ -212,7 +212,7 @@ export default function AboutPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-neutral-800 mb-4">Our Values</h2>
             <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-              These core values guide everything we do at GlobalExpat
+              These core values guide everything we do at Globoexpat
             </p>
           </div>
 
@@ -268,7 +268,7 @@ export default function AboutPage() {
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-br from-brand-primary to-blue-700 text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Join GlobalExpat?</h2>
+          <h2 className="text-3xl font-bold mb-4">Ready to Join Globoexpat?</h2>
           <p className="text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
             Whether you're looking to buy products from home or start selling to the expat
             community, we're here to help you succeed.
@@ -296,7 +296,7 @@ export default function AboutPage() {
 }
 
 export const metadata: Metadata = {
-  title: 'About Us - GlobalExpat',
+  title: 'About Us - Globoexpat',
   description:
-    'Learn about the mission, values and team behind GlobalExpat, the trusted marketplace for expats worldwide.',
+    'Learn about the mission, values and team behind Globoexpat, the trusted marketplace for expats worldwide.',
 }

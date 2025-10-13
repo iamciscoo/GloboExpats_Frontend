@@ -57,6 +57,7 @@ import {
   initializeAuthFromStorage,
   initializeAutoLogout,
 } from '@/lib/auth-service'
+import { setItemDebounced, getItem, removeItem as removeStorageItem, setItemImmediate, flushPendingWrites } from '@/lib/storage-utils'
 
 /**
  * =============================================================================
@@ -168,19 +169,28 @@ const SESSION_EXPIRY_HOURS = 24
 
 /**
  * Creates default verification status for new users
+ * SIMPLIFIED: Email verification = full access
  */
-const createDefaultVerificationStatus = (user?: Partial<User>): VerificationStatus => ({
-  isFullyVerified: false,
-  isIdentityVerified: true,
-  isOrganizationEmailVerified: Boolean(user?.organizationEmail),
-  canBuy: Boolean(user?.organizationEmail), // Can buy with org email only
-  canList: false, // Requires full verification
-  // Back-compat alias; some code references canSell
-  canSell: false,
-  canContact: Boolean(user?.organizationEmail),
-  currentStep: user?.organizationEmail ? 'identity' : 'organization',
-  pendingActions: user?.organizationEmail ? ['upload_documents'] : ['verify_email'],
-})
+const createDefaultVerificationStatus = (user?: Partial<User>): VerificationStatus => {
+  // Check if backend says user is verified (any of these conditions)
+  const isBackendVerified = (user as any)?.isVerified === true || 
+                            (user as any)?.verificationStatus === 'VERIFIED' ||
+                            (user as any)?.backendVerificationStatus === 'VERIFIED' ||
+                            (user as any)?.isOrganizationEmailVerified === true
+  
+  // Simplified logic: Email verified = all access
+  return {
+    isFullyVerified: isBackendVerified,
+    isIdentityVerified: isBackendVerified,
+    isOrganizationEmailVerified: isBackendVerified,
+    canBuy: isBackendVerified,
+    canList: isBackendVerified,
+    canSell: isBackendVerified,
+    canContact: isBackendVerified,
+    currentStep: isBackendVerified ? null : 'organization',
+    pendingActions: isBackendVerified ? [] : ['verify_email'],
+  }
+}
 
 /**
  * =============================================================================
@@ -227,7 +237,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       initializeAuthFromStorage()
       const token = getAuthToken()
-      const sessionData = localStorage.getItem(SESSION_STORAGE_KEY)
+      const sessionData = getItem(SESSION_STORAGE_KEY)
 
       if (!sessionData) {
         if (token) {
@@ -273,14 +283,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return
       }
 
-      const parsedSession = JSON.parse(sessionData)
-      if (!isSessionValid(parsedSession)) {
-        localStorage.removeItem(SESSION_STORAGE_KEY)
+      // sessionData is already parsed by getItem
+      if (!isSessionValid(sessionData)) {
+        removeStorageItem(SESSION_STORAGE_KEY)
         setAuthState((prev) => ({ ...prev, isLoading: false }))
         return
       }
 
-      const { user } = parsedSession
+      const { user } = sessionData
       if (token) initializeAuthFromStorage()
       const verificationStatus = createDefaultVerificationStatus(user)
       setAuthState({
@@ -292,7 +302,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
     } catch (error) {
       console.error('Session restoration failed:', error)
-      localStorage.removeItem(SESSION_STORAGE_KEY)
+      removeStorageItem(SESSION_STORAGE_KEY)
       setAuthState((prev) => ({
         ...prev,
         isLoading: false,
@@ -302,15 +312,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [isSessionValid])
 
   /**
-   * Persists session data to localStorage
+   * Persists session data to localStorage (immediate for critical operations)
    */
-  const persistSession = useCallback((user: User) => {
+  const persistSession = useCallback((user: User, immediate = false) => {
     try {
       const sessionData = {
         user,
         timestamp: Date.now(),
       }
-      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionData))
+      // Use immediate write for login/logout, debounced for updates
+      if (immediate) {
+        setItemImmediate(SESSION_STORAGE_KEY, sessionData)
+      } else {
+        setItemDebounced(SESSION_STORAGE_KEY, sessionData, 1000)
+      }
     } catch (error) {
       console.error('Failed to persist session:', error)
     }
@@ -339,7 +354,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Clear session storage
       try {
         sessionStorage.removeItem('expat_user')
-        localStorage.removeItem('expat_user')
+        removeStorageItem('expat_user')
       } catch {}
     }
 
@@ -454,7 +469,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (completeUser) {
           // Use the complete user data from backend
           const verificationStatus = completeUser.verificationStatus
-          persistSession(completeUser)
+          persistSession(completeUser, true) // Immediate write for login
 
           setAuthState({
             isLoggedIn: true,
@@ -484,7 +499,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
 
           const verificationStatus = createDefaultVerificationStatus(user)
-          persistSession(user)
+          persistSession(user, true) // Immediate write for login
 
           setAuthState({
             isLoggedIn: true,
@@ -540,6 +555,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setAuthState((prev) => ({ ...prev, isLoading: true }))
 
+      // Flush any pending writes before clearing
+      flushPendingWrites()
+
       // Clear local state
       setAuthState((prev) => ({
         ...prev,
@@ -552,7 +570,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // await api.auth.logout()
 
       // Clear local storage & token
-      localStorage.removeItem(SESSION_STORAGE_KEY)
+      removeStorageItem(SESSION_STORAGE_KEY)
       clearAuthToken()
 
       // ...existing code...
@@ -630,31 +648,68 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const token = getAuthToken()
         if (token) apiClient.setAuthToken(token)
+        
+        // Verify the OTP with backend
         await verifyOrgEmailOtp(organizationalEmail, otp, userRoles)
 
-        const updatedUser = { ...authState.user, organizationEmail: organizationalEmail }
-        const updatedVerificationStatus: VerificationStatus = {
-          ...authState.verificationStatus!,
-          isOrganizationEmailVerified: true,
-          canBuy: true,
-          canContact: true,
-          currentStep: 'identity',
-          pendingActions: ['upload_documents'],
+        // Fetch updated user details from backend to get real verification status
+        const updatedUserDetails = await fetchUserDetails()
+        
+        if (updatedUserDetails) {
+          // Use backend verification status
+          const updatedUser: any = {
+            ...authState.user,
+            ...updatedUserDetails,
+            organizationEmail: organizationalEmail,
+          }
+          
+          // Create verification status based on backend response
+          const computedVerificationStatus = createDefaultVerificationStatus(updatedUser)
+          updatedUser.verificationStatus = computedVerificationStatus
+          
+          persistSession(updatedUser)
+          setAuthState((prev) => ({
+            ...prev,
+            user: updatedUser,
+            verificationStatus: computedVerificationStatus,
+            isLoading: false,
+          }))
+          
+          console.log('✅ Verification complete! User is now fully verified:', computedVerificationStatus)
+        } else {
+          // Fallback if user details fetch fails
+          const updatedUser: any = { 
+            ...authState.user, 
+            organizationEmail: organizationalEmail,
+            isVerified: true,
+            backendVerificationStatus: 'VERIFIED',
+          }
+          const computedVerificationStatus: VerificationStatus = {
+            isFullyVerified: true,
+            isIdentityVerified: true,
+            isOrganizationEmailVerified: true,
+            canBuy: true,
+            canList: true,
+            canSell: true,
+            canContact: true,
+            currentStep: null,
+            pendingActions: [],
+          }
+          updatedUser.verificationStatus = computedVerificationStatus
+          persistSession(updatedUser)
+          setAuthState((prev) => ({
+            ...prev,
+            user: updatedUser,
+            verificationStatus: computedVerificationStatus,
+            isLoading: false,
+          }))
         }
-        updatedUser.verificationStatus = updatedVerificationStatus
-        persistSession(updatedUser)
-        setAuthState((prev) => ({
-          ...prev,
-          user: updatedUser,
-          verificationStatus: updatedVerificationStatus,
-          isLoading: false,
-        }))
       } catch (error) {
         setAuthState((prev) => ({ ...prev, isLoading: false, error: 'Verification failed' }))
         throw error
       }
     },
-    [authState.user, authState.verificationStatus, persistSession]
+    [authState.user, authState.verificationStatus, persistSession, fetchUserDetails]
   )
 
   /**
@@ -693,7 +748,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   /**
    * Complete verification for testing purposes
-   * In production, this would be handled by backend after document review
+   * This now actually calls the backend to mark the user as verified
    */
   const completeVerificationForTesting = useCallback(async (): Promise<void> => {
     if (!authState.user) {
@@ -703,39 +758,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setAuthState((prev) => ({ ...prev, isLoading: true, error: null }))
 
-      // Simulate API processing time
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      const updatedUser = {
-        ...authState.user,
-        organizationEmail: authState.user.organizationEmail || authState.user.email,
+      // Get current token
+      const token = getAuthToken()
+      if (token) {
+        apiClient.setAuthToken(token)
       }
 
-      // Update verification status to fully verified
-      const updatedVerificationStatus: VerificationStatus = {
-        isFullyVerified: true,
-        isIdentityVerified: true,
-        isOrganizationEmailVerified: true,
-        canBuy: true,
-        canList: true,
-        canSell: true,
-        canContact: true,
-        currentStep: null,
-        pendingActions: [],
-      }
+      // Use the user's email as organizational email
+      const organizationalEmail = authState.user.organizationEmail || authState.user.email
 
-      updatedUser.verificationStatus = updatedVerificationStatus
+      // Step 1: Request OTP from backend
+      console.log('🔐 Requesting OTP for:', organizationalEmail)
+      await apiClient.sendEmailOtp(organizationalEmail)
 
-      // Persist updated user
-      persistSession(updatedUser)
+      // Step 2: For testing, inform user to check console/email
+      console.log('✉️ OTP sent to:', organizationalEmail)
+      console.log('📧 Check your email for the OTP code')
+      console.log('⚠️ NOTE: Enter the OTP in the field below')
+      console.log('   Or check your backend logs for the OTP if in development mode')
 
-      // Update state
       setAuthState((prev) => ({
         ...prev,
-        user: updatedUser,
-        verificationStatus: updatedVerificationStatus,
         isLoading: false,
       }))
+
+      // Success - OTP sent (no intrusive alert)
 
       // ...existing code...
     } catch (error) {

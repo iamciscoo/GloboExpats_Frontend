@@ -20,11 +20,8 @@ export default function CategorySidebar() {
               {isLoggedIn ? (
                 <div className="space-y-3">
                   <div className="text-center">
-                    <div className="w-10 h-10 bg-gradient-to-r from-brand-primary to-brand-accent rounded-full flex items-center justify-center mx-auto mb-2">
-                      <Plus className="w-5 h-5 text-white" />
-                    </div>
-                    <h3 className="font-semibold text-gray-800 text-sm">Expat Dashboard</h3>
-                    <p className="text-xs text-gray-600 mt-1">
+                    <h3 className="font-semibold text-gray-800 text-base mb-2">Expat Dashboard</h3>
+                    <p className="text-xs text-gray-600">
                       Manage your listings, profile & community connections
                     </p>
                   </div>
@@ -79,12 +76,9 @@ export default function CategorySidebar() {
                 </div>
               ) : (
                 <div className="text-center space-y-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-brand-primary to-brand-accent rounded-full flex items-center justify-center mx-auto">
-                    <Plus className="w-5 h-5 text-white" />
-                  </div>
                   <div>
-                    <h3 className="font-semibold text-gray-800 text-sm">Join Expat Community</h3>
-                    <p className="text-xs text-gray-600 mt-1">
+                    <h3 className="font-semibold text-gray-800 text-base mb-2">Join Expat Community</h3>
+                    <p className="text-xs text-gray-600">
                       Connect, trade & build relationships with expats worldwide
                     </p>
                   </div>

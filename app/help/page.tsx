@@ -49,7 +49,7 @@ const faqCategories = [
       {
         question: 'Can I buy from sellers in other countries?',
         answer:
-          "Yes! GlobalExpat connects buyers and sellers worldwide. Check the seller's shipping policies for international delivery options and costs.",
+          "Yes! Globoexpat connects buyers and sellers worldwide. Check the seller's shipping policies for international delivery options and costs.",
       },
     ],
   },
@@ -66,7 +66,7 @@ const faqCategories = [
       {
         question: 'What are the seller fees?',
         answer:
-          'GlobalExpat charges a commission of 8-12% on successful sales, depending on your seller tier. Experienced sellers enjoy lower fees and additional benefits.',
+          'Globoexpat charges a commission of 8-12% on successful sales, depending on your seller tier. Experienced sellers enjoy lower fees and additional benefits.',
       },
       {
         question: 'How do I list a product?',

@@ -321,52 +321,52 @@ function SellPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-surface-secondary to-neutral-100 py-12">
+    <div className="min-h-screen bg-[#F8FAFB] py-6 sm:py-8 lg:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-brand-primary to-brand-accent rounded-3xl flex items-center justify-center shadow-futuristic">
-              <Sparkles className="h-8 w-8 text-white" />
+        <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-[#1E3A8A] rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg">
+              <Sparkles className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-white" />
             </div>
-            <h1 className="text-6xl font-display font-bold bg-gradient-to-r from-brand-primary to-brand-accent bg-clip-text text-transparent tracking-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-[#0F172A] tracking-tight">
               List Your Item
             </h1>
           </div>
-          <p className="text-2xl text-neutral-600 max-w-3xl mx-auto font-medium">
-            Create a professional listing and reach thousands of potential buyers in our global
-            expat community
+          <p className="text-base sm:text-lg lg:text-xl text-[#475569] max-w-2xl mx-auto px-4">
+            Create a professional listing and reach thousands of potential buyers in our global expat community
           </p>
         </div>
 
         {/* Modern Step Indicator */}
-        <div className="mb-16">
-          <div className="flex items-center justify-between max-w-3xl mx-auto mb-10">
+        <div className="mb-12 sm:mb-16">
+          <div className="flex items-center justify-between max-w-3xl mx-auto mb-6 sm:mb-10 px-2">
             {[1, 2, 3].map((step, index) => (
-              <div key={step} className="flex items-center">
-                <div className="flex flex-col items-center">
+              <div key={step} className="flex items-center flex-1">
+                <div className="flex flex-col items-center flex-1">
                   <div
-                    className={`w-20 h-20 rounded-3xl flex items-center justify-center text-xl font-display font-bold transition-all duration-500 transform ${
+                    className={`w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-xl sm:rounded-2xl flex items-center justify-center text-base sm:text-lg lg:text-xl font-display font-bold transition-all duration-300 ${
                       step <= currentStep
-                        ? 'bg-gradient-to-br from-brand-primary to-brand-accent text-white shadow-futuristic scale-110'
-                        : 'bg-surface-elevated text-neutral-400 border-2 border-neutral-300 shadow-card'
+                        ? 'bg-[#1E3A8A] text-white shadow-lg'
+                        : 'bg-white text-[#475569] border-2 border-[#E2E8F0]'
                     }`}
                   >
-                    {step < currentStep ? <CheckCircle2 className="h-8 w-8" /> : step}
+                    {step < currentStep ? <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" /> : step}
                   </div>
                   <span
-                    className={`mt-4 text-lg font-display font-semibold transition-all duration-300 ${
-                      step <= currentStep ? 'text-brand-primary' : 'text-neutral-500'
+                    className={`mt-2 sm:mt-3 lg:mt-4 text-xs sm:text-sm lg:text-base font-display font-semibold transition-all duration-300 text-center ${
+                      step <= currentStep ? 'text-[#1E3A8A]' : 'text-[#475569]'
                     }`}
                   >
-                    {STEP_TITLES[step - 1]}
+                    <span className="hidden sm:inline">{STEP_TITLES[step - 1]}</span>
+                    <span className="sm:hidden">{STEP_TITLES[step - 1].split(' ')[0]}</span>
                   </span>
                 </div>
                 {index < 2 && (
                   <div
-                    className={`w-32 h-3 mx-8 rounded-full transition-all duration-500 ${
+                    className={`flex-1 max-w-[40px] sm:max-w-[80px] lg:max-w-[120px] h-2 sm:h-3 mx-2 sm:mx-4 lg:mx-8 rounded-full transition-all duration-300 ${
                       step < currentStep
-                        ? 'bg-gradient-to-r from-brand-primary to-brand-accent shadow-card'
-                        : 'bg-neutral-200'
+                        ? 'bg-[#1E3A8A]'
+                        : 'bg-[#E2E8F0]'
                     }`}
                   />
                 )}
@@ -400,26 +400,26 @@ function SellPageContent() {
               backendCategories={backendCategories}
             />
 
-            <div className="flex justify-between mt-12">
+            <div className="flex flex-col sm:flex-row justify-between gap-4 mt-8 sm:mt-12">
               <Button
                 variant="outline"
                 onClick={prevStep}
                 disabled={currentStep === 1}
-                className="px-8 py-3 h-auto text-lg"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3 h-auto text-base sm:text-lg order-2 sm:order-1"
               >
                 Previous
               </Button>
               {currentStep < 3 ? (
                 <Button
                   onClick={nextStep}
-                  className="px-8 py-3 h-auto text-lg bg-gradient-to-r from-brand-primary to-brand-accent hover:from-blue-800 hover:to-cyan-600"
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 h-auto text-base sm:text-lg bg-[#1E3A8A] hover:bg-[#1e3a8a]/90 text-white order-1 sm:order-2 shadow-md"
                 >
                   Next Step
                 </Button>
               ) : (
                 <Button
                   onClick={publishListing}
-                  className="px-8 py-3 h-auto text-lg bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  className="w-full sm:w-auto px-6 sm:px-8 py-3 h-auto text-base sm:text-lg bg-[#059669] hover:bg-[#059669]/90 text-white order-1 sm:order-2 shadow-md"
                 >
                   Publish Listing
                 </Button>
@@ -470,17 +470,17 @@ function StepContent({
   const config = stepConfig[currentStep as keyof typeof stepConfig]
 
   return (
-    <Card className="shadow-futuristic border border-neutral-200 bg-surface-elevated rounded-3xl overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-brand-primary to-brand-accent text-white p-8">
-        <CardTitle className="flex items-center gap-4 text-3xl font-display font-bold">
-          <div className="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center text-lg font-bold">
+    <Card className="shadow-lg border-2 border-[#E2E8F0] bg-white rounded-xl sm:rounded-2xl overflow-hidden">
+      <CardHeader className="bg-[#1E3A8A] text-white p-4 sm:p-6 lg:p-8">
+        <CardTitle className="flex items-center gap-3 sm:gap-4 text-xl sm:text-2xl lg:text-3xl font-display font-bold">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/20 text-white flex items-center justify-center text-base sm:text-lg font-bold flex-shrink-0">
             {currentStep}
           </div>
-          {config.title}
+          <span className="break-words">{config.title}</span>
         </CardTitle>
-        <p className="text-white/90 mt-3 text-lg">{config.description}</p>
+        <p className="text-white/95 mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg">{config.description}</p>
       </CardHeader>
-      <CardContent className="space-y-10 p-10">
+      <CardContent className="space-y-6 sm:space-y-8 lg:space-y-10 p-4 sm:p-6 lg:p-10">
         {currentStep === 1 && (
           <Step1Content
             formData={formData}
@@ -515,28 +515,28 @@ function Step1Content({
 }) {
   return (
     <>
-      <div className="space-y-3">
-        <Label htmlFor="title" className="text-base font-semibold text-neutral-800">
+      <div className="space-y-2 sm:space-y-3">
+        <Label htmlFor="title" className="text-sm sm:text-base font-semibold text-neutral-800">
           Item Title *
         </Label>
         <Input
           id="title"
           placeholder="e.g., MacBook Pro 14″ M2, iPhone 15 Pro Max"
-          className="h-14 text-lg border-2 border-neutral-300 rounded-2xl focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 transition-all duration-300 bg-surface-elevated"
+          className="h-12 sm:h-14 text-base sm:text-lg border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 transition-all duration-200 bg-white"
           value={formData.title}
           onChange={(e) => updateFormData({ title: e.target.value })}
         />
-        <p className="text-sm text-neutral-500">Include brand, model, and key features</p>
+        <p className="text-xs sm:text-sm text-neutral-500">Include brand, model, and key features</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
         <div className="space-y-3">
           <Label className="text-base font-semibold text-neutral-800">Category *</Label>
           <Select
             onValueChange={(value) => updateFormData({ category: value })}
             value={formData.category}
           >
-            <SelectTrigger className="h-14 border-2 border-neutral-300 rounded-2xl focus:border-brand-primary bg-surface-elevated">
+            <SelectTrigger className="h-12 sm:h-14 border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 bg-white">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
@@ -561,7 +561,7 @@ function Step1Content({
             onValueChange={(value) => updateFormData({ condition: value })}
             value={formData.condition}
           >
-            <SelectTrigger className="h-14 border-2 border-neutral-300 rounded-2xl focus:border-brand-primary bg-surface-elevated">
+            <SelectTrigger className="h-12 sm:h-14 border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 bg-white">
               <SelectValue placeholder="Select condition" />
             </SelectTrigger>
             <SelectContent>
@@ -581,7 +581,7 @@ function Step1Content({
           onValueChange={(value) => updateFormData({ location: value })}
           value={formData.location}
         >
-          <SelectTrigger className="h-14 border-2 border-neutral-300 rounded-2xl focus:border-brand-primary bg-surface-elevated">
+          <SelectTrigger className="h-12 sm:h-14 border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 bg-white">
             <SelectValue placeholder="Select your location" />
           </SelectTrigger>
           <SelectContent>
@@ -630,33 +630,33 @@ function Step2Content({
           />
           <label
             htmlFor="image-upload"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-brand-primary text-white rounded-xl hover:bg-brand-primary/90 cursor-pointer transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#1E3A8A] text-white rounded-lg hover:bg-[#1E3A8A]/90 cursor-pointer transition-all shadow-md"
           >
             <Camera className="h-5 w-5" />
             Upload Images
           </label>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-sm text-[#475569] mt-2">
             Upload up to 10 images. Max 5MB per image. Supported: JPG, PNG, WebP
           </p>
         </div>
 
         {/* Image Preview Grid */}
         {formData.imageUrls.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
             {formData.imageUrls.map((imageUrl, index) => (
               <div key={index} className="relative aspect-square group">
                 <Image
                   src={imageUrl}
                   alt={`Upload ${index + 1}`}
                   fill
-                  className="object-cover rounded-xl border-2 border-gray-200"
+                  className="object-cover rounded-lg border-2 border-[#E2E8F0]"
                 />
 
                 {/* Remove Button */}
                 <Button
                   size="icon"
                   variant="destructive"
-                  className="absolute -top-2 -right-2 h-8 w-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute -top-2 -right-2 h-8 w-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity bg-red-600 hover:bg-red-700"
                   onClick={() => removeImage(index)}
                 >
                   <X className="h-4 w-4" />
@@ -664,7 +664,7 @@ function Step2Content({
 
                 {/* Main Image Badge */}
                 {imageUrl === formData.mainImage && (
-                  <Badge className="absolute bottom-2 left-2 bg-blue-600 text-white">
+                  <Badge className="absolute bottom-2 left-2 bg-[#1E3A8A] text-white border-0">
                     Main Photo
                   </Badge>
                 )}
@@ -674,7 +674,7 @@ function Step2Content({
                   <Button
                     size="sm"
                     variant="secondary"
-                    className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute bottom-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white text-[#0F172A] text-xs"
                     onClick={() => setMainImage(imageUrl)}
                   >
                     Set Main
@@ -687,14 +687,13 @@ function Step2Content({
 
         {/* Upload Placeholder */}
         {formData.imageUrls.length === 0 && (
-          <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
-            <Camera className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 mb-2">No images uploaded yet</p>
-            <p className="text-sm text-gray-400">Click "Upload Images" to add photos</p>
+          <div className="border-2 border-dashed border-[#E2E8F0] rounded-xl p-12 text-center bg-[#F8FAFB]">
+            <Camera className="h-12 w-12 text-[#475569] mx-auto mb-4" />
+            <p className="text-[#0F172A] mb-2 font-medium">No images uploaded yet</p>
+            <p className="text-sm text-[#475569]">Click "Upload Images" to add photos</p>
           </div>
         )}
       </div>
-
       <div className="space-y-3">
         <Label htmlFor="description" className="text-base font-semibold text-neutral-800">
           Item Description *
@@ -702,9 +701,10 @@ function Step2Content({
         <Textarea
           id="description"
           placeholder="Describe your item in detail. Include condition, features, reason for selling, etc."
-          className="min-h-32 text-base border-2 border-neutral-300 rounded-2xl focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 transition-all duration-300 bg-surface-elevated resize-none"
+          className="min-h-32 text-base border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 transition-all duration-200 bg-white resize-none"
           value={formData.description}
           onChange={(e) => updateFormData({ description: e.target.value })}
+          maxLength={500}
         />
         <p className="text-sm text-neutral-500">{formData.description.length}/500 characters</p>
       </div>
@@ -728,7 +728,7 @@ function Step3Content({
           value={formData.currency}
           onValueChange={(value) => updateFormData({ currency: value })}
         >
-          <SelectTrigger className="h-14 border-2 border-neutral-300 rounded-2xl focus:border-brand-primary bg-surface-elevated">
+          <SelectTrigger className="h-12 sm:h-14 border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 bg-white">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -741,7 +741,7 @@ function Step3Content({
         </Select>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
         <div className="space-y-3">
           <Label htmlFor="price" className="text-base font-semibold text-neutral-800">
             Asking Price * ({formData.currency})
@@ -752,7 +752,7 @@ function Step3Content({
               id="price"
               type="number"
               placeholder="2500000"
-              className="pl-12 h-14 text-lg border-2 border-neutral-300 rounded-2xl focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 transition-all duration-300 bg-surface-elevated"
+              className="pl-12 h-12 sm:h-14 text-base sm:text-lg border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 transition-all duration-200 bg-white"
               value={formData.price}
               onChange={(e) => updateFormData({ price: e.target.value })}
             />
@@ -769,7 +769,7 @@ function Step3Content({
               id="originalPrice"
               type="number"
               placeholder="3000000"
-              className="pl-12 h-14 text-lg border-2 border-neutral-300 rounded-2xl focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 transition-all duration-300 bg-surface-elevated"
+              className="pl-12 h-12 sm:h-14 text-base sm:text-lg border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 transition-all duration-200 bg-white"
               value={formData.originalPrice}
               onChange={(e) => updateFormData({ originalPrice: e.target.value })}
             />
@@ -777,12 +777,14 @@ function Step3Content({
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-status-success/10 to-brand-primary/10 border-2 border-status-success/20 rounded-2xl p-8 shadow-card">
-        <div className="flex items-center gap-3 mb-4">
-          <CheckCircle2 className="h-8 w-8 text-status-success" />
-          <h3 className="text-xl font-display font-bold text-neutral-900">Ready to Publish!</h3>
+      <div className="bg-[#059669]/5 border-2 border-[#059669]/30 rounded-xl p-6 sm:p-8">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-12 h-12 rounded-lg bg-[#059669] flex items-center justify-center">
+            <CheckCircle2 className="h-6 w-6 text-white" />
+          </div>
+          <h3 className="text-xl font-display font-bold text-[#0F172A]">Ready to Publish!</h3>
         </div>
-        <p className="text-neutral-700 text-lg">
+        <p className="text-[#475569] text-base sm:text-lg">
           Your listing will be reviewed and go live within a few minutes.
         </p>
       </div>
@@ -793,12 +795,12 @@ function Step3Content({
 // Sidebar component
 function SellingSidebar({ currentStep }: { currentStep: number }) {
   return (
-    <aside className="lg:col-span-1">
+    <aside className="hidden lg:block lg:col-span-1">
       <div className="sticky top-8 space-y-8">
-        <Card className="border border-neutral-200 bg-white rounded-lg overflow-hidden">
-          <CardHeader className="bg-brand-primary text-white p-4">
+        <Card className="border-2 border-[#E2E8F0] bg-white rounded-xl overflow-hidden shadow-md">
+          <CardHeader className="bg-[#1E3A8A] text-white p-4">
             <CardTitle className="text-white flex items-center gap-2 text-lg font-semibold">
-              💡 Pro Tips
+              💡 Selling Tips
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6 p-6">
@@ -806,12 +808,12 @@ function SellingSidebar({ currentStep }: { currentStep: number }) {
               const IconComponent = tip.icon
               return (
                 <div key={index} className="flex gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-brand-primary/10 text-brand-primary flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-[#1E3A8A]/10 text-[#1E3A8A] flex items-center justify-center flex-shrink-0">
                     <IconComponent className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-neutral-900 mb-1">{tip.title}</h4>
-                    <p className="text-neutral-600 text-sm">{tip.description}</p>
+                    <h4 className="font-semibold text-[#0F172A] mb-1">{tip.title}</h4>
+                    <p className="text-[#475569] text-sm">{tip.description}</p>
                   </div>
                 </div>
               )
@@ -819,23 +821,23 @@ function SellingSidebar({ currentStep }: { currentStep: number }) {
           </CardContent>
         </Card>
 
-        <Card className="border border-neutral-200 bg-white rounded-lg">
+        <Card className="border-2 border-[#E2E8F0] bg-white rounded-xl shadow-md">
           <CardContent className="p-6">
-            <h3 className="font-semibold text-neutral-900 mb-4 text-lg">Your Progress</h3>
+            <h3 className="font-semibold text-[#0F172A] mb-4 text-lg">Your Progress</h3>
             <div className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-neutral-600">Completion</span>
-                <span className="font-semibold text-brand-primary">
+                <span className="text-[#475569]">Completion</span>
+                <span className="font-semibold text-[#1E3A8A]">
                   {Math.round((currentStep / 3) * 100)}%
                 </span>
               </div>
-              <div className="w-full bg-neutral-200 rounded-full h-2">
+              <div className="w-full bg-[#E2E8F0] rounded-full h-2.5">
                 <div
-                  className="bg-brand-primary h-2 rounded-full transition-all duration-300"
+                  className="bg-[#1E3A8A] h-2.5 rounded-full transition-all duration-300"
                   style={{ width: `${(currentStep / 3) * 100}%` }}
                 />
               </div>
-              <p className="text-neutral-500 text-sm">Step {currentStep} of 3 completed</p>
+              <p className="text-[#475569] text-sm">Step {currentStep} of 3 completed</p>
             </div>
           </CardContent>
         </Card>

@@ -71,18 +71,18 @@ export function ProductCard({
           {/* Image */}
           <div
             className={cn(
-              'relative overflow-hidden flex-shrink-0',
-              viewMode === 'list' ? 'w-48' : 'rounded-t-2xl'
+              'relative overflow-hidden flex-shrink-0 bg-white',
+              viewMode === 'list' ? 'w-48 aspect-square rounded-l-2xl' : 'aspect-square rounded-t-2xl'
             )}
           >
             <Image
               src={product.image || '/assets/images/products/placeholder.svg'}
               alt={`${product.title} product image`}
-              width={viewMode === 'list' ? 192 : 300}
-              height={viewMode === 'list' ? 192 : 200}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className={cn(
-                'object-cover group-hover:scale-105 transition-transform duration-300',
-                viewMode === 'list' ? 'w-full h-full' : 'w-full h-48'
+                'object-contain transition-transform duration-300',
+                viewMode === 'list' ? '' : 'group-hover:scale-[1.02]'
               )}
               loading="lazy"
               placeholder="blur"
@@ -91,12 +91,12 @@ export function ProductCard({
           </div>
 
           {/* Content */}
-          <div className="p-3 flex-1 flex flex-col h-full">
+          <div className="p-3 sm:p-4 flex-1 flex flex-col h-full">
             {/* Title - Fixed height with line clamping */}
-            <div className="mb-1.5">
+            <div className="mb-2">
               <h3
                 id={`product-title-${product.id}`}
-                className="font-semibold text-neutral-900 line-clamp-2 group-hover:text-brand-primary transition-colors text-sm leading-4 min-h-[2rem]"
+                className="font-semibold text-neutral-900 line-clamp-2 group-hover:text-brand-primary transition-colors text-sm sm:text-base leading-tight min-h-[2.5rem]"
               >
                 {product.title}
               </h3>
@@ -104,18 +104,18 @@ export function ProductCard({
 
             {/* Price - Fixed height */}
             <div
-              className="flex items-center gap-2 mb-2 min-h-[1.5rem]"
+              className="flex items-center gap-1.5 sm:gap-2 mb-2 min-h-[1.75rem]"
               aria-label="Product pricing"
             >
               <span
-                className="text-lg font-bold text-brand-secondary"
+                className="text-base sm:text-lg font-bold text-brand-secondary"
                 aria-label={`Current price ${product.price}`}
               >
                 {product.price}
               </span>
               {product.originalPrice && (
                 <span
-                  className="text-sm text-neutral-500 line-through"
+                  className="text-xs sm:text-sm text-neutral-500 line-through"
                   aria-label={`Original price ${product.originalPrice}`}
                 >
                   {product.originalPrice}
@@ -124,20 +124,20 @@ export function ProductCard({
             </div>
 
             {/* Seller Info - Fixed height */}
-            <div className="flex items-center justify-between mb-1.5 min-h-[1rem]">
+            <div className="flex items-center justify-between mb-2 min-h-[1.25rem]">
               <div
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 flex-shrink-0"
                 aria-label={`Rating ${product.rating} out of 5 stars with ${product.reviews} reviews`}
               >
                 <Star
-                  className="w-4 h-4 fill-brand-secondary text-brand-secondary"
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-brand-secondary text-brand-secondary flex-shrink-0"
                   aria-hidden="true"
                 />
-                <span className="text-sm font-medium">{product.rating}</span>
-                <span className="text-sm text-neutral-500">({product.reviews})</span>
+                <span className="text-xs sm:text-sm font-medium">{product.rating}</span>
+                <span className="text-xs sm:text-sm text-neutral-500">({product.reviews})</span>
               </div>
               <span
-                className="text-sm text-neutral-600 truncate max-w-[120px]"
+                className="text-xs sm:text-sm text-neutral-600 truncate max-w-[100px] sm:max-w-[120px] ml-1"
                 aria-label={`Listed by ${product.listedBy}`}
               >
                 {product.listedBy}
@@ -146,26 +146,26 @@ export function ProductCard({
 
             {/* Location - Fixed height */}
             <div
-              className="flex items-center gap-1 mb-2 min-h-[1rem]"
+              className="flex items-center gap-1 mb-2 min-h-[1.25rem]"
               aria-label={`Location: ${product.location}`}
             >
-              <MapPin className="w-4 h-4 text-neutral-400" aria-hidden="true" />
-              <span className="text-sm text-neutral-600">{product.location}</span>
+              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-400 flex-shrink-0" aria-hidden="true" />
+              <span className="text-xs sm:text-sm text-neutral-600 truncate">{product.location}</span>
             </div>
 
             {/* Bottom Section - Pushed to bottom */}
-            <div className="mt-auto">
+            <div className="mt-auto pt-2">
               <Button
-                className="w-full bg-gradient-to-r from-brand-primary to-brand-accent hover:from-blue-800 hover:to-cyan-600 text-white font-semibold py-2 rounded-lg shadow-futuristic hover:shadow-xl focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 transition-all duration-300 group/btn text-sm"
+                className="w-full bg-gradient-to-r from-brand-primary to-brand-accent hover:from-blue-800 hover:to-cyan-600 text-white font-semibold py-1.5 sm:py-2 rounded-lg shadow-futuristic hover:shadow-xl focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 transition-all duration-300 group/btn text-xs sm:text-sm"
                 onClick={(e) => {
                   e.stopPropagation()
                   handleViewDetails()
                 }}
                 aria-label={`View details for ${product.title}`}
               >
-                <span className="flex items-center justify-center gap-2">
+                <span className="flex items-center justify-center gap-1.5 sm:gap-2">
                   View Product
-                  <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-200" />
+                  <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover/btn:translate-x-1 transition-transform duration-200" />
                 </span>
               </Button>
             </div>

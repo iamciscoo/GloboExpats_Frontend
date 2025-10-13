@@ -79,35 +79,35 @@ export const MobileMenu = React.memo<MobileMenuProps>(
     const isBrowsePage = pathname.startsWith('/browse')
 
     return (
-      <>
+      <div className="flex items-center gap-1">
         {/* Mobile Search Toggle */}
         {!isAuthPage && !isBrowsePage && (
-          <div className="md:hidden">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-neutral-200 hover:text-white"
-                  aria-label="Open search"
-                >
-                  <Search className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent
-                side="top"
-                className="h-24 bg-brand-primary border-b-0"
-                aria-describedby="search-description"
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-neutral-200 hover:text-white h-8 w-8"
+                aria-label="Open search"
               >
-                <SheetHeader className="sr-only">
-                  <SheetTitle>Search Products</SheetTitle>
-                </SheetHeader>
-                <div className="pt-4 px-4">
-                  <SearchBar />
+                <Search className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent
+              side="top"
+              className="h-auto bg-brand-primary border-b-0 p-4 pb-6"
+              aria-describedby="search-description"
+            >
+              <SheetHeader className="sr-only">
+                <SheetTitle>Search Products</SheetTitle>
+              </SheetHeader>
+              <div className="flex items-center justify-center w-full pt-2">
+                <div className="w-full max-w-md">
+                  <SearchBar autoExpand />
                 </div>
-              </SheetContent>
-            </Sheet>
-          </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         )}
 
         {/* Mobile Menu */}
@@ -116,7 +116,7 @@ export const MobileMenu = React.memo<MobileMenuProps>(
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden text-neutral-200 hover:text-white"
+              className="text-neutral-200 hover:text-white h-8 w-8"
               aria-label="Open navigation menu"
             >
               <Menu className="h-5 w-5" />
@@ -269,7 +269,7 @@ export const MobileMenu = React.memo<MobileMenuProps>(
             </div>
           </SheetContent>
         </Sheet>
-      </>
+      </div>
     )
   }
 )

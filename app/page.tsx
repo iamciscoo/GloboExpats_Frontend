@@ -3,7 +3,7 @@
  * HOMEPAGE - MAIN LANDING PAGE
  * =============================================================================
  *
- * The main landing page for the GlobalExpat Marketplace. This page serves as the
+ * The main landing page for the Globoexpat Marketplace. This page serves as the
  * primary entry point for users and showcases the platform's key features and
  * offerings in a visually appealing and user-friendly layout.
  *

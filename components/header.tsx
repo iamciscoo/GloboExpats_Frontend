@@ -169,33 +169,39 @@ const UserNavigation = React.memo<{
         className="hover:bg-brand-primary/80 transition-colors"
       />
 
-      {/* Notifications - Real-time updates from backend */}
-      <NotificationBadge
-        href="/notifications"
-        icon={Bell}
-        count={notificationCounts.unread}
-        ariaLabel={`View notifications (${notificationCounts.unread} unread)`}
-        testId="notifications-button"
-        className="hover:bg-brand-primary/80 transition-colors"
-      />
+      {/* Notifications - Real-time updates from backend - HIDDEN ON MOBILE */}
+      <div className="hidden md:block">
+        <NotificationBadge
+          href="/notifications"
+          icon={Bell}
+          count={notificationCounts.unread}
+          ariaLabel={`View notifications (${notificationCounts.unread} unread)`}
+          testId="notifications-button"
+          className="hover:bg-brand-primary/80 transition-colors"
+        />
+      </div>
 
-      {/* Messages - Real-time messaging system */}
-      <NotificationBadge
-        href="/messages"
-        icon={MessageCircle}
-        count={messageCounts.unread}
-        ariaLabel={`View messages (${messageCounts.unread} unread)`}
-        testId="messages-button"
-        className="hover:bg-brand-primary/80 transition-colors"
-      />
+      {/* Messages - Real-time messaging system - HIDDEN ON MOBILE */}
+      <div className="hidden md:block">
+        <NotificationBadge
+          href="/messages"
+          icon={MessageCircle}
+          count={messageCounts.unread}
+          ariaLabel={`View messages (${messageCounts.unread} unread)`}
+          testId="messages-button"
+          className="hover:bg-brand-primary/80 transition-colors"
+        />
+      </div>
 
-      {/* User Profile Dropdown - Account management and settings */}
-      <ProfileDropdown
-        user={user}
-        isVerifiedBuyer={isVerifiedBuyer}
-        isAdmin={isAdmin}
-        onLogout={handleLogout}
-      />
+      {/* User Profile Dropdown - Account management and settings - HIDDEN ON MOBILE */}
+      <div className="hidden md:block">
+        <ProfileDropdown
+          user={user}
+          isVerifiedBuyer={isVerifiedBuyer}
+          isAdmin={isAdmin}
+          onLogout={handleLogout}
+        />
+      </div>
     </div>
   )
 })
@@ -459,28 +465,29 @@ const Header = React.memo(() => {
             )}
 
             {/* 
-              =============================================================
-              MOBILE MENU
-              =============================================================
-              Responsive navigation for mobile devices. Includes all
-              navigation items, user actions, and currency selection
-              in a slide-out drawer interface.
-            */}
-            <div className="lg:hidden">
-              <MobileMenu
-                isLoggedIn={isLoggedIn}
-                isAdmin={isAdmin}
-                isAuthPage={routeConfig.isAuthPage}
-                user={user}
-                currency={currency}
-                currencies={currencies}
-                setCurrency={setCurrency}
-                handleLogout={logout}
-              />
-            </div>
+            =============================================================
+            MOBILE MENU
+            =============================================================
+            Responsive navigation for mobile devices. Includes all
+            navigation items, user actions, and currency selection
+            in a slide-out drawer interface.
+            Always visible on mobile (< lg breakpoint)
+          */}
+          <div className="lg:hidden">
+            <MobileMenu
+              isLoggedIn={isLoggedIn}
+              isAdmin={isAdmin}
+              isAuthPage={routeConfig.isAuthPage}
+              user={user}
+              currency={currency}
+              currencies={currencies}
+              setCurrency={setCurrency}
+              handleLogout={logout}
+            />
           </div>
         </div>
       </div>
+    </div>
     </header>
   )
 })

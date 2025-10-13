@@ -210,7 +210,7 @@ export default function RegisterPage() {
             <div className="relative z-10">
               <div className="mb-8">
                 <div className="text-4xl font-bold font-display mb-4">
-                  Global<span className="text-brand-secondary">Expat</span>
+                  Globo<span className="text-brand-secondary">Expat</span>
                 </div>
                 <p className="text-xl text-blue-100 leading-relaxed mb-6">
                   Join the world's most trusted expat marketplace community
@@ -271,7 +271,7 @@ export default function RegisterPage() {
               <CardHeader className="text-center pb-4 pt-6">
                 <div className="lg:hidden mb-4">
                   <div className="text-3xl font-bold font-display text-brand-primary">
-                    Global<span className="text-brand-secondary">Expat</span>
+                    Globo<span className="text-brand-secondary">Expat</span>
                   </div>
                 </div>
                 <CardTitle className="text-3xl font-bold text-neutral-800 mb-2">

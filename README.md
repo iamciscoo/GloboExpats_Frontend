@@ -1,6 +1,6 @@
-# GlobalExpat Marketplace - Documentation Index
+# Globoexpat Marketplace - Documentation Index
 
-Welcome to the comprehensive documentation for the GlobalExpat Marketplace platform.
+Welcome to the comprehensive documentation for the Globoexpat Marketplace platform.
 
 ---
 

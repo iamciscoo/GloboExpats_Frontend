@@ -1,5 +1,5 @@
 /**
- * Error handling utilities for the GlobalExpat application
+ * Error handling utilities for the Globoexpat application
  */
 
 // Error types for different contexts

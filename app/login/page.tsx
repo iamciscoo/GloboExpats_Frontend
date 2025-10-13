@@ -220,7 +220,7 @@ function LoginContent() {
         <CardHeader className="text-center pb-4 pt-6">
           <Link href="/" className="inline-block mx-auto mb-3">
             <div className="text-2xl lg:text-3xl font-bold font-display text-brand-primary">
-              Global<span className="text-brand-secondary">Expat</span>
+              Globo<span className="text-brand-secondary">Expat</span>
             </div>
           </Link>
           <CardTitle className="text-xl lg:text-2xl font-bold text-neutral-800">

@@ -25,7 +25,7 @@ const lexend = Lexend({
 })
 
 export const metadata: Metadata = {
-  title: 'GlobalExpat - Marketplace for Expats',
+  title: 'Globoexpat - Marketplace for Expats',
   description:
     'Connect with verified sellers worldwide. Buy and sell quality items in the global expat community.',
 }

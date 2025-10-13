@@ -8,15 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Frequently Asked Questions | GlobalExpat',
-  description: 'Find answers to common questions about buying and selling on GlobalExpat.',
+  title: 'Frequently Asked Questions | Globoexpat',
+  description: 'Find answers to common questions about buying and selling on Globoexpat.',
 }
 
 const FAQS = [
   {
-    question: 'What is GlobalExpat?',
+    question: 'What is Globoexpat?',
     answer:
-      'GlobalExpat is a marketplace designed for expatriates to buy and sell quality items within the community with added trust signals and verification.',
+      'Globoexpat is a marketplace designed for expatriates to buy and sell quality items within the community with added trust signals and verification.',
   },
   {
     question: 'How do I create an account?',

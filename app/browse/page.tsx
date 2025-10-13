@@ -506,11 +506,39 @@ export default function BrowsePage() {
     return matchesSearch && matchesCategory && matchesPrice && matchesExpatType && matchesLocation
   })
 
+  // Sorted products (client-side) to keep pagination, filtering and sorting in sync
+  const sortedProducts = useMemo(() => {
+    const arr = [...filteredProducts]
+    const toNumber = (priceStr: string) => parseInt(priceStr?.replace(/[^\d]/g, '')) || 0
+    switch (sortBy) {
+      case 'price-asc':
+        arr.sort((a, b) => toNumber(a.price) - toNumber(b.price))
+        break
+      case 'price-desc':
+        arr.sort((a, b) => toNumber(b.price) - toNumber(a.price))
+        break
+      case 'rating-desc':
+        arr.sort((a, b) => (b.rating || 0) - (a.rating || 0))
+        break
+      case 'date-desc':
+        arr.sort(
+          (a: any, b: any) =>
+            (new Date(b.createdAt || 0).getTime() || (b as any).id || 0) -
+            (new Date(a.createdAt || 0).getTime() || (a as any).id || 0)
+        )
+        break
+      default:
+        // relevance (backend order)
+        break
+    }
+    return arr
+  }, [filteredProducts, sortBy])
+
   // Pagination calculations
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
+  const totalPages = Math.ceil(sortedProducts.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const currentProducts = filteredProducts.slice(startIndex, endIndex)
+  const currentProducts = sortedProducts.slice(startIndex, endIndex)
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -722,11 +750,11 @@ export default function BrowsePage() {
                 <div
                   className={
                     viewMode === 'grid'
-                      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+                      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6'
                       : 'space-y-6'
                   }
                 >
-                  {currentProducts.map((product) => (
+                  {currentProducts.map((product: FeaturedItem) => (
                     <ProductCard key={product.id} product={product} viewMode={viewMode} />
                   ))}
                 </div>

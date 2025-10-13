@@ -112,7 +112,7 @@ const nextConfig = {
 
   // Environment variables accessible to the frontend
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://10.123.22.21:8081/api/v1',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://10.123.22.21:8081',
     NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || 'ws://10.123.22.21:8081/ws',
     NEXT_PUBLIC_CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || '',
     NEXT_PUBLIC_ENVIRONMENT: process.env.NODE_ENV || 'development',

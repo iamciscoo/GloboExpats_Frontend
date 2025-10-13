@@ -145,34 +145,33 @@ export default function FeaturedListings() {
   }
 
   return (
-    <section className="py-16 bg-gradient-to-br from-neutral-50 to-blue-50/30">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section className="py-8 sm:py-12 lg:py-16 bg-gradient-to-br from-neutral-50 to-blue-50/30">
+      <div className="container mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
         {/* Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <div className="flex justify-center mb-12">
-            <div className="bg-gradient-to-r from-white via-neutral-50 to-white p-2 rounded-2xl shadow-xl border border-neutral-200/60 backdrop-blur-sm">
+          <div className="flex justify-center mb-6 sm:mb-8 lg:mb-12">
+            <div className="bg-gradient-to-r from-white via-neutral-50 to-white p-1 sm:p-2 rounded-xl sm:rounded-2xl shadow-xl border border-neutral-200/60 backdrop-blur-sm w-full sm:w-auto">
               <TabsList className="grid w-full grid-cols-3 bg-transparent border-0 h-auto">
                 <TabsTrigger
                   value="new"
-                  className="flex items-center gap-2 px-6 py-4 text-sm font-medium rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 hover:bg-green-50"
+                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 text-xs sm:text-sm font-medium rounded-lg sm:rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 hover:bg-green-50"
                 >
-                  <Clock className="w-4 h-4" />
+                  <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="hidden sm:inline">New Listings</span>
                   <span className="sm:hidden">New</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="featured"
-                  className="flex items-center gap-2 px-6 py-4 text-sm font-medium rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand-primary data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 hover:bg-blue-50"
+                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 text-xs sm:text-sm font-medium rounded-lg sm:rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-brand-primary data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 hover:bg-blue-50"
                 >
-                  <Crown className="w-4 h-4" />
-                  <span className="hidden sm:inline">Featured</span>
-                  <span className="sm:hidden">Featured</span>
+                  <Crown className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span>Featured</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="top"
-                  className="flex items-center gap-2 px-6 py-4 text-sm font-medium rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-violet-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 hover:bg-purple-50"
+                  className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 text-xs sm:text-sm font-medium rounded-lg sm:rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-violet-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 hover:bg-purple-50"
                 >
-                  <TrendingUp className="w-4 h-4" />
+                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="hidden sm:inline">Top Picks</span>
                   <span className="sm:hidden">Top</span>
                 </TabsTrigger>
@@ -182,7 +181,7 @@ export default function FeaturedListings() {
 
           {/* Tab Content */}
           <TabsContent value="new" className="space-y-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
               {newListings.map((item: FeaturedItem) => (
                 <div key={`new-${item.id}`} className="group">
                   <ProductCard product={item} />
@@ -192,7 +191,7 @@ export default function FeaturedListings() {
           </TabsContent>
 
           <TabsContent value="featured" className="space-y-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
               {featuredListings.map((item: FeaturedItem) => (
                 <div key={`featured-${item.id}`} className="group">
                   <ProductCard product={item} />
@@ -202,7 +201,7 @@ export default function FeaturedListings() {
           </TabsContent>
 
           <TabsContent value="top" className="space-y-0">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
               {topPicks.map((item: FeaturedItem) => (
                 <div key={`top-${item.id}`} className="group">
                   <ProductCard product={item} />
