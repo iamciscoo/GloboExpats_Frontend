@@ -24,7 +24,7 @@ import { useState, useEffect } from 'react'
 import { Clock, Crown, TrendingUp, Loader2 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { apiClient } from '@/lib/api'
-import type { FeaturedItem, ListingItem } from '@/lib/types'
+import type { FeaturedItem } from '@/lib/types'
 import { transformBackendProduct, extractContentFromResponse } from '@/lib/image-utils'
 import { ProductCard } from '@/components/ui/product-card'
 
@@ -37,6 +37,7 @@ export default function FeaturedListings() {
   const [error, setError] = useState<string | null>(null)
 
   // Transform backend ListingItem to FeaturedItem format
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const transformToFeaturedItem = (item: any): FeaturedItem => {
     // ...existing code...
     const transformed = transformBackendProduct(item)
@@ -73,6 +74,7 @@ export default function FeaturedListings() {
         all.forEach((product, index) => {
           if (typeof product === 'object' && product !== null) {
             Object.keys(product).forEach((key) => {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const value = (product as any)[key]
               if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
                 if (

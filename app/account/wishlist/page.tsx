@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   Heart,
   ShoppingCart,
@@ -10,11 +11,10 @@ import {
   Bell,
   TrendingDown,
   ChevronRight,
-  Package,
   Filter,
   SortAsc,
 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -289,9 +289,11 @@ export default function WishlistPage() {
                     </div>
 
                     <Link href={`/product/${item.productId}`} className="flex-shrink-0">
-                      <img
+                      <Image
                         src={item.image}
                         alt={item.name}
+                        width={96}
+                        height={96}
                         className="w-24 h-24 object-cover rounded-lg hover:opacity-90 transition-opacity"
                       />
                     </Link>
@@ -380,7 +382,7 @@ export default function WishlistPage() {
                 Your wishlist is empty
               </h3>
               <p className="text-neutral-600 mb-4">
-                Save items you're interested in to view them later
+                Save items you&apos;re interested in to view them later
               </p>
               <Link href="/browse">
                 <Button>Start Browsing</Button>

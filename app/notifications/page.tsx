@@ -2,24 +2,21 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   Bell,
   CheckCircle2,
-  Clock,
   Archive,
   AlertCircle,
   MessageCircle,
   Package,
   Settings,
-  ChevronRight,
   Trash2,
   ExternalLink,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useToast } from '@/components/ui/use-toast'
 import {
@@ -154,8 +151,7 @@ export default function NotificationsPage() {
 
 function NotificationsPageContent() {
   const { toast } = useToast()
-  const { notificationCounts, markNotificationAsRead, markAllNotificationsAsRead } =
-    useNotifications()
+  const { markNotificationAsRead } = useNotifications()
   const { checkVerification, isVerificationPopupOpen, currentAction, closeVerificationPopup } =
     useVerification()
   const [activeTab, setActiveTab] = useState('all')
@@ -211,13 +207,14 @@ function NotificationsPageContent() {
     )
   }
 
-  const selectAllNotifications = () => {
-    if (selectedNotifications.length === filteredNotifications.length) {
-      setSelectedNotifications([])
-    } else {
-      setSelectedNotifications(filteredNotifications.map((n) => n.id))
-    }
-  }
+  // Select all functionality reserved for bulk actions feature
+  // const selectAllNotifications = () => {
+  //   if (selectedNotifications.length === filteredNotifications.length) {
+  //     setSelectedNotifications([])
+  //   } else {
+  //     setSelectedNotifications(filteredNotifications.map((n) => n.id))
+  //   }
+  // }
 
   const markSelectedAsRead = async () => {
     setIsLoading(true)
@@ -229,7 +226,7 @@ function NotificationsPageContent() {
         description: `${selectedNotifications.length} notifications marked as read.`,
       })
       setSelectedNotifications([])
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to mark notifications as read. Please try again.',
@@ -250,7 +247,7 @@ function NotificationsPageContent() {
         description: `${selectedNotifications.length} notifications deleted.`,
       })
       setSelectedNotifications([])
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to delete notifications. Please try again.',
@@ -270,7 +267,7 @@ function NotificationsPageContent() {
         title: 'All notifications marked as read',
         description: 'All your notifications have been marked as read.',
       })
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to mark all notifications as read. Please try again.',
@@ -305,6 +302,7 @@ function NotificationsPageContent() {
   /**
    * Handle marking notification as read and navigate
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleNotificationClick = (notification: any) => {
     if (!notification.isRead) {
       markNotificationAsRead(notification.id)
@@ -501,9 +499,11 @@ function NotificationsPageContent() {
 
                           {notification.itemTitle && (
                             <div className="mt-3 flex items-center gap-3 bg-neutral-100/70 p-2 rounded-md">
-                              <img
+                              <Image
                                 src={notification.itemImage}
                                 alt={notification.itemTitle}
+                                width={40}
+                                height={40}
                                 className="w-10 h-10 rounded-md object-cover"
                               />
                               <div className="text-sm">
@@ -534,7 +534,7 @@ function NotificationsPageContent() {
                 <div className="text-center py-16">
                   <Bell className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-neutral-800">No Notifications</h3>
-                  <p className="text-neutral-600">You're all caught up!</p>
+                  <p className="text-neutral-600">You&apos;re all caught up!</p>
                 </div>
               )}
             </div>

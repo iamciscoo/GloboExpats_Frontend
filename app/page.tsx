@@ -129,7 +129,6 @@ export default function HomePage() {
           */}
           <FeaturedListings />
 
-
           {/* 
             =================================================================
             HERO CAROUSEL SECTION - MOVED BACK TO BOTTOM

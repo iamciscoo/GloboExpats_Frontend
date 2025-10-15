@@ -95,9 +95,16 @@ import { Button } from '@/components/ui/button'
 **Location**: `components/ui/card.tsx`
 
 ```tsx
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 
-<Card>
+;<Card>
   <CardHeader>
     <CardTitle>Card Title</CardTitle>
     <CardDescription>Card description</CardDescription>
@@ -119,13 +126,21 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
 const formSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters')
+  password: z.string().min(8, 'Password must be at least 8 characters'),
 })
 
 export const LoginForm = () => {
@@ -133,8 +148,8 @@ export const LoginForm = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: '',
-      password: ''
-    }
+      password: '',
+    },
   })
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -153,14 +168,12 @@ export const LoginForm = () => {
               <FormControl>
                 <Input placeholder="Enter your email" {...field} />
               </FormControl>
-              <FormDescription>
-                We'll never share your email with anyone else.
-              </FormDescription>
+              <FormDescription>We'll never share your email with anyone else.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="password"
@@ -174,7 +187,7 @@ export const LoginForm = () => {
             </FormItem>
           )}
         />
-        
+
         <Button type="submit" className="w-full">
           Sign In
         </Button>
@@ -189,9 +202,17 @@ export const LoginForm = () => {
 **Location**: `components/ui/dialog.tsx`
 
 ```tsx
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 
-<Dialog>
+;<Dialog>
   <DialogTrigger asChild>
     <Button variant="outline">Open Dialog</Button>
   </DialogTrigger>
@@ -202,9 +223,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
         Make changes to your profile here. Click save when you're done.
       </DialogDescription>
     </DialogHeader>
-    <div className="grid gap-4 py-4">
-      {/* Dialog content */}
-    </div>
+    <div className="grid gap-4 py-4">{/* Dialog content */}</div>
     <DialogFooter>
       <Button type="submit">Save changes</Button>
     </DialogFooter>
@@ -217,7 +236,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 ### Server vs Client Components
 
 #### Server Components (Default)
+
 Use for:
+
 - Static content
 - Data fetching
 - SEO-optimized pages
@@ -230,7 +251,7 @@ import { getListings } from '@/lib/api'
 export default async function ListingsPage() {
   // Fetch data on the server
   const listings = await getListings()
-  
+
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6">Listings</h1>
@@ -245,7 +266,9 @@ export default async function ListingsPage() {
 ```
 
 #### Client Components
+
 Use for:
+
 - Interactive elements
 - State management
 - Event handlers
@@ -259,13 +282,11 @@ import { Button } from '@/components/ui/button'
 
 export const InteractiveComponent = () => {
   const [count, setCount] = useState(0)
-  
+
   return (
     <div>
       <p>Count: {count}</p>
-      <Button onClick={() => setCount(count + 1)}>
-        Increment
-      </Button>
+      <Button onClick={() => setCount(count + 1)}>Increment</Button>
     </div>
   )
 }
@@ -297,7 +318,7 @@ export const ListingsGrid = ({ category, limit = 12 }: ListingsGridProps) => {
       try {
         setLoading(true)
         const response = await apiClient.get('/listings', {
-          params: { category, limit }
+          params: { category, limit },
         })
         setListings(response.data.listings)
       } catch (err) {
@@ -375,7 +396,7 @@ export const ListingProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(false)
 
   const updateFilters = (newFilters: Partial<FilterOptions>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }))
+    setFilters((prev) => ({ ...prev, ...newFilters }))
   }
 
   const refreshListings = async () => {
@@ -383,13 +404,15 @@ export const ListingProvider = ({ children }: { children: ReactNode }) => {
   }
 
   return (
-    <ListingContext.Provider value={{
-      listings,
-      filters,
-      loading,
-      updateFilters,
-      refreshListings
-    }}>
+    <ListingContext.Provider
+      value={{
+        listings,
+        filters,
+        loading,
+        updateFilters,
+        refreshListings,
+      }}
+    >
       {children}
     </ListingContext.Provider>
   )
@@ -411,7 +434,7 @@ export const useListings = () => {
 ```tsx
 // Mobile-first responsive design
 <div className="
-  grid 
+  grid
   grid-cols-1          // 1 column on mobile
   sm:grid-cols-2       // 2 columns on small screens (640px+)
   md:grid-cols-3       // 3 columns on medium screens (768px+)
@@ -466,10 +489,18 @@ export const MobileNavigation = () => {
       </SheetTrigger>
       <SheetContent side="left" className="w-80">
         <div className="flex flex-col space-y-4 mt-8">
-          <a href="/browse" className="text-lg font-medium">Browse</a>
-          <a href="/sell" className="text-lg font-medium">Sell</a>
-          <a href="/account" className="text-lg font-medium">Account</a>
-          <a href="/help" className="text-lg font-medium">Help</a>
+          <a href="/browse" className="text-lg font-medium">
+            Browse
+          </a>
+          <a href="/sell" className="text-lg font-medium">
+            Sell
+          </a>
+          <a href="/account" className="text-lg font-medium">
+            Account
+          </a>
+          <a href="/help" className="text-lg font-medium">
+            Help
+          </a>
         </div>
       </SheetContent>
     </Sheet>
@@ -531,12 +562,14 @@ export const MobileNavigation = () => {
 
 ```tsx
 // Loading states
-{loading && (
-  <div role="status" aria-live="polite">
-    <Loader2 className="h-4 w-4 animate-spin" />
-    <span className="sr-only">Loading...</span>
-  </div>
-)}
+{
+  loading && (
+    <div role="status" aria-live="polite">
+      <Loader2 className="h-4 w-4 animate-spin" />
+      <span className="sr-only">Loading...</span>
+    </div>
+  )
+}
 
 // Status updates
 const [status, setStatus] = useState('')
@@ -546,10 +579,12 @@ return (
     <div aria-live="polite" aria-atomic="true" className="sr-only">
       {status}
     </div>
-    <Button onClick={() => {
-      handleSave()
-      setStatus('Changes saved successfully')
-    }}>
+    <Button
+      onClick={() => {
+        handleSave()
+        setStatus('Changes saved successfully')
+      }}
+    >
       Save
     </Button>
   </div>
@@ -575,7 +610,7 @@ describe('Button', () => {
   it('handles click events', () => {
     const handleClick = jest.fn()
     render(<Button onClick={handleClick}>Click me</Button>)
-    
+
     fireEvent.click(screen.getByRole('button'))
     expect(handleClick).toHaveBeenCalledTimes(1)
   })
@@ -603,18 +638,20 @@ import { ListingsGrid } from '../listings-grid'
 
 const server = setupServer(
   rest.get('/api/listings', (req, res, ctx) => {
-    return res(ctx.json({
-      data: {
-        listings: [
-          {
-            id: 1,
-            title: 'Test Listing',
-            price: 100,
-            currency: 'USD'
-          }
-        ]
-      }
-    }))
+    return res(
+      ctx.json({
+        data: {
+          listings: [
+            {
+              id: 1,
+              title: 'Test Listing',
+              price: 100,
+              currency: 'USD',
+            },
+          ],
+        },
+      })
+    )
   })
 )
 
@@ -625,9 +662,9 @@ afterAll(() => server.close())
 describe('ListingsGrid', () => {
   it('displays listings after loading', async () => {
     render(<ListingsGrid />)
-    
+
     expect(screen.getByText('Loading...')).toBeInTheDocument()
-    
+
     await waitFor(() => {
       expect(screen.getByText('Test Listing')).toBeInTheDocument()
     })
@@ -662,6 +699,7 @@ describe('ListingsGrid', () => {
 ---
 
 **For more detailed examples, check:**
+
 - `components/ui/` directory for UI component implementations
 - `app/` directory for page component examples
-- `__tests__/` directories for testing patterns 
+- `__tests__/` directories for testing patterns

@@ -1,14 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Facebook,
-  Twitter,
-  Instagram,
-} from 'lucide-react'
+import { Mail, Phone, MapPin, Facebook, Twitter, Instagram } from 'lucide-react'
 import { CATEGORIES } from '@/lib/constants'
 
 export default function Footer() {
@@ -29,7 +22,9 @@ export default function Footer() {
 
           {/* Categories */}
           <div>
-            <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Popular Categories</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">
+              Popular Categories
+            </h3>
             <ul className="space-y-2 sm:space-y-3 text-sm">
               {CATEGORIES.slice(0, 4).map((cat) => (
                 <li key={cat.slug}>
@@ -54,7 +49,10 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-neutral-300 hover:text-white transition-colors">
+                <Link
+                  href="/contact"
+                  className="text-neutral-300 hover:text-white transition-colors"
+                >
                   Contact
                 </Link>
               </li>
@@ -68,7 +66,9 @@ export default function Footer() {
 
           {/* Contact */}
           <div className="col-span-2 md:col-span-1">
-            <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Contact Us</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">
+              Contact Us
+            </h3>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2 sm:gap-3">
                 <MapPin className="h-4 w-4 sm:h-5 sm:w-5 mt-0.5 text-[#FF9800] flex-shrink-0" />
@@ -80,7 +80,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-2 sm:gap-3">
                 <Mail className="h-4 w-4 sm:h-5 sm:w-5 mt-0.5 text-[#FF9800] flex-shrink-0" />
-                <span className="text-neutral-300 break-all">support@globoexpat.co.tz</span>
+                <span className="text-neutral-300 break-all">info@globoexpat.com</span>
               </li>
             </ul>
           </div>

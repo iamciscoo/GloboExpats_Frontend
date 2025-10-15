@@ -8,13 +8,14 @@
 'use client'
 
 import { useState } from 'react'
-import { useCart } from '@/hooks/use-cart'
-import { useAuth } from '@/hooks/use-auth'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { useCart } from '@/hooks/use-cart'
 import { Badge } from '@/components/ui/badge'
 import { toast } from '@/components/ui/use-toast'
 import { ShoppingCart, Plus, Minus, Trash2 } from 'lucide-react'
 import { productToCartItem, formatCurrency } from '@/lib/cart-utils'
+import { useAuth } from '@/hooks/use-auth'
 
 interface Product {
   id: number
@@ -25,7 +26,8 @@ interface Product {
 }
 
 export function CartExample() {
-  const { addToCart, removeFromCart, updateQuantity, cart, isLoading } = useCart()
+  const { addToCart, removeFromCart, updateQuantity, items, isLoading, itemCount, subtotal } =
+    useCart()
   const { isLoggedIn } = useAuth()
   const [exampleProduct] = useState<Product>({
     id: 11,
@@ -87,9 +89,11 @@ export function CartExample() {
       {/* Example Product */}
       <div className="flex items-center justify-between p-4 border rounded-lg">
         <div className="flex items-center space-x-4">
-          <img
+          <Image
             src={exampleProduct.image}
             alt={exampleProduct.title}
+            width={64}
+            height={64}
             className="w-16 h-16 object-cover rounded"
           />
           <div>
@@ -115,23 +119,26 @@ export function CartExample() {
           <h4 className="font-medium">Current Cart</h4>
           <Badge variant="secondary" className="flex items-center space-x-1">
             <ShoppingCart className="w-4 h-4" />
-            <span>{cart.itemCount} items</span>
+            <span>{itemCount} items</span>
           </Badge>
         </div>
 
-        {cart.items.length === 0 ? (
+        {items.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">Your cart is empty</p>
         ) : (
           <div className="space-y-2">
-            {cart.items.map((item) => (
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {items.map((item: any) => (
               <div
                 key={item.id}
                 className="flex items-center justify-between p-4 border rounded-lg"
               >
                 <div className="flex items-center space-x-4">
-                  <img
+                  <Image
                     src={item.image || '/placeholder.svg'}
                     alt={item.title}
+                    width={48}
+                    height={48}
                     className="w-12 h-12 object-cover rounded"
                   />
                   <div>
@@ -179,7 +186,7 @@ export function CartExample() {
               <div className="flex justify-between items-center">
                 <span className="font-medium">Total:</span>
                 <span className="font-bold">
-                  {formatCurrency(cart.subtotal, cart.items[0]?.currency || 'TZS')}
+                  {formatCurrency(subtotal, items[0]?.currency || 'TZS')}
                 </span>
               </div>
             </div>

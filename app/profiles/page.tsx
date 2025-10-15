@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import {
   Search,
   MapPin,
@@ -12,7 +11,6 @@ import {
   Award,
   Shield,
   MessageCircle,
-  Filter,
   Grid,
   List,
   ChevronRight,
@@ -29,12 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  getAllSellerProfiles,
-  getSellersByLocation,
-  getSellersBySpecialty,
-} from '@/lib/seller-data'
 import { RouteGuard } from '@/components/route-guard'
 import { EXPAT_LOCATIONS } from '@/lib/constants'
 
@@ -53,13 +45,17 @@ function ProfilesPageContent() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sortBy, setSortBy] = useState('rating')
 
-  const allProfiles = getAllSellerProfiles()
+  // TODO: Fetch seller profiles from backend API
+  // GET /api/v1/sellers
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const allProfiles: any[] = []
 
   // Get unique specialties for filter
   const specialties = useMemo(() => {
     const allSpecialties = allProfiles.flatMap((profile) => profile.specialties || [])
     return Array.from(new Set(allSpecialties)).sort()
-  }, [allProfiles])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // allProfiles is empty array, no dependencies needed
 
   // Filter and sort profiles
   const filteredProfiles = useMemo(() => {
@@ -72,7 +68,7 @@ function ProfilesPageContent() {
           profile.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           profile.bio?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           profile.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          profile.specialties?.some((spec) =>
+          profile.specialties?.some((spec: string) =>
             spec.toLowerCase().includes(searchQuery.toLowerCase())
           )
       )
@@ -80,22 +76,19 @@ function ProfilesPageContent() {
 
     // Location filter
     if (selectedLocation) {
-      filtered = getSellersByLocation(selectedLocation)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      filtered = filtered.filter((profile: any) =>
+        profile.location?.toLowerCase().includes(selectedLocation.toLowerCase())
+      )
     }
 
     // Specialty filter
     if (selectedSpecialty) {
-      filtered = getSellersBySpecialty(selectedSpecialty)
-    }
-
-    // Apply multiple filters if both location and specialty are selected
-    if (selectedLocation && selectedSpecialty) {
-      filtered = allProfiles.filter(
-        (profile) =>
-          profile.location.toLowerCase().includes(selectedLocation.toLowerCase()) &&
-          profile.specialties?.some((spec) =>
-            spec.toLowerCase().includes(selectedSpecialty.toLowerCase())
-          )
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      filtered = filtered.filter((profile: any) =>
+        profile.specialties?.some((spec: string) =>
+          spec.toLowerCase().includes(selectedSpecialty.toLowerCase())
+        )
       )
     }
 
@@ -114,12 +107,14 @@ function ProfilesPageContent() {
       default:
         return filtered
     }
-  }, [allProfiles, searchQuery, selectedLocation, selectedSpecialty, sortBy])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, selectedLocation, selectedSpecialty, sortBy]) // allProfiles is empty, no dependency needed
 
   const clearFilters = () => {
     setSearchQuery('')
     setSelectedLocation('')
     setSelectedSpecialty('')
+    setSortBy('rating')
   }
 
   return (
@@ -197,7 +192,7 @@ function ProfilesPageContent() {
               <SelectContent>
                 <SelectItem value="all">All Locations</SelectItem>
                 {EXPAT_LOCATIONS.map((location) => (
-                  <SelectItem key={location.value} value={location.country}>
+                  <SelectItem key={location.value} value={location.country || location.label}>
                     {location.label}
                   </SelectItem>
                 ))}
@@ -295,10 +290,12 @@ function ProfilesPageContent() {
 }
 
 // Profile Card Component
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ProfileCard({ profile, viewMode }: { profile: any; viewMode: 'grid' | 'list' }) {
-  const verificationBadgeCount = Object.values(profile.verificationBadges || {}).filter(
-    Boolean
-  ).length
+  // Badge count calculation reserved for when profiles are loaded from API
+  // const verificationBadgeCount = Object.values(profile.verificationBadges || {}).filter(
+  //   Boolean
+  // ).length
 
   if (viewMode === 'list') {
     return (

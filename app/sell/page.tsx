@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Plus, DollarSign, AlertCircle, CheckCircle2, Camera, PackageCheck, Eye, User } from 'lucide-react'
+import { X, Plus, DollarSign, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -19,22 +19,8 @@ import { Badge } from '@/components/ui/badge'
 import { RouteGuard } from '@/components/route-guard'
 import { useAuth } from '@/hooks/use-auth'
 import { apiClient } from '@/lib/api'
-import {
-  SELLING_CATEGORIES,
-  ITEM_CONDITIONS,
-  SELLING_TIPS,
-  EXPAT_LOCATIONS,
-  CURRENCIES,
-} from '@/lib/constants'
+import { ITEM_CONDITIONS, SELLING_TIPS, EXPAT_LOCATIONS, CURRENCIES } from '@/lib/constants'
 import Image from 'next/image'
-import Link from 'next/link'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 
 interface FormData {
   images: File[]
@@ -88,8 +74,6 @@ function SellPageContent() {
   const [backendCategories, setBackendCategories] = useState<
     Array<{ categoryId: number; categoryName: string }>
   >([])
-  const [showSuccessModal, setShowSuccessModal] = useState(false)
-  const [createdProductId, setCreatedProductId] = useState<number | null>(null)
 
   // Debug logging
   console.log('🖼️ SELL PAGE - FormData:', {
@@ -314,14 +298,36 @@ function SellPageContent() {
       })
 
       // Call the backend API
+      console.log('📤 Sending product creation request...')
       const result = await apiClient.createProduct(productData, formData.images)
 
-      console.log('✅ Product created successfully:', result)
-      
-      // Show success modal instead of alert
-      setCreatedProductId(result.productId)
-      setShowSuccessModal(true)
-      
+      console.log('✅ Product created successfully!')
+      console.log('📋 FULL Product creation response:', JSON.stringify(result, null, 2))
+      console.log('📋 Product ID:', result.productId)
+      console.log('📋 Image IDs:', result.imageIds)
+
+      // CRITICAL CHECK: Verify product ID was returned
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if (!result.productId && !(result as any).data?.productId) {
+        console.error('❌ CRITICAL: No productId in response!')
+        console.error('❌ Product may not have been saved to database')
+        console.error('❌ Full response:', result)
+        alert('⚠️ Warning: Product creation returned no ID. Please check with support.')
+      }
+
+      // Store the product ID for verification
+      if (result.productId) {
+        console.log('🎉 Product successfully created with ID:', result.productId)
+        // Wait a moment for backend to process
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      } else {
+        console.warn('⚠️ Warning: No productId in response. Product may need approval.')
+      }
+
+      // Redirect to dashboard with My Listings tab
+      console.log('🔄 Redirecting to dashboard...')
+      window.location.href = '/expat/dashboard?tab=listings'
+
       // Reset form
       setFormData(INITIAL_FORM_DATA)
       setCurrentStep(1)
@@ -341,43 +347,44 @@ function SellPageContent() {
             List Your Item
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-[#475569] max-w-2xl mx-auto px-4">
-            Create a professional listing and reach thousands of potential buyers in our global expat community
+            Create a professional listing and reach thousands of potential buyers in our global
+            expat community
           </p>
         </div>
 
-        {/* Modern Step Indicator */}
+        {/* Step Indicator */}
         <div className="mb-10 sm:mb-12">
-          <div className="flex items-start justify-center max-w-4xl mx-auto px-4">
+          <div className="flex items-center justify-center max-w-3xl mx-auto px-4">
             {[1, 2, 3].map((step, index) => (
-              <div key={step} className="flex items-center">
-                <div className="flex flex-col items-center">
+              <div key={step} className="flex items-center flex-1">
+                <div className="flex flex-col items-center w-full">
                   <div
-                    className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-xl sm:rounded-2xl flex items-center justify-center text-base sm:text-lg lg:text-xl font-display font-bold transition-all duration-300 ${
-                      step <= currentStep
-                        ? 'bg-[#1E3A8A] text-white shadow-lg'
-                        : 'bg-white text-[#475569] border-2 border-[#E2E8F0]'
+                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold transition-all duration-300 ${
+                      step === currentStep
+                        ? 'bg-[#1E3A8A] text-white shadow-md'
+                        : step < currentStep
+                          ? 'bg-[#1E3A8A] text-white'
+                          : 'bg-[#F1F5F9] text-[#94A3B8] border-2 border-[#E2E8F0]'
                     }`}
                   >
-                    {step < currentStep ? <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8" /> : step}
+                    {step}
                   </div>
                   <span
-                    className={`mt-3 sm:mt-4 text-xs sm:text-sm lg:text-base font-display font-semibold transition-all duration-300 text-center whitespace-nowrap ${
-                      step <= currentStep ? 'text-[#1E3A8A]' : 'text-[#475569]'
+                    className={`mt-2 text-xs sm:text-sm font-medium transition-all duration-300 text-center ${
+                      step <= currentStep ? 'text-[#0F172A]' : 'text-[#94A3B8]'
                     }`}
                   >
-                    <span className="hidden sm:inline">{STEP_TITLES[step - 1]}</span>
-                    <span className="sm:hidden">{STEP_TITLES[step - 1].split(' ')[0]}</span>
+                    {STEP_TITLES[step - 1]}
                   </span>
                 </div>
                 {index < 2 && (
-                  <div
-                    className={`w-16 sm:w-24 lg:w-32 h-1 sm:h-1.5 mx-3 sm:mx-4 lg:mx-6 rounded-full transition-all duration-300 flex-shrink-0 ${
-                      step < currentStep
-                        ? 'bg-[#1E3A8A]'
-                        : 'bg-[#E2E8F0]'
-                    }`}
-                    style={{ marginTop: '28px' }}
-                  />
+                  <div className="flex-1 h-0.5 mx-2 sm:mx-4 mb-8">
+                    <div
+                      className={`h-full transition-all duration-300 ${
+                        step < currentStep ? 'bg-[#1E3A8A]' : 'bg-[#E2E8F0]'
+                      }`}
+                    />
+                  </div>
                 )}
               </div>
             ))}
@@ -421,14 +428,14 @@ function SellPageContent() {
               {currentStep < 3 ? (
                 <Button
                   onClick={nextStep}
-                  className="w-full sm:w-auto px-6 sm:px-8 py-3 h-auto text-base sm:text-lg bg-[#1E3A8A] hover:bg-[#1e3a8a]/90 text-white order-1 sm:order-2 shadow-md"
+                  className="w-full sm:w-auto px-8 py-3 text-base bg-[#1E3A8A] hover:bg-[#1e3a8a]/90 text-white order-1 sm:order-2"
                 >
-                  Next Step
+                  Continue
                 </Button>
               ) : (
                 <Button
                   onClick={publishListing}
-                  className="w-full sm:w-auto px-6 sm:px-8 py-3 h-auto text-base sm:text-lg bg-[#059669] hover:bg-[#059669]/90 text-white order-1 sm:order-2 shadow-md"
+                  className="w-full sm:w-auto px-8 py-3 text-base bg-[#1E3A8A] hover:bg-[#1e3a8a]/90 text-white order-1 sm:order-2"
                 >
                   Publish Listing
                 </Button>
@@ -439,59 +446,6 @@ function SellPageContent() {
           <SellingSidebar currentStep={currentStep} />
         </div>
       </div>
-
-      {/* Success Modal */}
-      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-              <PackageCheck className="h-10 w-10 text-green-600" />
-            </div>
-            <DialogTitle className="text-center text-2xl font-bold text-neutral-900">
-              🎉 Listing Published!
-            </DialogTitle>
-            <DialogDescription className="text-center text-base text-neutral-600">
-              Congratulations! Your product has been successfully listed on our marketplace.
-              {createdProductId && (
-                <span className="mt-2 block text-sm text-neutral-500">
-                  Product ID: <span className="font-mono font-semibold">#{createdProductId}</span>
-                </span>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="mt-6 flex flex-col gap-3">
-            <Button
-              asChild
-              className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-white"
-            >
-              <Link href={`/product/${createdProductId}`}>
-                <Eye className="mr-2 h-4 w-4" />
-                View Your Listing
-              </Link>
-            </Button>
-            
-            <Button
-              asChild
-              variant="outline"
-              className="w-full border-2 border-[#E2E8F0]"
-            >
-              <Link href="/account/my-listings">
-                <User className="mr-2 h-4 w-4" />
-                Go to My Listings
-              </Link>
-            </Button>
-            
-            <Button
-              variant="ghost"
-              onClick={() => setShowSuccessModal(false)}
-              className="w-full text-neutral-600 hover:text-neutral-900"
-            >
-              Close
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
@@ -533,14 +487,18 @@ function StepContent({
 
   return (
     <Card className="shadow-lg border-2 border-[#E2E8F0] bg-white rounded-xl sm:rounded-2xl overflow-hidden">
-      <CardHeader className="bg-[#1E3A8A] text-white p-4 sm:p-6 lg:p-8">
-        <CardTitle className="flex items-center gap-3 sm:gap-4 text-xl sm:text-2xl lg:text-3xl font-display font-bold">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/20 text-white flex items-center justify-center text-base sm:text-lg font-bold flex-shrink-0">
+      <CardHeader className="border-b border-[#E2E8F0] p-6">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center text-sm font-semibold">
             {currentStep}
           </div>
-          <span className="break-words">{config.title}</span>
-        </CardTitle>
-        <p className="text-white/95 mt-2 sm:mt-3 text-sm sm:text-base lg:text-lg">{config.description}</p>
+          <div className="flex-1">
+            <CardTitle className="text-xl font-semibold text-[#0F172A] mb-1">
+              {config.title}
+            </CardTitle>
+            <p className="text-sm text-[#475569]">{config.description}</p>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6 sm:space-y-8 lg:space-y-10 p-4 sm:p-6 lg:p-10">
         {currentStep === 1 && (
@@ -588,7 +546,9 @@ function Step1Content({
           value={formData.title}
           onChange={(e) => updateFormData({ title: e.target.value })}
         />
-        <p className="text-xs sm:text-sm text-neutral-500">Include brand, model, and key features</p>
+        <p className="text-xs sm:text-sm text-neutral-500">
+          Include brand, model, and key features
+        </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
@@ -603,11 +563,13 @@ function Step1Content({
             </SelectTrigger>
             <SelectContent>
               {backendCategories.length > 0 ? (
-                backendCategories.map((cat) => (
-                  <SelectItem key={cat.categoryId} value={cat.categoryName}>
-                    {cat.categoryName}
-                  </SelectItem>
-                ))
+                backendCategories
+                  .filter((cat) => cat.categoryName.toLowerCase() !== 'jobs')
+                  .map((cat) => (
+                    <SelectItem key={cat.categoryId} value={cat.categoryName}>
+                      {cat.categoryName}
+                    </SelectItem>
+                  ))
               ) : (
                 <SelectItem disabled value="loading">
                   Loading categories...
@@ -692,13 +654,13 @@ function Step2Content({
           />
           <label
             htmlFor="image-upload"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#1E3A8A] text-white rounded-lg hover:bg-[#1E3A8A]/90 cursor-pointer transition-all shadow-md"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#1E3A8A] text-white text-sm rounded-lg hover:bg-[#1E3A8A]/90 cursor-pointer transition-colors"
           >
-            <Camera className="h-5 w-5" />
-            Upload Images
+            <Plus className="h-4 w-4" />
+            Add Images
           </label>
-          <p className="text-sm text-[#475569] mt-2">
-            Upload up to 10 images. Max 5MB per image. Supported: JPG, PNG, WebP
+          <p className="text-xs text-[#94A3B8] mt-2">
+            Upload up to 10 images • Max 5MB per image • JPG, PNG, or WebP
           </p>
         </div>
 
@@ -749,10 +711,11 @@ function Step2Content({
 
         {/* Upload Placeholder */}
         {formData.imageUrls.length === 0 && (
-          <div className="border-2 border-dashed border-[#E2E8F0] rounded-xl p-12 text-center bg-[#F8FAFB]">
-            <Camera className="h-12 w-12 text-[#475569] mx-auto mb-4" />
-            <p className="text-[#0F172A] mb-2 font-medium">No images uploaded yet</p>
-            <p className="text-sm text-[#475569]">Click "Upload Images" to add photos</p>
+          <div className="border-2 border-dashed border-[#E2E8F0] rounded-lg p-8 text-center bg-[#F8FAFB]">
+            <p className="text-sm text-[#64748B] mb-1">No images uploaded</p>
+            <p className="text-xs text-[#94A3B8]">
+              Click &quot;Add Images&quot; to upload photos of your item
+            </p>
           </div>
         )}
       </div>
@@ -839,15 +802,10 @@ function Step3Content({
         </div>
       </div>
 
-      <div className="bg-[#059669]/5 border-2 border-[#059669]/30 rounded-xl p-6 sm:p-8">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-12 h-12 rounded-lg bg-[#059669] flex items-center justify-center">
-            <CheckCircle2 className="h-6 w-6 text-white" />
-          </div>
-          <h3 className="text-xl font-display font-bold text-[#0F172A]">Ready to Publish!</h3>
-        </div>
-        <p className="text-[#475569] text-base sm:text-lg">
-          Your listing will be reviewed and go live within a few minutes.
+      <div className="bg-[#F8FAFB] border border-[#E2E8F0] rounded-lg p-6">
+        <h3 className="text-base font-semibold text-[#0F172A] mb-2">Review & Publish</h3>
+        <p className="text-sm text-[#475569]">
+          Your listing will be published immediately and visible to buyers on the marketplace.
         </p>
       </div>
     </>
@@ -859,47 +817,35 @@ function SellingSidebar({ currentStep }: { currentStep: number }) {
   return (
     <aside className="hidden lg:block lg:col-span-1">
       <div className="sticky top-8 space-y-8">
-        <Card className="border-2 border-[#E2E8F0] bg-white rounded-xl overflow-hidden shadow-md">
-          <CardHeader className="bg-[#1E3A8A] text-white p-4">
-            <CardTitle className="text-white flex items-center gap-2 text-lg font-semibold">
-              💡 Selling Tips
-            </CardTitle>
+        <Card className="border border-[#E2E8F0] bg-white rounded-lg">
+          <CardHeader className="border-b border-[#E2E8F0] p-4">
+            <CardTitle className="text-sm font-semibold text-[#0F172A]">Selling Tips</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6 p-6">
-            {SELLING_TIPS.map((tip, index) => {
-              const IconComponent = tip.icon
-              return (
-                <div key={index} className="flex gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-[#1E3A8A]/10 text-[#1E3A8A] flex items-center justify-center flex-shrink-0">
-                    <IconComponent className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-[#0F172A] mb-1">{tip.title}</h4>
-                    <p className="text-[#475569] text-sm">{tip.description}</p>
-                  </div>
-                </div>
-              )
-            })}
+          <CardContent className="space-y-6 p-4">
+            {SELLING_TIPS.map((tip, index) => (
+              <div key={index} className="space-y-2">
+                <h4 className="text-base font-bold text-[#0F172A]">{tip.title}</h4>
+                <p className="text-sm text-[#64748B] leading-relaxed">{tip.description}</p>
+              </div>
+            ))}
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-[#E2E8F0] bg-white rounded-xl shadow-md">
-          <CardContent className="p-6">
-            <h3 className="font-semibold text-[#0F172A] mb-4 text-lg">Your Progress</h3>
+        <Card className="border border-[#E2E8F0] bg-white rounded-lg">
+          <CardContent className="p-4">
             <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-[#475569]">Completion</span>
-                <span className="font-semibold text-[#1E3A8A]">
-                  {Math.round((currentStep / 3) * 100)}%
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-[#64748B]">Progress</span>
+                <span className="text-xs font-semibold text-[#0F172A]">
+                  Step {currentStep} of 3
                 </span>
               </div>
-              <div className="w-full bg-[#E2E8F0] rounded-full h-2.5">
+              <div className="w-full bg-[#F1F5F9] rounded-full h-1.5">
                 <div
-                  className="bg-[#1E3A8A] h-2.5 rounded-full transition-all duration-300"
+                  className="bg-[#1E3A8A] h-1.5 rounded-full transition-all duration-300"
                   style={{ width: `${(currentStep / 3) * 100}%` }}
                 />
               </div>
-              <p className="text-[#475569] text-sm">Step {currentStep} of 3 completed</p>
             </div>
           </CardContent>
         </Card>

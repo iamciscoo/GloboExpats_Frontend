@@ -1,5 +1,7 @@
 # Technical Product Requirements Document
+
 # Global Expat Belongings Marketplace Platform
+
 ## Part 2: Database Schema & API Specifications
 
 **Document Version:** 2.0  
@@ -13,6 +15,7 @@
 ### 1.1 Core Tables
 
 #### Table: `users`
+
 ```sql
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
@@ -21,37 +24,37 @@ CREATE TABLE users (
     phone_number VARCHAR(20),
     avatar_url VARCHAR(500),
     role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user', 'admin', 'moderator')),
-    
+
     -- Verification system
     is_verified_buyer BOOLEAN DEFAULT false,
-    verification_level VARCHAR(20) DEFAULT 'none' 
+    verification_level VARCHAR(20) DEFAULT 'none'
         CHECK (verification_level IN ('none', 'individual', 'expert', 'un_embassy', 'corporate')),
     verification_date TIMESTAMP,
-    
+
     -- Account status
     is_active BOOLEAN DEFAULT true,
     is_email_verified BOOLEAN DEFAULT false,
-    
+
     -- Profile information
     bio TEXT,
     location VARCHAR(255),
     country VARCHAR(100),
     languages VARCHAR(255)[], -- Array of language codes
-    
+
     -- Seller information
     seller_rating DECIMAL(3,2) DEFAULT 0.00,
     total_sales INTEGER DEFAULT 0,
     response_time_hours INTEGER,
-    
+
     -- Authentication
     last_login TIMESTAMP,
     last_otp_sent TIMESTAMP,
     otp_attempts INTEGER DEFAULT 0,
-    
+
     -- Timestamps
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     CONSTRAINT valid_email CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$'),
     CONSTRAINT valid_rating CHECK (seller_rating >= 0 AND seller_rating <= 5)
 );
@@ -64,13 +67,14 @@ CREATE INDEX idx_users_created_at ON users(created_at DESC);
 ```
 
 #### Table: `allowed_domains`
+
 ```sql
 CREATE TABLE allowed_domains (
     domain_id SERIAL PRIMARY KEY,
     domain VARCHAR(255) UNIQUE NOT NULL,
     organization_name VARCHAR(255),
     organization_type VARCHAR(50) CHECK (organization_type IN ('un', 'embassy', 'ngo', 'corporate')),
-    verification_level VARCHAR(20) DEFAULT 'expert' 
+    verification_level VARCHAR(20) DEFAULT 'expert'
         CHECK (verification_level IN ('expert', 'un_embassy', 'corporate')),
     country VARCHAR(100),
     is_active BOOLEAN DEFAULT true,
@@ -89,6 +93,7 @@ CREATE INDEX idx_allowed_domains_domain ON allowed_domains(domain);
 ```
 
 #### Table: `categories`
+
 ```sql
 CREATE TABLE categories (
     category_id SERIAL PRIMARY KEY,
@@ -99,14 +104,14 @@ CREATE TABLE categories (
     parent_category_id INTEGER REFERENCES categories(category_id),
     display_order INTEGER DEFAULT 0,
     is_active BOOLEAN DEFAULT true,
-    
+
     -- Image requirements for listings
     min_images INTEGER DEFAULT 1,
     max_images INTEGER DEFAULT 10,
     required_image_types VARCHAR(50)[], -- e.g., ['front', 'side', 'back'] for vehicles
-    
+
     item_count INTEGER DEFAULT 0, -- Denormalized for performance
-    
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -127,6 +132,7 @@ CREATE INDEX idx_categories_parent ON categories(parent_category_id);
 ```
 
 #### Table: `items` (Products)
+
 ```sql
 CREATE TABLE items (
     item_id SERIAL PRIMARY KEY,
@@ -134,52 +140,52 @@ CREATE TABLE items (
     description TEXT NOT NULL,
     category_id INTEGER NOT NULL REFERENCES categories(category_id),
     seller_id INTEGER NOT NULL REFERENCES users(user_id),
-    
+
     -- Pricing
     price DECIMAL(12,2) NOT NULL,
     original_price DECIMAL(12,2),
     currency VARCHAR(3) DEFAULT 'TZS' CHECK (currency IN ('TZS', 'KES', 'UGX', 'USD', 'EUR', 'GBP')),
-    
+
     -- Item details
     condition VARCHAR(20) NOT NULL CHECK (condition IN ('new', 'like-new', 'excellent', 'very-good', 'good', 'fair')),
     brand VARCHAR(100),
     model VARCHAR(100),
     year_of_manufacture INTEGER,
-    
+
     -- Location
     location VARCHAR(255) NOT NULL,
     country VARCHAR(100) NOT NULL,
     latitude DECIMAL(10,8),
     longitude DECIMAL(11,8),
-    
+
     -- Shipping
     shipping_available BOOLEAN DEFAULT false,
     local_pickup BOOLEAN DEFAULT true,
-    
+
     -- Status management
     status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('draft', 'active', 'sold', 'archived', 'pending_review')),
     listing_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expiry_date TIMESTAMP,
     sold_date TIMESTAMP,
-    
+
     -- Engagement metrics
     view_count INTEGER DEFAULT 0,
     favorite_count INTEGER DEFAULT 0,
     inquiry_count INTEGER DEFAULT 0,
-    
+
     -- Admin management
     is_featured BOOLEAN DEFAULT false,
     is_premium BOOLEAN DEFAULT false,
     admin_notification_count INTEGER DEFAULT 0,
     last_admin_notification TIMESTAMP,
-    
+
     -- SEO
     slug VARCHAR(300) UNIQUE,
     meta_description TEXT,
-    
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     CONSTRAINT valid_price CHECK (price > 0),
     CONSTRAINT valid_dates CHECK (listing_date <= CURRENT_TIMESTAMP)
 );
@@ -192,36 +198,37 @@ CREATE INDEX idx_items_listing_date ON items(listing_date DESC);
 CREATE INDEX idx_items_price ON items(price);
 CREATE INDEX idx_items_location ON items(country, location);
 CREATE INDEX idx_items_featured ON items(is_featured) WHERE is_featured = true;
-CREATE INDEX idx_items_overdue ON items(listing_date, status) 
+CREATE INDEX idx_items_overdue ON items(listing_date, status)
     WHERE status = 'active' AND listing_date < (CURRENT_TIMESTAMP - INTERVAL '14 days');
 ```
 
 #### Table: `images`
+
 ```sql
 CREATE TABLE images (
     image_id SERIAL PRIMARY KEY,
     item_id INTEGER NOT NULL REFERENCES items(item_id) ON DELETE CASCADE,
     url VARCHAR(500) NOT NULL,
     thumbnail_url VARCHAR(500),
-    
+
     -- Image metadata
     type VARCHAR(50), -- e.g., 'front', 'side', 'main', 'detail'
     display_order INTEGER DEFAULT 0,
     is_primary BOOLEAN DEFAULT false,
-    
+
     -- Storage details
     file_name VARCHAR(255),
     file_size INTEGER, -- in bytes
     width INTEGER,
     height INTEGER,
     format VARCHAR(10), -- jpeg, png, webp
-    
+
     -- Cloud storage reference
     storage_provider VARCHAR(50) DEFAULT 's3', -- s3, cloudinary
     storage_key VARCHAR(500),
-    
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     CONSTRAINT one_primary_per_item UNIQUE (item_id, is_primary) WHERE is_primary = true
 );
 
@@ -230,30 +237,31 @@ CREATE INDEX idx_images_primary ON images(item_id, is_primary) WHERE is_primary 
 ```
 
 #### Table: `messages`
+
 ```sql
 CREATE TABLE messages (
     message_id SERIAL PRIMARY KEY,
     sender_id INTEGER NOT NULL REFERENCES users(user_id),
     receiver_id INTEGER NOT NULL REFERENCES users(user_id),
     item_id INTEGER REFERENCES items(item_id), -- Optional, can be general message
-    
+
     message_text TEXT NOT NULL,
-    
+
     -- Conversation threading
     conversation_id VARCHAR(100), -- Generated: "user1_user2_item" or "user1_user2"
     parent_message_id INTEGER REFERENCES messages(message_id),
-    
+
     -- Status
     is_read BOOLEAN DEFAULT false,
     read_at TIMESTAMP,
     is_deleted_by_sender BOOLEAN DEFAULT false,
     is_deleted_by_receiver BOOLEAN DEFAULT false,
-    
+
     -- Attachments (optional)
     attachment_url VARCHAR(500),
-    
+
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     CONSTRAINT no_self_message CHECK (sender_id != receiver_id)
 );
 
@@ -264,29 +272,30 @@ CREATE INDEX idx_messages_item ON messages(item_id);
 ```
 
 #### Table: `notifications`
+
 ```sql
 CREATE TABLE notifications (
     notification_id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(user_id),
-    
+
     message TEXT NOT NULL,
     type VARCHAR(50) NOT NULL CHECK (type IN (
-        'item_update', 'admin_message', 'new_message', 
+        'item_update', 'admin_message', 'new_message',
         'item_sold', 'inquiry_received', 'verification_approved',
         'listing_expiring', 'listing_archived'
     )),
-    
+
     -- Related entities
     item_id INTEGER REFERENCES items(item_id),
     related_user_id INTEGER REFERENCES users(user_id),
-    
+
     -- Action link
     action_url VARCHAR(500),
-    
+
     -- Status
     is_read BOOLEAN DEFAULT false,
     read_at TIMESTAMP,
-    
+
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expires_at TIMESTAMP
 );
@@ -297,21 +306,22 @@ CREATE INDEX idx_notifications_unread ON notifications(user_id, is_read) WHERE i
 ```
 
 #### Table: `admin_actions`
+
 ```sql
 CREATE TABLE admin_actions (
     action_id SERIAL PRIMARY KEY,
     admin_id INTEGER NOT NULL REFERENCES users(user_id),
     item_id INTEGER REFERENCES items(item_id),
     target_user_id INTEGER REFERENCES users(user_id),
-    
+
     action_type VARCHAR(50) NOT NULL CHECK (action_type IN (
-        'send_notification', 'archive_item', 'update_item', 
+        'send_notification', 'archive_item', 'update_item',
         'verify_user', 'suspend_user', 'feature_item', 'approve_listing'
     )),
-    
+
     description TEXT,
     metadata JSONB, -- Additional action data
-    
+
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -323,15 +333,16 @@ CREATE INDEX idx_admin_actions_timestamp ON admin_actions(timestamp DESC);
 ### 1.2 Additional Tables (E-commerce Enhancement)
 
 #### Table: `wishlists`
+
 ```sql
 CREATE TABLE wishlists (
     wishlist_id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(user_id),
     item_id INTEGER NOT NULL REFERENCES items(item_id),
-    
+
     notes TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     UNIQUE (user_id, item_id)
 );
 
@@ -339,27 +350,28 @@ CREATE INDEX idx_wishlists_user ON wishlists(user_id);
 ```
 
 #### Table: `reviews`
+
 ```sql
 CREATE TABLE reviews (
     review_id SERIAL PRIMARY KEY,
     item_id INTEGER NOT NULL REFERENCES items(item_id),
     reviewer_id INTEGER NOT NULL REFERENCES users(user_id),
     seller_id INTEGER NOT NULL REFERENCES users(user_id),
-    
+
     rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
     title VARCHAR(255),
     comment TEXT,
-    
+
     -- Verification
     is_verified_purchase BOOLEAN DEFAULT false,
-    
+
     -- Status
     is_published BOOLEAN DEFAULT true,
     is_flagged BOOLEAN DEFAULT false,
-    
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
+
     UNIQUE (item_id, reviewer_id)
 );
 
@@ -368,6 +380,7 @@ CREATE INDEX idx_reviews_seller ON reviews(seller_id);
 ```
 
 #### Table: `search_queries` (Analytics)
+
 ```sql
 CREATE TABLE search_queries (
     query_id SERIAL PRIMARY KEY,
@@ -375,10 +388,10 @@ CREATE TABLE search_queries (
     query_text VARCHAR(500) NOT NULL,
     filters JSONB,
     results_count INTEGER,
-    
+
     ip_address VARCHAR(45),
     user_agent TEXT,
-    
+
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -389,6 +402,7 @@ CREATE INDEX idx_search_queries_text ON search_queries USING gin(to_tsvector('en
 ### 1.3 Database Functions & Triggers
 
 #### Auto-update timestamps
+
 ```sql
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -410,20 +424,21 @@ CREATE TRIGGER update_categories_updated_at BEFORE UPDATE ON categories
 ```
 
 #### Auto-update category item counts
+
 ```sql
 CREATE OR REPLACE FUNCTION update_category_item_count()
 RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
-        UPDATE categories SET item_count = item_count + 1 
+        UPDATE categories SET item_count = item_count + 1
         WHERE category_id = NEW.category_id;
     ELSIF TG_OP = 'DELETE' THEN
-        UPDATE categories SET item_count = item_count - 1 
+        UPDATE categories SET item_count = item_count - 1
         WHERE category_id = OLD.category_id;
     ELSIF TG_OP = 'UPDATE' AND NEW.category_id != OLD.category_id THEN
-        UPDATE categories SET item_count = item_count - 1 
+        UPDATE categories SET item_count = item_count - 1
         WHERE category_id = OLD.category_id;
-        UPDATE categories SET item_count = item_count + 1 
+        UPDATE categories SET item_count = item_count + 1
         WHERE category_id = NEW.category_id;
     END IF;
     RETURN NULL;
@@ -441,7 +456,9 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ### 2.1 Authentication Endpoints
 
 #### POST `/api/auth/login`
+
 **Request:**
+
 ```json
 {
   "email": "user@undp.org"
@@ -449,6 +466,7 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -458,7 +476,9 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ```
 
 #### POST `/api/auth/verify-otp`
+
 **Request:**
+
 ```json
 {
   "email": "user@undp.org",
@@ -467,6 +487,7 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -483,9 +504,11 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ```
 
 #### POST `/api/auth/logout`
+
 **Headers:** `Authorization: Bearer {token}`
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -494,9 +517,11 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ```
 
 #### GET `/api/auth/me`
+
 **Headers:** `Authorization: Bearer {token}`
 
 **Response:**
+
 ```json
 {
   "userId": 123,
@@ -513,7 +538,9 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ### 2.2 Item Management Endpoints
 
 #### GET `/api/items`
+
 **Query Parameters:**
+
 - `page` (default: 1)
 - `limit` (default: 20, max: 100)
 - `category` (category slug)
@@ -525,6 +552,7 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 - `search` (text search)
 
 **Response:**
+
 ```json
 {
   "items": [
@@ -569,12 +597,15 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ```
 
 #### GET `/api/items/{id}`
+
 **Response:** Single item with full details including all images and seller information
 
 #### POST `/api/items`
+
 **Headers:** `Authorization: Bearer {token}`
 
 **Request:**
+
 ```json
 {
   "title": "MacBook Pro 14\" M2",
@@ -599,28 +630,35 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
-  "item": { /* full item object */ },
+  "item": {
+    /* full item object */
+  },
   "message": "Listing created successfully"
 }
 ```
 
 #### PUT `/api/items/{id}`
+
 **Headers:** `Authorization: Bearer {token}`
 **Authorization:** Only item owner or admin
 
 **Request:** Same as POST
 
 #### DELETE `/api/items/{id}`
+
 **Headers:** `Authorization: Bearer {token}`
 **Authorization:** Only item owner or admin
 
 ### 2.3 Category Endpoints
 
 #### GET `/api/categories`
+
 **Response:**
+
 ```json
 {
   "categories": [
@@ -640,12 +678,15 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ### 2.4 Messaging Endpoints
 
 #### GET `/api/messages`
+
 **Headers:** `Authorization: Bearer {token}`
 **Query Parameters:**
+
 - `conversationId` (optional)
 - `itemId` (optional)
 
 **Response:**
+
 ```json
 {
   "conversations": [
@@ -673,9 +714,11 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ```
 
 #### POST `/api/messages`
+
 **Headers:** `Authorization: Bearer {token}`
 
 **Request:**
+
 ```json
 {
   "receiverId": 123,
@@ -685,22 +728,28 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
-  "message": { /* full message object */ }
+  "message": {
+    /* full message object */
+  }
 }
 ```
 
 #### PUT `/api/messages/{id}/read`
+
 **Headers:** `Authorization: Bearer {token}`
 
 ### 2.5 Notification Endpoints
 
 #### GET `/api/notifications`
+
 **Headers:** `Authorization: Bearer {token}`
 
 **Response:**
+
 ```json
 {
   "notifications": [
@@ -718,22 +767,27 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ```
 
 #### PUT `/api/notifications/{id}/read`
+
 **Headers:** `Authorization: Bearer {token}`
 
 ### 2.6 Admin Endpoints
 
 #### GET `/api/admin/items/overdue`
+
 **Headers:** `Authorization: Bearer {token}`
 **Authorization:** Admin only
 
 **Response:**
+
 ```json
 {
   "items": [
     {
       "itemId": 123,
       "title": "Item title",
-      "seller": { /* seller info */ },
+      "seller": {
+        /* seller info */
+      },
       "listingDate": "2025-11-01T10:00:00Z",
       "daysOverdue": 25,
       "adminNotificationCount": 2,
@@ -744,10 +798,12 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ```
 
 #### POST `/api/admin/items/{id}/notify`
+
 **Headers:** `Authorization: Bearer {token}`
 **Authorization:** Admin only
 
 **Request:**
+
 ```json
 {
   "message": "Your listing has been active for over 2 weeks..."
@@ -755,6 +811,7 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ```
 
 #### POST `/api/admin/items/{id}/archive`
+
 **Headers:** `Authorization: Bearer {token}`
 **Authorization:** Admin only
 
@@ -765,6 +822,7 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ### 3.1 JWT Token Structure
 
 **Payload:**
+
 ```json
 {
   "userId": 123,
@@ -790,22 +848,26 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ### 3.3 Authorization Rules
 
 **Public (No Auth Required):**
+
 - Browse items (GET /api/items)
 - View item details (GET /api/items/{id})
 - View categories (GET /api/categories)
 
 **Authenticated Users:**
+
 - Create listings
 - Send messages (if verified buyer)
 - Manage own listings
 - Access profile
 
 **Verified Buyers Only:**
+
 - Contact sellers via messages
 - Add to cart
 - Checkout
 
 **Admin Only:**
+
 - View overdue items
 - Send admin notifications
 - Archive items
@@ -818,6 +880,7 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ### 4.1 Item Listing Validation
 
 **Required Fields:**
+
 - Title: 10-255 characters
 - Description: 50-5000 characters
 - Category: Must exist in categories table
@@ -827,6 +890,7 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 - Images: Min 1, max 10 (category-specific)
 
 **Image Validation:**
+
 - Format: JPEG, PNG, WebP
 - Max size: 5MB per image
 - Min dimensions: 800x600px
@@ -850,6 +914,7 @@ CREATE TRIGGER update_category_counts AFTER INSERT OR UPDATE OR DELETE ON items
 ## Next Steps
 
 Continue to **Part 3** for:
+
 - Gap analysis (what's missing)
 - Implementation roadmap
 - Testing requirements

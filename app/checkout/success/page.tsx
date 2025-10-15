@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
 import {
   CheckCircle2,
@@ -10,7 +11,6 @@ import {
   MapPin,
   MessageCircle,
   Download,
-  Star,
   ArrowRight,
   Home,
   Share2,
@@ -23,7 +23,6 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAuth } from '@/hooks/use-auth'
-import { formatPrice } from '@/lib/utils'
 
 interface OrderData {
   id: string
@@ -260,10 +259,11 @@ function CheckoutSuccessContent() {
                     key={item.id}
                     className="flex items-center gap-4 p-4 bg-neutral-50 rounded-lg"
                   >
-                    <div className="w-16 h-16 bg-neutral-200 rounded-lg flex-shrink-0">
-                      <img
+                    <div className="w-16 h-16 bg-neutral-200 rounded-lg flex-shrink-0 relative">
+                      <Image
                         src={item.image}
                         alt={item.title}
+                        fill
                         className="w-full h-full object-cover rounded-lg"
                       />
                     </div>
@@ -310,7 +310,7 @@ function CheckoutSuccessContent() {
               <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50">
                 <CardTitle className="flex items-center gap-2 text-blue-900">
                   <Package className="w-6 h-6" />
-                  What's Next?
+                  What&apos;s Next?
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6 p-6">

@@ -98,11 +98,13 @@ Type guards ensure type safety at runtime:
 ```typescript
 // Type guard for user authentication
 export const isAuthenticatedUser = (user: any): user is User => {
-  return user && 
-         typeof user.id === 'string' && 
-         typeof user.email === 'string' && 
-         typeof user.name === 'string' &&
-         user.email.length > 0
+  return (
+    user &&
+    typeof user.id === 'string' &&
+    typeof user.email === 'string' &&
+    typeof user.name === 'string' &&
+    user.email.length > 0
+  )
 }
 
 // Usage in components
@@ -167,12 +169,13 @@ App Layout (layout.tsx)
 ### Server vs Client Components
 
 #### Server Components (Default)
+
 ```typescript
 // app/products/page.tsx
 // ✅ Server component - runs on server, can access backend directly
 async function ProductsPage() {
   const products = await fetch('http://localhost:8000/api/products')
-  
+
   return (
     <div>
       <h1>Products</h1>
@@ -183,6 +186,7 @@ async function ProductsPage() {
 ```
 
 #### Client Components
+
 ```typescript
 // components/search-bar.tsx
 'use client' // ✅ Client directive for interactivity
@@ -191,14 +195,14 @@ import { useState } from 'react'
 
 export function SearchBar() {
   const [query, setQuery] = useState('')
-  
+
   const handleSearch = (e: FormEvent) => {
     // Interactive logic runs in browser
   }
-  
+
   return (
     <form onSubmit={handleSearch}>
-      <input 
+      <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search products..."
@@ -232,14 +236,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading: true,
     error: null,
   })
-  
+
   // Memoized context value to prevent unnecessary re-renders
   const value = useMemo(() => ({
     ...authState,
     login,
     logout,
   }), [authState, login, logout])
-  
+
   return (
     <AuthContext.Provider value={value}>
       {children}
@@ -257,7 +261,7 @@ For component-specific state, we use `useState` and `useReducer`:
 const [isLoading, setIsLoading] = useState(false)
 
 // Complex state with useReducer
-type CartAction = 
+type CartAction =
   | { type: 'ADD_ITEM'; payload: CartItem }
   | { type: 'REMOVE_ITEM'; payload: string }
   | { type: 'CLEAR_CART' }
@@ -267,7 +271,7 @@ function cartReducer(state: CartItem[], action: CartAction): CartItem[] {
     case 'ADD_ITEM':
       return [...state, action.payload]
     case 'REMOVE_ITEM':
-      return state.filter(item => item.id !== action.payload)
+      return state.filter((item) => item.id !== action.payload)
     case 'CLEAR_CART':
       return []
     default:
@@ -334,11 +338,11 @@ function DataFetcher<T>({ url, children }: DataFetcherProps<T>) {
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+
   useEffect(() => {
     fetchData(url).then(setData).catch(setError).finally(() => setLoading(false))
   }, [url])
-  
+
   return <>{children(data, loading, error)}</>
 }
 
@@ -359,11 +363,11 @@ function DataFetcher<T>({ url, children }: DataFetcherProps<T>) {
 function withAuth<P extends object>(Component: ComponentType<P>) {
   return function AuthenticatedComponent(props: P) {
     const { isLoggedIn, user } = useAuth()
-    
+
     if (!isLoggedIn) {
       return <LoginPrompt />
     }
-    
+
     return <Component {...props} user={user} />
   }
 }
@@ -383,7 +387,7 @@ interface UseApiOptions {
 }
 
 function useApi<T>(
-  endpoint: string, 
+  endpoint: string,
   options: UseApiOptions = {}
 ): {
   data: T | null
@@ -394,7 +398,7 @@ function useApi<T>(
   const [data, setData] = useState<T | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true)
@@ -407,13 +411,13 @@ function useApi<T>(
       setLoading(false)
     }
   }, [endpoint])
-  
+
   useEffect(() => {
     if (options.enabled !== false) {
       fetchData()
     }
   }, [fetchData, options.enabled])
-  
+
   // Polling
   useEffect(() => {
     if (options.refetchInterval) {
@@ -421,7 +425,7 @@ function useApi<T>(
       return () => clearInterval(interval)
     }
   }, [fetchData, options.refetchInterval])
-  
+
   return { data, loading, error, refetch: fetchData }
 }
 ```
@@ -438,25 +442,23 @@ interface UseFormOptions<T> {
 function useForm<T extends Record<string, any>>({
   initialValues,
   validate,
-  onSubmit
+  onSubmit,
 }: UseFormOptions<T>) {
   const [values, setValues] = useState<T>(initialValues)
   const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  
-  const handleChange = (name: keyof T) => (
-    value: T[keyof T]
-  ) => {
-    setValues(prev => ({ ...prev, [name]: value }))
+
+  const handleChange = (name: keyof T) => (value: T[keyof T]) => {
+    setValues((prev) => ({ ...prev, [name]: value }))
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }))
+      setErrors((prev) => ({ ...prev, [name]: undefined }))
     }
   }
-  
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    
+
     // Validation
     if (validate) {
       const validationErrors = validate(values)
@@ -465,7 +467,7 @@ function useForm<T extends Record<string, any>>({
         return
       }
     }
-    
+
     try {
       setIsSubmitting(true)
       await onSubmit(values)
@@ -475,7 +477,7 @@ function useForm<T extends Record<string, any>>({
       setIsSubmitting(false)
     }
   }
-  
+
   return {
     values,
     errors,
@@ -566,22 +568,22 @@ class ErrorBoundary extends Component<
     super(props)
     this.state = { hasError: false }
   }
-  
+
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error }
   }
-  
+
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Error boundary caught an error:', error, errorInfo)
     // Send to error reporting service
   }
-  
+
   render() {
     if (this.state.hasError) {
       const FallbackComponent = this.props.fallback || DefaultErrorFallback
       return <FallbackComponent error={this.state.error!} />
     }
-    
+
     return this.props.children
   }
 }
@@ -592,17 +594,17 @@ class ErrorBoundary extends Component<
 ```typescript
 function useErrorHandler() {
   const [error, setError] = useState<string | null>(null)
-  
+
   const handleError = useCallback((error: unknown) => {
     const message = error instanceof Error ? error.message : 'An unexpected error occurred'
     setError(message)
     console.error('Error caught by error handler:', error)
   }, [])
-  
+
   const clearError = useCallback(() => {
     setError(null)
   }, [])
-  
+
   return { error, handleError, clearError }
 }
 ```
@@ -621,15 +623,15 @@ describe('Button Component', () => {
     render(<Button>Click me</Button>)
     expect(screen.getByRole('button', { name: 'Click me' })).toBeInTheDocument()
   })
-  
+
   it('calls onClick handler when clicked', () => {
     const handleClick = jest.fn()
     render(<Button onClick={handleClick}>Click me</Button>)
-    
+
     fireEvent.click(screen.getByRole('button'))
     expect(handleClick).toHaveBeenCalledTimes(1)
   })
-  
+
   it('applies correct variant styles', () => {
     render(<Button variant="destructive">Delete</Button>)
     expect(screen.getByRole('button')).toHaveClass('bg-destructive')
@@ -652,14 +654,14 @@ const wrapper = ({ children }: { children: ReactNode }) => (
 describe('useAuth Hook', () => {
   it('should login user successfully', async () => {
     const { result } = renderHook(() => useAuth(), { wrapper })
-    
+
     await act(async () => {
       await result.current.login({
         email: 'test@example.com',
         name: 'Test User'
       })
     })
-    
+
     expect(result.current.isLoggedIn).toBe(true)
     expect(result.current.user?.email).toBe('test@example.com')
   })
@@ -674,7 +676,7 @@ describe('useAuth Hook', () => {
 // ✅ Do: Single Responsibility Principle
 function UserAvatar({ user, size = 'md' }: UserAvatarProps) {
   return (
-    <img 
+    <img
       src={user.avatar || '/default-avatar.png'}
       alt={`${user.name}'s avatar`}
       className={cn('rounded-full', sizeClasses[size])}
@@ -762,4 +764,4 @@ This React and TypeScript architecture provides:
 4. **Maintainability**: Consistent patterns and clear separation of concerns
 5. **Developer Experience**: Rich tooling support and clear error messages
 
-By following these patterns and practices, the GlobalExpat Marketplace maintains high code quality while remaining flexible for future enhancements. 
+By following these patterns and practices, the GlobalExpat Marketplace maintains high code quality while remaining flexible for future enhancements.

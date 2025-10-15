@@ -1,5 +1,7 @@
 # Technical Product Requirements Document
+
 # Global Expat Belongings Marketplace Platform
+
 ## Part 1: Overview, Architecture & Current Implementation
 
 **Document Version:** 2.0  
@@ -15,6 +17,7 @@ This document provides comprehensive technical specifications for the **Global E
 ### Current Implementation Status
 
 **✅ Completed (Frontend)**
+
 - Modern Next.js 15 + React 19 + TypeScript architecture
 - 30+ pages with full routing system
 - 56+ UI components with accessibility features
@@ -27,6 +30,7 @@ This document provides comprehensive technical specifications for the **Global E
 - Multi-currency support UI (TZS, KES, UGX, USD)
 
 **🔄 In Progress**
+
 - Backend API integration
 - Database implementation
 - Email service integration
@@ -34,6 +38,7 @@ This document provides comprehensive technical specifications for the **Global E
 - Real-time notifications
 
 **❌ Not Started**
+
 - Payment gateway integration (future enhancement)
 - Advanced search filters
 - Social media integration
@@ -48,6 +53,7 @@ This document provides comprehensive technical specifications for the **Global E
 The **Global Expat Marketplace** is a premium marketplace platform designed specifically for the international expat community. Originally conceived for UN and embassy staff in Tanzania, the platform has evolved to serve expats globally across multiple regions:
 
 **Primary Markets:**
+
 - **Africa**: Tanzania, Kenya, Uganda, Rwanda, South Africa, Nigeria
 - **Asia**: Dubai, Singapore, Hong Kong, Bangkok
 - **Europe**: London, Berlin, Amsterdam, Zurich
@@ -57,12 +63,14 @@ The **Global Expat Marketplace** is a premium marketplace platform designed spec
 ### 1.2 Evolution from Original Concept
 
 **Original Vision (May 2024):**
+
 - Email-based verification for UN/Embassy staff
 - Tanzania-focused marketplace
 - Basic item listings
 - Admin-managed platform
 
 **Current Vision (December 2025):**
+
 - Global expat community platform
 - Multi-region support with localization
 - Premium marketplace experience
@@ -76,6 +84,7 @@ The **Global Expat Marketplace** is a premium marketplace platform designed spec
 #### Implemented Features (Frontend)
 
 **User Experience**
+
 - ✅ OTP-based authentication (UI complete)
 - ✅ Guest browsing capabilities
 - ✅ Responsive design (mobile/tablet/desktop)
@@ -83,6 +92,7 @@ The **Global Expat Marketplace** is a premium marketplace platform designed spec
 - ✅ Accessibility compliance (WCAG 2.1)
 
 **Product Management**
+
 - ✅ Category-based browsing (8 main categories)
 - ✅ Product listing creation interface
 - ✅ Image upload interface with validation
@@ -91,6 +101,7 @@ The **Global Expat Marketplace** is a premium marketplace platform designed spec
 - ✅ Product detail pages
 
 **Commerce Features**
+
 - ✅ Shopping cart management
 - ✅ Wishlist/favorites
 - ✅ Checkout flow UI
@@ -98,11 +109,13 @@ The **Global Expat Marketplace** is a premium marketplace platform designed spec
 - ✅ Multi-currency display
 
 **Communication**
+
 - ✅ Messaging interface (buyer-seller)
 - ✅ Notification center UI
 - ✅ Contact seller forms
 
 **Administration**
+
 - ✅ Admin dashboard UI
 - ✅ Listing management interface
 - ✅ User management UI
@@ -111,6 +124,7 @@ The **Global Expat Marketplace** is a premium marketplace platform designed spec
 #### Required Backend Implementation
 
 **Critical Path Items**
+
 - ❌ PostgreSQL database setup
 - ❌ Spring Boot REST API
 - ❌ OTP email service integration
@@ -127,6 +141,7 @@ The **Global Expat Marketplace** is a premium marketplace platform designed spec
 ### 2.1 Current Tech Stack
 
 #### Frontend (Implemented)
+
 ```
 Framework:        Next.js 15.2.4 (App Router)
 UI Library:       React 19
@@ -141,6 +156,7 @@ Testing:          Vitest
 ```
 
 #### Backend (Required)
+
 ```
 Framework:        Spring Boot 3.x (as per original spec)
 Language:         Java 17+
@@ -201,6 +217,7 @@ Cache:            Redis (optional, for performance)
 ### 2.3 Component Architecture
 
 #### Frontend Component Structure (Current)
+
 ```
 /app                              # Next.js App Router pages
   /                               # Homepage
@@ -267,6 +284,7 @@ UI Re-render (React)
 ### 3.1 Routing Structure (Next.js App Router)
 
 **Authentication & User Management**
+
 - `/login` - OTP-based authentication
 - `/register` - User registration (auto-create on first login)
 - `/reset-password` - Password recovery (future)
@@ -279,6 +297,7 @@ UI Re-render (React)
 - `/account/wishlist` - Saved items
 
 **Product Discovery**
+
 - `/` - Homepage with featured listings
 - `/browse` - All products with filters
 - `/search` - Search results
@@ -289,22 +308,27 @@ UI Re-render (React)
 - `/product/[id]` - Product detail page
 
 **Commerce Flow**
+
 - `/cart` - Shopping cart
 - `/checkout` - Checkout process
 - `/checkout/success` - Order confirmation
 
 **Communication**
+
 - `/messages` - Buyer-seller messaging
 - `/notifications` - Activity notifications
 
 **Seller Features**
+
 - `/sell` - Create new listing
 - `/profiles` - Seller profiles
 
 **Admin Panel**
+
 - `/admin/dashboard` - Admin overview
 
 **Support & Legal**
+
 - `/about` - Platform information
 - `/contact` - Contact form
 - `/help` - Help center
@@ -315,17 +339,20 @@ UI Re-render (React)
 ### 3.2 Component Library (56+ Components)
 
 **Layout & Navigation**
+
 - Header, Footer, Breadcrumb
 - Sidebar, Navigation Menu
 - Mobile Sidebar Toggle
 
 **Forms & Inputs**
+
 - Input, Textarea, Select, Checkbox, Radio, Switch
 - Form, Label, Input OTP
 - Calendar, Date Picker
 - Slider, Progress
 
 **Data Display**
+
 - Card (with Header, Content, Footer variants)
 - Badge, Status Badge
 - Avatar, Tooltip
@@ -333,12 +360,14 @@ UI Re-render (React)
 - Product Card (specialized)
 
 **Feedback & Overlays**
+
 - Dialog, Alert Dialog, Sheet, Drawer
 - Toast, Sonner, Alert
 - Skeleton (loading states)
 - Popover, Hover Card, Context Menu
 
 **Interactive**
+
 - Button (6 variants)
 - Dropdown Menu, Command, Menubar
 - Accordion, Collapsible, Tabs, Toggle
@@ -348,6 +377,7 @@ UI Re-render (React)
 ### 3.3 State Management
 
 **Authentication Context (AuthProvider)**
+
 ```typescript
 interface AuthContext {
   user: User | null
@@ -360,6 +390,7 @@ interface AuthContext {
 ```
 
 **Cart Context (CartProvider)**
+
 ```typescript
 interface CartContext {
   items: CartItem[]
@@ -375,24 +406,26 @@ interface CartContext {
 ### 3.4 Design System Implementation
 
 **Color Palette (Current)**
+
 ```css
 /* Brand Colors */
---brand-primary: #1e40af;      /* Blue-800 */
---brand-secondary: #f59e0b;    /* Amber-500 */
---brand-accent: #06b6d4;       /* Cyan-500 */
+--brand-primary: #1e40af; /* Blue-800 */
+--brand-secondary: #f59e0b; /* Amber-500 */
+--brand-accent: #06b6d4; /* Cyan-500 */
 
 /* Status Colors */
---status-success: #10b981;     /* Emerald-500 */
---status-error: #ef4444;       /* Red-500 */
---status-warning: #f97316;     /* Orange-500 */
+--status-success: #10b981; /* Emerald-500 */
+--status-error: #ef4444; /* Red-500 */
+--status-warning: #f97316; /* Orange-500 */
 
 /* Recommended Update (See Platform Analysis) */
---deep-tanzanite-blue: #1E3A8A;
---kilimanjaro-gold: #F59E0B;
---futuristic-cyan: #06B6D4;
+--deep-tanzanite-blue: #1e3a8a;
+--kilimanjaro-gold: #f59e0b;
+--futuristic-cyan: #06b6d4;
 ```
 
 **Typography System**
+
 ```css
 /* Current */
 font-family-sans: Inter, sans-serif;
@@ -404,11 +437,13 @@ font-family-display: 'Space Grotesk', Outfit, Inter;
 ```
 
 **Spacing Scale**
+
 - Base: 8px units
 - Component: 16px, 24px, 32px, 48px
 - Section: 64px, 80px, 96px
 
 **Responsive Breakpoints**
+
 ```typescript
 sm: '640px'   // Mobile landscape
 md: '768px'   // Tablet
@@ -539,32 +574,33 @@ If no response after 3 notifications:
 ### 5.1 Frontend API Client Structure
 
 **Current Implementation (lib/api.ts)**
+
 ```typescript
 class APIClient {
   // Authentication
   async login(email: string): Promise<void>
   async verifyOTP(code: string): Promise<AuthResponse>
   async logout(): Promise<void>
-  
+
   // Products
   async getProducts(filters?: ProductFilters): Promise<Product[]>
   async getProduct(id: number): Promise<Product>
   async createProduct(data: ProductData): Promise<Product>
   async updateProduct(id: number, data: ProductData): Promise<Product>
   async deleteProduct(id: number): Promise<void>
-  
+
   // Categories
   async getCategories(): Promise<Category[]>
-  
+
   // Cart
   async getCart(): Promise<Cart>
   async addToCart(itemId: number): Promise<Cart>
   async updateCartItem(itemId: number, quantity: number): Promise<Cart>
-  
+
   // Messages
   async getMessages(): Promise<Message[]>
   async sendMessage(data: MessageData): Promise<Message>
-  
+
   // Notifications
   async getNotifications(): Promise<Notification[]>
   async markNotificationRead(id: number): Promise<void>
@@ -582,6 +618,7 @@ class APIClient {
 ### 6.1 Current Optimizations (Frontend)
 
 **Build-Time Optimizations**
+
 - Server-side rendering (SSR) for SEO
 - Static generation (SSG) for static pages
 - Automatic code splitting per route
@@ -589,6 +626,7 @@ class APIClient {
 - Image optimization with Next.js Image
 
 **Runtime Optimizations**
+
 - React 19 concurrent features
 - Component memoization with React.memo
 - Virtual scrolling for long lists (planned)
@@ -596,6 +634,7 @@ class APIClient {
 - Font optimization with variable fonts
 
 **Bundle Analysis**
+
 ```bash
 npm run build:analyze  # Bundle size analysis
 ```
@@ -603,17 +642,20 @@ npm run build:analyze  # Bundle size analysis
 ### 6.2 Required Backend Optimizations
 
 **Database**
+
 - Indexing on frequently queried columns
 - Query optimization with JPA
 - Connection pooling
 - Pagination for large datasets
 
 **Caching**
+
 - Redis for session storage (optional)
 - API response caching
 - Static asset CDN
 
 **Performance Targets**
+
 - API response time: < 200ms (p95)
 - Page load time: < 2s (First Contentful Paint)
 - Time to Interactive: < 3s
@@ -623,12 +665,14 @@ npm run build:analyze  # Bundle size analysis
 ## Next Steps
 
 Continue to **Part 2** for:
+
 - Complete database schema
 - API endpoint specifications
 - Authentication & authorization details
 - Data validation rules
 
 Then review **Part 3** for:
+
 - Gap analysis
 - Implementation roadmap
 - Testing requirements

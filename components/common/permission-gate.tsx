@@ -11,7 +11,7 @@
 
 import React from 'react'
 import { useAuth } from '@/hooks/use-auth'
-import { ErrorDisplay, PermissionErrorDisplay } from './error-display'
+import { PermissionErrorDisplay } from './error-display'
 import { Button } from '@/components/ui/button'
 import { Shield, Lock, Mail, IdCard } from 'lucide-react'
 import Link from 'next/link'
@@ -136,6 +136,7 @@ function getVerificationLink(permission: Permission, redirectTo?: string): strin
 /**
  * Check if user has required permission
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function hasPermission(permission: Permission, authState: any): boolean {
   const { isLoggedIn, user, canBuy, canSell, canContact, isAdmin } = authState
 
@@ -219,7 +220,7 @@ export function PermissionGate({
   }
 
   // Default error display
-  const { title, description } = getPermissionDescription(permission)
+  const { description } = getPermissionDescription(permission)
 
   return <PermissionErrorDisplay message={errorMessage || description} className={className} />
 }

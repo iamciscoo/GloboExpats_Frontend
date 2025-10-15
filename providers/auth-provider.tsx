@@ -57,7 +57,13 @@ import {
   initializeAuthFromStorage,
   initializeAutoLogout,
 } from '@/lib/auth-service'
-import { setItemDebounced, getItem, removeItem as removeStorageItem, setItemImmediate, flushPendingWrites } from '@/lib/storage-utils'
+import {
+  setItemDebounced,
+  getItem,
+  removeItem as removeStorageItem,
+  setItemImmediate,
+  flushPendingWrites,
+} from '@/lib/storage-utils'
 
 /**
  * =============================================================================
@@ -173,11 +179,12 @@ const SESSION_EXPIRY_HOURS = 24
  */
 const createDefaultVerificationStatus = (user?: Partial<User>): VerificationStatus => {
   // Check if backend says user is verified (any of these conditions)
-  const isBackendVerified = (user as any)?.isVerified === true || 
-                            (user as any)?.verificationStatus === 'VERIFIED' ||
-                            (user as any)?.backendVerificationStatus === 'VERIFIED' ||
-                            (user as any)?.isOrganizationEmailVerified === true
-  
+  const isBackendVerified =
+    (user as any)?.isVerified === true ||
+    (user as any)?.verificationStatus === 'VERIFIED' ||
+    (user as any)?.backendVerificationStatus === 'VERIFIED' ||
+    (user as any)?.isOrganizationEmailVerified === true
+
   // Simplified logic: Email verified = all access
   return {
     isFullyVerified: isBackendVerified,
@@ -355,7 +362,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         sessionStorage.removeItem('expat_user')
         removeStorageItem('expat_user')
-      } catch {}
+      } catch (error) {
+        // Silently handle storage errors (e.g., in private browsing mode)
+        console.debug('Failed to clear session storage:', error)
+      }
     }
 
     window.addEventListener('authTokenExpired', handleTokenExpiry)
@@ -648,13 +658,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const token = getAuthToken()
         if (token) apiClient.setAuthToken(token)
-        
+
         // Verify the OTP with backend
         await verifyOrgEmailOtp(organizationalEmail, otp, userRoles)
 
         // Fetch updated user details from backend to get real verification status
         const updatedUserDetails = await fetchUserDetails()
-        
+
         if (updatedUserDetails) {
           // Use backend verification status
           const updatedUser: any = {
@@ -662,11 +672,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             ...updatedUserDetails,
             organizationEmail: organizationalEmail,
           }
-          
+
           // Create verification status based on backend response
           const computedVerificationStatus = createDefaultVerificationStatus(updatedUser)
           updatedUser.verificationStatus = computedVerificationStatus
-          
+
           persistSession(updatedUser)
           setAuthState((prev) => ({
             ...prev,
@@ -674,12 +684,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             verificationStatus: computedVerificationStatus,
             isLoading: false,
           }))
-          
-          console.log('✅ Verification complete! User is now fully verified:', computedVerificationStatus)
+
+          console.log(
+            '✅ Verification complete! User is now fully verified:',
+            computedVerificationStatus
+          )
         } else {
           // Fallback if user details fetch fails
-          const updatedUser: any = { 
-            ...authState.user, 
+          const updatedUser: any = {
+            ...authState.user,
             organizationEmail: organizationalEmail,
             isVerified: true,
             backendVerificationStatus: 'VERIFIED',

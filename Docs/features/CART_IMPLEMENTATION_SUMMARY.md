@@ -5,7 +5,6 @@
 ### 1. Backend API Integration (`lib/api.ts`)
 
 - ✅ Added cart endpoints to ApiClient class:
-
   - `addToCart(productId, quantity)` - POST /cart/add
   - `getUserCart()` - GET /cart/User
   - `updateCartItem(cartId, productId, quantity)` - PUT /cart/item/{cartId}

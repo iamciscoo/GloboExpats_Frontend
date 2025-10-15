@@ -17,7 +17,7 @@ interface CartHeaderProps {
 }
 
 export function CartHeader({ className }: CartHeaderProps) {
-  const { itemCount, isLoading } = useCart()
+  const { itemCount } = useCart()
 
   return (
     <Link href="/cart">

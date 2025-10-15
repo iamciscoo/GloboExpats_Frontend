@@ -45,7 +45,10 @@ export default function CategorySidebar() {
                       variant="outline"
                       className="border-blue-200 hover:bg-blue-50 text-blue-700 text-xs py-2 h-auto"
                     >
-                      <Link href="/expat/dashboard" className="flex flex-col items-center gap-1">
+                      <Link
+                        href="/expat/dashboard?tab=listings"
+                        className="flex flex-col items-center gap-1"
+                      >
                         <svg
                           className="w-3 h-3"
                           fill="none"
@@ -77,7 +80,9 @@ export default function CategorySidebar() {
               ) : (
                 <div className="text-center space-y-3">
                   <div>
-                    <h3 className="font-semibold text-gray-800 text-base mb-2">Join Expat Community</h3>
+                    <h3 className="font-semibold text-gray-800 text-base mb-2">
+                      Join Expat Community
+                    </h3>
                     <p className="text-xs text-gray-600">
                       Connect, trade & build relationships with expats worldwide
                     </p>

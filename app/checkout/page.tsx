@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Shield, CreditCard, Truck, AlertCircle, CheckCircle2, Lock } from 'lucide-react'
+import { ArrowLeft, CreditCard, AlertCircle, Truck, CheckCircle2, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -14,7 +14,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Badge } from '@/components/ui/badge'
 import { useCart } from '@/hooks/use-cart'
 import { useAuth } from '@/hooks/use-auth'
 import { useVerification } from '@/hooks/use-verification'
@@ -400,7 +399,9 @@ export default function CheckoutPage() {
                     </div>
                     Shipping Address
                   </CardTitle>
-                  <p className="text-neutral-600 mt-3 text-lg">Where should we deliver your items?</p>
+                  <p className="text-neutral-600 mt-3 text-lg">
+                    Where should we deliver your items?
+                  </p>
                 </CardHeader>
                 <CardContent className="space-y-10 p-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -595,7 +596,10 @@ export default function CheckoutPage() {
                           <div className="flex items-center gap-4">
                             <div className="text-3xl flex-shrink-0">{method.icon}</div>
                             <div className="min-w-0">
-                              <Label htmlFor={method.id} className="font-semibold text-neutral-900 cursor-pointer">
+                              <Label
+                                htmlFor={method.id}
+                                className="font-semibold text-neutral-900 cursor-pointer"
+                              >
                                 {method.name}
                               </Label>
                               <p className="text-sm text-neutral-600">{method.description}</p>
@@ -740,7 +744,9 @@ export default function CheckoutPage() {
                           </div>
                         </div>
                         <div className="bg-white p-4 rounded-xl border-2 border-neutral-200">
-                          <h4 className="font-semibold text-neutral-900 mb-2">🔒 Secure Payment:</h4>
+                          <h4 className="font-semibold text-neutral-900 mb-2">
+                            🔒 Secure Payment:
+                          </h4>
                           <ul className="space-y-1 text-sm text-neutral-700">
                             <li>• Your card details are encrypted and secure</li>
                             <li>• We accept Visa, Mastercard, and local bank cards</li>

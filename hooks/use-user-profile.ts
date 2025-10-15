@@ -9,12 +9,10 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/hooks/use-auth'
-import { getSellerProfileByName, SELLER_PROFILES } from '@/lib/seller-data'
-import { SellerProfile, User } from '@/lib/types'
+import { User } from '@/lib/types'
 
 export interface UserProfileMethods {
   userProfile: User | null
-  sellerProfile: SellerProfile | null
   isLoading: boolean
   error: string | null
 
@@ -36,7 +34,6 @@ export interface UserProfileMethods {
 export function useUserProfile(): UserProfileMethods {
   const { user, isLoggedIn, updateUser } = useAuth()
   const [userProfile, setUserProfile] = useState<User | null>(null)
-  const [sellerProfile, setSellerProfile] = useState<SellerProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -45,7 +42,6 @@ export function useUserProfile(): UserProfileMethods {
     const initializeProfile = async () => {
       if (!isLoggedIn || !user) {
         setUserProfile(null)
-        setSellerProfile(null)
         setIsLoading(false)
         return
       }
@@ -54,13 +50,8 @@ export function useUserProfile(): UserProfileMethods {
         setIsLoading(true)
         setError(null)
 
-        // Try to find existing seller profile
-        const existingSeller = getSellerProfileByName(user.name)
-
-        if (existingSeller) {
-          setSellerProfile(existingSeller)
-        }
-
+        // TODO: Fetch additional profile data from backend if needed
+        // GET /api/v1/users/{userId}/profile
         setUserProfile(user)
       } catch (err) {
         console.error('Failed to initialize user profile:', err)
@@ -121,10 +112,7 @@ export function useUserProfile(): UserProfileMethods {
   }, [userProfile, user])
 
   const getProfileSlug = useCallback(() => {
-    if (sellerProfile) {
-      return sellerProfile.id
-    }
-    // Generate slug from name if no seller profile
+    // Generate slug from user name
     return (
       userProfile?.name
         .toLowerCase()
@@ -133,19 +121,19 @@ export function useUserProfile(): UserProfileMethods {
         .replace(/-+/g, '-')
         .trim() || 'user'
     )
-  }, [sellerProfile, userProfile])
+  }, [userProfile])
 
   const canEditProfile = useCallback(() => {
     return isLoggedIn && !!userProfile
   }, [isLoggedIn, userProfile])
 
   const isSeller = useCallback(() => {
-    return !!sellerProfile
-  }, [sellerProfile])
+    // Check if user has SELLER role from backend
+    return user?.roles?.some((role) => role.roleName === 'SELLER') || false
+  }, [user])
 
   return {
     userProfile,
-    sellerProfile,
     isLoading,
     error,
     updateProfile,

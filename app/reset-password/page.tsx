@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { Mail, ArrowLeft, Loader2, Check } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -16,7 +15,6 @@ export default function ResetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState('')
-  const router = useRouter()
   const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -58,7 +56,9 @@ export default function ResetPasswordPage() {
                 <Check className="w-8 h-8 text-green-600" />
               </div>
               <h2 className="text-2xl font-bold text-neutral-800 mb-2">Check your email</h2>
-              <p className="text-neutral-600 mb-6">We've sent password reset instructions to:</p>
+              <p className="text-neutral-600 mb-6">
+                We&apos;ve sent password reset instructions to:
+              </p>
               <p className="font-medium text-neutral-800 mb-6">{email}</p>
               <div className="space-y-3">
                 <Button
@@ -76,11 +76,12 @@ export default function ResetPasswordPage() {
                 </Link>
               </div>
               <p className="text-sm text-neutral-600 mt-6">
-                Didn't receive the email? Check your spam folder or{' '}
+                Didn&apos;t receive the email? Check your spam folder or{' '}
                 <button
                   className="text-brand-primary hover:underline"
                   onClick={() => {
                     setIsSuccess(false)
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     handleSubmit(new Event('submit') as any)
                   }}
                 >
@@ -107,7 +108,7 @@ export default function ResetPasswordPage() {
           </Link>
           <CardTitle className="text-2xl font-bold">Reset your password</CardTitle>
           <CardDescription>
-            Enter your email address and we'll send you instructions to reset your password.
+            Enter your email address and we&apos;ll send you instructions to reset your password.
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -203,6 +203,8 @@ export interface FeaturedItem {
   location: string
   isVerified: boolean
   isPremium: boolean
+  category?: string
+  condition?: string
 }
 
 /**
@@ -211,9 +213,18 @@ export interface FeaturedItem {
  * =============================================================================
  */
 
-// Simplified conversation thread
-export interface Conversation extends LoadingState {
-  id: number
+// Participant in a conversation
+export interface Participant {
+  id: string | number
+  name: string
+  avatar?: string
+  role?: 'buyer' | 'seller' | 'admin'
+  online?: boolean
+}
+
+// Simplified conversation structure
+export interface Conversation {
+  id: string | number
   name: string
   avatar?: string
   lastMessage: string
@@ -221,6 +232,7 @@ export interface Conversation extends LoadingState {
   unread: number
   product: string
   online: boolean
+  participants?: Participant[]
 }
 
 // Simplified message structure
@@ -229,12 +241,15 @@ export interface Message {
   sender: string
   text: string
   time: string
+  type?: string // TODO: Use enum for message types
+  status?: string // TODO: Use enum for message status (read, sent, delivered)
 }
 
 // Simplified chat conversation data
 export interface ChatData extends LoadingState {
   product: Partial<Product>
   messages: Message[]
+  participants?: Participant[]
 }
 
 // Messages data structure

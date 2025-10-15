@@ -13,29 +13,26 @@ import type { BackendCartItem, BackendCartResponse } from '@/lib/types'
  * @param quantity - Initial quantity (default: 1)
  * @returns CartItem formatted for the cart provider
  */
-export function productToCartItem(
-  product: {
-    id: number | string
-    title: string
-    price: number
-    image?: string
-    category?: string
-    location?: string
-    currency?: string
-    expatId?: string
-    expatName?: string
-    verified?: boolean
-    condition?: string
-  },
-  quantity: number = 1
-): Omit<CartItem, 'quantity'> {
+export function productToCartItem(product: {
+  id: number | string
+  title: string
+  price: number
+  image?: string
+  category?: string
+  location?: string
+  currency?: string
+  expatId?: string
+  expatName?: string
+  verified?: boolean
+  condition?: string
+}): Omit<CartItem, 'quantity'> {
   return {
     id: product.id.toString(),
     title: product.title,
     price: product.price,
     originalPrice: product.price,
     image: product.image || '/placeholder.svg',
-    condition: (product.condition as any) || 'used',
+    condition: (product.condition as 'new' | 'used' | 'refurbished') || 'used',
     expatId: product.expatId || 'unknown',
     expatName: product.expatName || 'Unknown Seller',
     category: product.category || 'general',
@@ -91,7 +88,7 @@ export function formatCurrency(
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount)
-  } catch (error) {
+  } catch {
     // Fallback for unsupported currencies
     return `${new Intl.NumberFormat(locale).format(amount)} ${currency}`
   }
@@ -130,15 +127,17 @@ export function calculateCartSummary(items: CartItem[]) {
  * @param item - Cart item to validate
  * @returns True if valid, false otherwise
  */
-export function validateCartItem(item: any): item is CartItem {
+export function validateCartItem(item: unknown): item is CartItem {
+  if (!item || typeof item !== 'object') return false
+
+  const obj = item as Record<string, unknown>
+
   return (
-    item &&
-    typeof item === 'object' &&
-    typeof item.id === 'string' &&
-    typeof item.title === 'string' &&
-    typeof item.price === 'number' &&
-    typeof item.quantity === 'number' &&
-    item.quantity > 0
+    typeof obj.id === 'string' &&
+    typeof obj.title === 'string' &&
+    typeof obj.price === 'number' &&
+    typeof obj.quantity === 'number' &&
+    obj.quantity > 0
   )
 }
 

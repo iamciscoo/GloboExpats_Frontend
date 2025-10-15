@@ -10,9 +10,7 @@ import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
 import { getInitials } from '@/lib/utils'
-import type { Conversation, Message, Product, ChatData, MessagesData } from '@/lib/types'
-import { ConversationsList } from './messages/ConversationsList'
-import { ChatWindow } from './messages/ChatWindow'
+import type { Conversation, Message, ChatData, MessagesData } from '@/lib/types'
 
 const conversations: Conversation[] = [
   {
@@ -24,8 +22,6 @@ const conversations: Conversation[] = [
     unread: 2,
     product: 'iPhone 15 Pro Max',
     online: true,
-    isLoading: false,
-    error: null,
   },
   {
     id: 2,
@@ -36,8 +32,6 @@ const conversations: Conversation[] = [
     unread: 0,
     product: 'MacBook Air M2',
     online: false,
-    isLoading: false,
-    error: null,
   },
   {
     id: 3,
@@ -48,8 +42,6 @@ const conversations: Conversation[] = [
     unread: 1,
     product: 'iPad Pro 12.9"',
     online: true,
-    isLoading: false,
-    error: null,
   },
   {
     id: 4,
@@ -60,8 +52,6 @@ const conversations: Conversation[] = [
     unread: 0,
     product: 'Gaming Setup',
     online: false,
-    isLoading: false,
-    error: null,
   },
 ]
 
@@ -145,7 +135,11 @@ const messagesData: MessagesData = {
 
 export function MessagesClient() {
   const [selectedConversation, setSelectedConversation] = useState<Conversation>(conversations[0])
-  const activeChat: ChatData = messagesData[selectedConversation.id] || {
+  const conversationId =
+    typeof selectedConversation.id === 'number'
+      ? selectedConversation.id
+      : parseInt(String(selectedConversation.id))
+  const activeChat: ChatData = messagesData[conversationId] || {
     product: {},
     messages: [],
     isLoading: false,

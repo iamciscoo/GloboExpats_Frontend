@@ -1,9 +1,11 @@
 # API Requirements for Backend Team
 
 ## Overview
+
 The frontend expects REST APIs with consistent response formats. You can implement these endpoints in **any technology** (Node.js, Python, Java, Go, PHP, etc.).
 
 ## Base Response Format
+
 All API responses should follow this structure:
 
 ```json
@@ -16,6 +18,7 @@ All API responses should follow this structure:
 ```
 
 ## Authentication
+
 - Use Bearer token authentication
 - Header: `Authorization: Bearer <token>`
 - Include user context in protected endpoints
@@ -25,13 +28,16 @@ All API responses should follow this structure:
 ### Products API
 
 #### GET /api/products
+
 **Query Parameters:**
+
 - `category` (optional): Filter by category
 - `page` (optional): Page number for pagination
 - `limit` (optional): Items per page
 - `search` (optional): Search query
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -61,7 +67,9 @@ All API responses should follow this structure:
 ```
 
 #### GET /api/products/{id}
+
 **Response:**
+
 ```json
 {
   "data": {
@@ -82,7 +90,9 @@ All API responses should follow this structure:
 ### Users API
 
 #### GET /api/users/{id}
+
 **Response:**
+
 ```json
 {
   "data": {
@@ -98,7 +108,9 @@ All API responses should follow this structure:
 ```
 
 #### PATCH /api/users/{id}
+
 **Request Body:**
+
 ```json
 {
   "name": "string",
@@ -109,7 +121,9 @@ All API responses should follow this structure:
 ### Authentication API
 
 #### POST /api/auth/login
+
 **Request Body:**
+
 ```json
 {
   "email": "string",
@@ -118,18 +132,23 @@ All API responses should follow this structure:
 ```
 
 **Response:**
+
 ```json
 {
   "data": {
     "token": "string",
-    "user": { /* user object */ }
+    "user": {
+      /* user object */
+    }
   },
   "success": true
 }
 ```
 
 #### POST /api/auth/register
+
 **Request Body:**
+
 ```json
 {
   "name": "string",
@@ -141,7 +160,9 @@ All API responses should follow this structure:
 ### Messages API
 
 #### GET /api/messages/conversations
+
 **Response:**
+
 ```json
 {
   "data": [
@@ -160,7 +181,9 @@ All API responses should follow this structure:
 ```
 
 #### GET /api/messages/conversations/{id}
+
 **Response:**
+
 ```json
 {
   "data": {
@@ -178,7 +201,9 @@ All API responses should follow this structure:
 ```
 
 #### POST /api/messages/conversations/{id}
+
 **Request Body:**
+
 ```json
 {
   "message": "string"
@@ -188,15 +213,23 @@ All API responses should follow this structure:
 ### Orders API
 
 #### GET /api/orders
+
 **Response:**
+
 ```json
 {
   "data": [
     {
       "id": "string",
-      "buyer": { /* user object */ },
-      "seller": { /* user object */ },
-      "product": { /* product object */ },
+      "buyer": {
+        /* user object */
+      },
+      "seller": {
+        /* user object */
+      },
+      "product": {
+        /* product object */
+      },
       "amount": "string",
       "currency": "string",
       "status": "pending|confirmed|shipped|delivered|completed|cancelled",
@@ -208,7 +241,9 @@ All API responses should follow this structure:
 ```
 
 #### POST /api/orders
+
 **Request Body:**
+
 ```json
 {
   "productId": "string",
@@ -226,19 +261,18 @@ All API responses should follow this structure:
 ## Error Handling
 
 ### Error Response Format
+
 ```json
 {
   "data": null,
   "success": false,
   "message": "Error description",
-  "errors": [
-    "Specific error 1",
-    "Specific error 2"
-  ]
+  "errors": ["Specific error 1", "Specific error 2"]
 }
 ```
 
 ### HTTP Status Codes
+
 - `200` - Success
 - `201` - Created
 - `400` - Bad Request (validation errors)
@@ -248,32 +282,36 @@ All API responses should follow this structure:
 - `500` - Internal Server Error
 
 ## CORS Configuration
+
 Make sure to configure CORS to allow requests from:
+
 - Development: `http://localhost:3000`
 - Production: `https://yourfrontend.com`
 
 ## Example Implementation Starters
 
 ### Node.js + Express
+
 ```javascript
 app.get('/api/products', async (req, res) => {
   try {
     const products = await Product.find(req.query)
     res.json({
       data: products,
-      success: true
+      success: true,
     })
   } catch (error) {
     res.status(500).json({
       data: null,
       success: false,
-      message: error.message
+      message: error.message,
     })
   }
 })
 ```
 
 ### Python + FastAPI
+
 ```python
 @app.get("/api/products")
 async def get_products(category: Optional[str] = None):
@@ -292,6 +330,7 @@ async def get_products(category: Optional[str] = None):
 ```
 
 ### Java + Spring Boot
+
 ```java
 @GetMapping("/api/products")
 public ResponseEntity<ApiResponse<List<Product>>> getProducts(
@@ -307,9 +346,11 @@ public ResponseEntity<ApiResponse<List<Product>>> getProducts(
 ```
 
 ## Testing
+
 You can test your APIs using:
+
 - Postman collections
 - curl commands
 - Automated testing tools
 
-The frontend will automatically work once these endpoints are implemented correctly! 
+The frontend will automatically work once these endpoints are implemented correctly!

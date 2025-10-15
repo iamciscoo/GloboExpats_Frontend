@@ -2,20 +2,19 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   Package,
   Truck,
   CheckCircle,
   Clock,
   AlertCircle,
-  Filter,
   Download,
-  RefreshCw,
   ChevronRight,
   Calendar,
   Search,
 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -26,7 +25,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -314,9 +312,11 @@ export default function OrderHistory() {
                     <div className="space-y-4">
                       {order.items.map((item) => (
                         <div key={item.id} className="flex gap-4">
-                          <img
+                          <Image
                             src={item.image}
                             alt={item.name}
+                            width={80}
+                            height={80}
                             className="w-20 h-20 object-cover rounded-lg"
                           />
                           <div className="flex-1">

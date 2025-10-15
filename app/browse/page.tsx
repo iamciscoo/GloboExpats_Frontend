@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { Slider } from '@/components/ui/slider'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Select,
@@ -65,7 +64,10 @@ interface FilterProps {
 }
 
 const FilterContentEl = ({ filters, setFilters, clearAllFilters }: FilterProps) => {
-  const updateFilter = (key: keyof FilterState, value: any) => {
+  const updateFilter = (
+    key: keyof FilterState,
+    value: string | number | string[] | [number, number]
+  ) => {
     setFilters({
       ...filters,
       [key]: value,
@@ -390,35 +392,33 @@ export default function BrowsePage() {
   })
 
   // Transform backend ListingItem to FeaturedItem format
-  const transformToFeaturedItem = (item: any): FeaturedItem => {
+  const transformToFeaturedItem = (item: Record<string, unknown>): FeaturedItem => {
     console.log('🔄 BROWSE: Transforming item:', item)
     const transformed = transformBackendProduct(item)
     console.log('✅ BROWSE: Transformed to:', transformed)
     return transformed
   }
 
-  // Fetch products from backend
+  // Fetch products from backend (client-side filtering only)
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true)
         setError(null)
-        console.log('🔥 BROWSE PAGE: Fetching ALL products from backend - NO DUMMY DATA!')
+
+        // Always fetch ALL products and filter client-side
+        // Backend filter API is unreliable, so we'll handle filtering in the browser
+        console.log('🔥 BROWSE PAGE: Fetching ALL products from backend')
         const response = await apiClient.getAllProducts(0)
-        // Use centralized content extraction
         const productsData = extractContentFromResponse(response)
-        console.log('🚀 BROWSE PAGE: Backend response:', response)
         console.log('📦 BROWSE PAGE: Products count:', productsData.length)
-        setProducts(productsData.map(transformToFeaturedItem))
-        console.log(
-          '✅ BROWSE PAGE: Successfully loaded',
-          productsData.length,
-          'products from backend'
+        setProducts(
+          productsData.map((item) => transformToFeaturedItem(item as Record<string, unknown>))
         )
+        console.log('✅ BROWSE PAGE: Successfully loaded products')
       } catch (err) {
         console.error('🚨 BROWSE PAGE: Error fetching products:', err)
         setError(err instanceof Error ? err.message : 'Failed to fetch products')
-        // NO FALLBACK TO DUMMY DATA - IF BACKEND FAILS, SHOW ERROR
       } finally {
         setLoading(false)
       }
@@ -484,11 +484,37 @@ export default function BrowsePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, filters.selectedCategory, currentPage])
 
+  // Debug: Log filter state changes
+  useEffect(() => {
+    if (filters.selectedCategory) {
+      console.log('🔍 BROWSE: Category filter active:', filters.selectedCategory)
+      console.log('🔍 BROWSE: Total products:', products.length)
+      const categoriesInProducts = [...new Set(products.map((p) => p.category).filter(Boolean))]
+      console.log('🔍 BROWSE: Available categories in products:', categoriesInProducts)
+    }
+  }, [filters.selectedCategory, products])
+
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase())
-    // Note: FeaturedItem doesn't have categorySlug, so we'll skip category filtering for now
-    // This could be enhanced by adding categorySlug to the FeaturedItem type or using a different approach
-    const matchesCategory = !filters.selectedCategory // Skip category filtering until we have proper category data
+
+    // Category filtering - match against both slug and category name
+    let matchesCategory = !filters.selectedCategory
+    if (filters.selectedCategory && product.category) {
+      const selectedCat = filters.selectedCategory.toLowerCase().replace(/-/g, ' ')
+      const productCat = product.category.toLowerCase().replace(/&/g, 'and')
+
+      // Try exact match first, then partial match
+      matchesCategory =
+        productCat === selectedCat ||
+        productCat.includes(selectedCat) ||
+        selectedCat.includes(productCat) ||
+        // Handle specific mappings
+        (selectedCat === 'books media' && productCat.includes('books')) ||
+        (selectedCat === 'sports outdoors' && productCat.includes('sports')) ||
+        (selectedCat === 'home appliances' && productCat.includes('appliance')) ||
+        (selectedCat === 'beauty health' && productCat.includes('beauty')) ||
+        (selectedCat === 'real estate' && productCat.includes('real'))
+    }
 
     // Convert price string to number for comparison
     const priceNumber = parseInt(product.price.replace(/[^\d]/g, ''))
@@ -500,10 +526,24 @@ export default function BrowsePage() {
       (filters.expatType === 'verified' && product.isVerified) ||
       (filters.expatType === 'premium' && product.isPremium)
 
-    const matchesLocation =
-      !filters.location || generateSlug(product.location).includes(filters.location)
+    // Condition filtering using product.condition field
+    const matchesCondition =
+      !filters.condition || product.condition?.toLowerCase() === filters.condition.toLowerCase()
 
-    return matchesSearch && matchesCategory && matchesPrice && matchesExpatType && matchesLocation
+    // Location filtering
+    const matchesLocation =
+      !filters.location ||
+      product.location?.toLowerCase().includes(filters.location.toLowerCase()) ||
+      generateSlug(product.location).includes(filters.location)
+
+    return (
+      matchesSearch &&
+      matchesCategory &&
+      matchesPrice &&
+      matchesExpatType &&
+      matchesCondition &&
+      matchesLocation
+    )
   })
 
   // Sorted products (client-side) to keep pagination, filtering and sorting in sync
@@ -521,11 +561,14 @@ export default function BrowsePage() {
         arr.sort((a, b) => (b.rating || 0) - (a.rating || 0))
         break
       case 'date-desc':
-        arr.sort(
-          (a: any, b: any) =>
-            (new Date(b.createdAt || 0).getTime() || (b as any).id || 0) -
-            (new Date(a.createdAt || 0).getTime() || (a as any).id || 0)
-        )
+        arr.sort((a, b) => {
+          const aItem = a as { createdAt?: string; id?: number }
+          const bItem = b as { createdAt?: string; id?: number }
+          return (
+            (new Date(bItem.createdAt || 0).getTime() || bItem.id || 0) -
+            (new Date(aItem.createdAt || 0).getTime() || aItem.id || 0)
+          )
+        })
         break
       default:
         // relevance (backend order)

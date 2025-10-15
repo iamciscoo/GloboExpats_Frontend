@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import {
   Archive,
   Bell,
@@ -16,7 +17,6 @@ import {
   CheckCircle2,
   X,
   Calendar,
-  Eye,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -177,7 +177,7 @@ function AdminDashboardContent() {
   const [activeTab, setActiveTab] = useState('overdue')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [selectedItem, setSelectedItem] = useState<any>(null)
+  const [selectedItem, setSelectedItem] = useState<(typeof overdueItems)[0] | null>(null)
   const [isNotificationDialogOpen, setIsNotificationDialogOpen] = useState(false)
   const [notificationMessage, setNotificationMessage] = useState('')
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false)
@@ -192,20 +192,22 @@ function AdminDashboardContent() {
   })
 
   const handleSendNotification = () => {
+    if (!selectedItem) return
     // In a real app, this would send the notification to the backend
     console.log(`Sending notification to item ${selectedItem.id}: ${notificationMessage}`)
     setIsNotificationDialogOpen(false)
 
     // Update the notification count in the UI
-    const updatedItems = overdueItems.map((item) => {
-      if (item.id === selectedItem.id) {
-        return {
-          ...item,
-          notificationsSent: item.notificationsSent + 1,
-        }
-      }
-      return item
-    })
+    // In a real implementation, this would update the state
+    // const updatedItems = overdueItems.map((item) => {
+    //   if (item.id === selectedItem.id) {
+    //     return {
+    //       ...item,
+    //       notificationsSent: item.notificationsSent + 1,
+    //     }
+    //   }
+    //   return item
+    // })
 
     // Reset form
     setNotificationMessage('')
@@ -213,6 +215,7 @@ function AdminDashboardContent() {
   }
 
   const handleArchiveItem = () => {
+    if (!selectedItem) return
     // In a real app, this would send the archive request to the backend
     console.log(`Archiving item ${selectedItem.id}`)
     setIsArchiveDialogOpen(false)
@@ -390,9 +393,11 @@ function AdminDashboardContent() {
                         <TableRow key={item.id} className="hover:bg-slate-50">
                           <TableCell>
                             <div className="flex items-center gap-3">
-                              <img
+                              <Image
                                 src="/images/iphone-15-pro.jpg"
                                 alt={item.title}
+                                width={48}
+                                height={48}
                                 className="w-12 h-12 object-cover rounded-lg"
                               />
                               <div>
@@ -473,7 +478,7 @@ function AdminDashboardContent() {
                                     <DialogTitle>Send Notification to Seller</DialogTitle>
                                     <DialogDescription>
                                       This will send a notification to {item.seller.name} about
-                                      their listing "{item.title}".
+                                      their listing &quot;{item.title}&quot;.
                                     </DialogDescription>
                                   </DialogHeader>
                                   <div className="space-y-4 py-4">
@@ -526,8 +531,8 @@ function AdminDashboardContent() {
                                   <DialogHeader>
                                     <DialogTitle>Archive Item</DialogTitle>
                                     <DialogDescription>
-                                      This will archive the listing "{item.title}" as the seller has
-                                      not responded to 3 notifications.
+                                      This will archive the listing &quot;{item.title}&quot; as the
+                                      seller has not responded to 3 notifications.
                                     </DialogDescription>
                                   </DialogHeader>
                                   <div className="py-4">
@@ -616,9 +621,11 @@ function AdminDashboardContent() {
                       <TableRow key={item.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <img
+                            <Image
                               src="/images/herman-miller-chair.jpg"
                               alt={item.title}
+                              width={48}
+                              height={48}
                               className="w-12 h-12 object-cover rounded-lg"
                             />
                             <div>

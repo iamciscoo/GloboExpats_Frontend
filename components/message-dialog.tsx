@@ -45,7 +45,8 @@ export default function MessageDialog({
         <DialogHeader>
           <DialogTitle>Message {sellerName}</DialogTitle>
           <DialogDescription>
-            Let the seller know you're interested in "{productTitle}". Describe your query below.
+            Let the seller know you&apos;re interested in &quot;{productTitle}&quot;. Describe your
+            query below.
           </DialogDescription>
         </DialogHeader>
 

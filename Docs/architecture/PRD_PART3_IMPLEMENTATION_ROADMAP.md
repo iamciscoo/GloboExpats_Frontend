@@ -1,5 +1,7 @@
 # Technical Product Requirements Document
+
 # Global Expat Belongings Marketplace Platform
+
 ## Part 3: Gap Analysis & Implementation Roadmap
 
 **Document Version:** 2.0  
@@ -15,6 +17,7 @@
 #### ✅ COMPLETED (Frontend)
 
 **User Interface (100%)**
+
 - [x] All 30 pages implemented
 - [x] 56+ reusable components
 - [x] Responsive mobile design
@@ -25,6 +28,7 @@
 - [x] Empty states
 
 **Authentication UI (100%)**
+
 - [x] Login page with OTP input
 - [x] Registration flow
 - [x] Password reset interface
@@ -32,6 +36,7 @@
 - [x] Protected route guards
 
 **Product Features UI (100%)**
+
 - [x] Product listing creation form
 - [x] Image upload interface
 - [x] Product browsing grid
@@ -41,17 +46,20 @@
 - [x] Filtering UI
 
 **Commerce UI (100%)**
+
 - [x] Shopping cart
 - [x] Checkout flow
 - [x] Order history display
 - [x] Wishlist management
 
 **Communication UI (100%)**
+
 - [x] Messaging interface
 - [x] Notification center
 - [x] Contact forms
 
 **Admin UI (100%)**
+
 - [x] Dashboard layout
 - [x] User management interface
 - [x] Listing management
@@ -60,6 +68,7 @@
 #### ❌ NOT IMPLEMENTED (Backend)
 
 **Core Backend (0%)**
+
 - [ ] Spring Boot application setup
 - [ ] PostgreSQL database deployment
 - [ ] Database schema implementation
@@ -70,6 +79,7 @@
 - [ ] Error handling framework
 
 **Authentication & Authorization (0%)**
+
 - [ ] OTP generation service
 - [ ] Email service integration (SendGrid/SES)
 - [ ] JWT token generation/validation
@@ -78,6 +88,7 @@
 - [ ] Email domain verification
 
 **File Management (0%)**
+
 - [ ] AWS S3 integration (or Cloudinary)
 - [ ] Image upload service
 - [ ] Image optimization/resizing
@@ -85,6 +96,7 @@
 - [ ] CDN configuration
 
 **Business Logic (0%)**
+
 - [ ] Item CRUD operations
 - [ ] Messaging system backend
 - [ ] Notification generation
@@ -93,6 +105,7 @@
 - [ ] Email notification templates
 
 **Integration & Services (0%)**
+
 - [ ] Redis caching (optional)
 - [ ] Email service
 - [ ] Cloud storage
@@ -101,25 +114,26 @@
 
 ### 1.2 Feature Comparison Matrix
 
-| Feature | Original PRD | Current Implementation | Gap | Priority |
-|---------|-------------|----------------------|-----|----------|
-| **OTP Login** | Required | Frontend only | Backend needed | P0 |
-| **Email Verification** | Domain-based | UI ready | Backend logic needed | P0 |
-| **Item Listings** | Basic CRUD | Full UI | API needed | P0 |
-| **Image Upload** | Category-specific | UI ready | S3 integration needed | P0 |
-| **Buyer Restrictions** | Verified only | UI logic present | Backend enforcement needed | P0 |
-| **Admin Monitoring** | 2-week check | UI complete | Background job needed | P1 |
-| **Notifications** | Email alerts | UI complete | Email service needed | P1 |
-| **Messaging** | Buyer-seller | Full interface | Real-time backend needed | P1 |
-| **Search** | Basic | UI complete | Search index needed | P1 |
-| **Multi-currency** | Not in original | UI implemented | Conversion API needed | P2 |
-| **Reviews** | Not in original | Not implemented | Full feature needed | P2 |
-| **Wishlist** | Not in original | UI implemented | Backend needed | P2 |
-| **Analytics** | Not in original | UI ready | Backend tracking needed | P2 |
-| **Payment** | Explicitly excluded | Not implemented | Future scope | P3 |
-| **Social Login** | Not in original | Not implemented | Future scope | P3 |
+| Feature                | Original PRD        | Current Implementation | Gap                        | Priority |
+| ---------------------- | ------------------- | ---------------------- | -------------------------- | -------- |
+| **OTP Login**          | Required            | Frontend only          | Backend needed             | P0       |
+| **Email Verification** | Domain-based        | UI ready               | Backend logic needed       | P0       |
+| **Item Listings**      | Basic CRUD          | Full UI                | API needed                 | P0       |
+| **Image Upload**       | Category-specific   | UI ready               | S3 integration needed      | P0       |
+| **Buyer Restrictions** | Verified only       | UI logic present       | Backend enforcement needed | P0       |
+| **Admin Monitoring**   | 2-week check        | UI complete            | Background job needed      | P1       |
+| **Notifications**      | Email alerts        | UI complete            | Email service needed       | P1       |
+| **Messaging**          | Buyer-seller        | Full interface         | Real-time backend needed   | P1       |
+| **Search**             | Basic               | UI complete            | Search index needed        | P1       |
+| **Multi-currency**     | Not in original     | UI implemented         | Conversion API needed      | P2       |
+| **Reviews**            | Not in original     | Not implemented        | Full feature needed        | P2       |
+| **Wishlist**           | Not in original     | UI implemented         | Backend needed             | P2       |
+| **Analytics**          | Not in original     | UI ready               | Backend tracking needed    | P2       |
+| **Payment**            | Explicitly excluded | Not implemented        | Future scope               | P3       |
+| **Social Login**       | Not in original     | Not implemented        | Future scope               | P3       |
 
 **Priority Legend:**
+
 - **P0**: Critical - Blocks MVP launch
 - **P1**: High - Needed for full functionality
 - **P2**: Medium - Enhances user experience
@@ -132,7 +146,9 @@
 ### 2.1 Phase 1: Backend Foundation (Weeks 1-3)
 
 #### Week 1: Project Setup & Database
+
 **Deliverables:**
+
 - [ ] Spring Boot project initialization
   - Maven/Gradle setup
   - Project structure
@@ -152,13 +168,16 @@
   - Relationships and cascade operations
 
 **Acceptance Criteria:**
+
 - Database accessible and schema complete
 - All entities mapped correctly
 - Application connects to database successfully
 - Basic CRUD operations work in tests
 
 #### Week 2: Authentication & Security
+
 **Deliverables:**
+
 - [ ] Spring Security configuration
   - JWT token configuration
   - CORS setup
@@ -182,6 +201,7 @@
   - Buyer verification checks
 
 **Acceptance Criteria:**
+
 - User can request OTP via email
 - OTP validation works correctly
 - JWT tokens issued on successful login
@@ -189,7 +209,9 @@
 - Email domain verification working
 
 #### Week 3: Core API Endpoints
+
 **Deliverables:**
+
 - [ ] User management APIs
   - GET /api/auth/me
   - PUT /api/users/profile
@@ -207,6 +229,7 @@
   - Error handling
 
 **Acceptance Criteria:**
+
 - All core APIs functional
 - Proper error responses
 - Validation working
@@ -215,7 +238,9 @@
 ### 2.2 Phase 2: File Upload & Complete Item Management (Weeks 4-5)
 
 #### Week 4: Image Upload Service
+
 **Deliverables:**
+
 - [ ] AWS S3 setup
   - S3 bucket creation
   - IAM user/role configuration
@@ -235,6 +260,7 @@
   - PUT /api/items/{id}/images/reorder
 
 **Acceptance Criteria:**
+
 - Users can upload multiple images
 - Images stored in S3
 - Thumbnails generated automatically
@@ -242,7 +268,9 @@
 - Images displayed correctly on frontend
 
 #### Week 5: Advanced Item Features
+
 **Deliverables:**
+
 - [ ] Search functionality
   - Full-text search on title/description
   - PostgreSQL full-text search or Elasticsearch
@@ -261,6 +289,7 @@
   - Premium listing logic
 
 **Acceptance Criteria:**
+
 - Search returns relevant results
 - All filters work correctly
 - Sorting functions properly
@@ -269,7 +298,9 @@
 ### 2.3 Phase 3: Communication & Notifications (Weeks 6-7)
 
 #### Week 6: Messaging System
+
 **Deliverables:**
+
 - [ ] Message APIs
   - POST /api/messages
   - GET /api/messages (conversations)
@@ -288,6 +319,7 @@
   - In-app notification creation
 
 **Acceptance Criteria:**
+
 - Users can send/receive messages
 - Conversations properly threaded
 - Unread counts accurate
@@ -295,7 +327,9 @@
 - Real-time updates working (if implemented)
 
 #### Week 7: Notification System
+
 **Deliverables:**
+
 - [ ] Notification service
   - Notification creation logic
   - Notification types handling
@@ -313,6 +347,7 @@
   - Browser push notifications
 
 **Acceptance Criteria:**
+
 - All notification types working
 - Email notifications sent correctly
 - Notification center displays properly
@@ -321,7 +356,9 @@
 ### 2.4 Phase 4: Admin Features & Background Jobs (Weeks 8-9)
 
 #### Week 8: Admin Panel Backend
+
 **Deliverables:**
+
 - [ ] Admin dashboard APIs
   - GET /api/admin/stats
   - GET /api/admin/users
@@ -340,6 +377,7 @@
   - Verification level assignment
 
 **Acceptance Criteria:**
+
 - Admin can view all statistics
 - Overdue items identified correctly
 - Notification sending works
@@ -347,7 +385,9 @@
 - User management operational
 
 #### Week 9: Background Jobs & Automation
+
 **Deliverables:**
+
 - [ ] Scheduled job setup
   - Spring @Scheduled configuration
   - Cron job definitions
@@ -364,6 +404,7 @@
   - Update statistics
 
 **Acceptance Criteria:**
+
 - Scheduled jobs run on time
 - Overdue monitoring works automatically
 - Email digests sent correctly
@@ -372,7 +413,9 @@
 ### 2.5 Phase 5: Testing & Optimization (Weeks 10-11)
 
 #### Week 10: Testing
+
 **Deliverables:**
+
 - [ ] Unit tests
   - Service layer tests
   - Repository tests
@@ -393,13 +436,16 @@
 **Test Coverage Target:** Minimum 70%
 
 **Acceptance Criteria:**
+
 - All critical paths covered
 - Security vulnerabilities addressed
 - Integration tests passing
 - E2E tests passing
 
 #### Week 11: Performance Optimization
+
 **Deliverables:**
+
 - [ ] Database optimization
   - Query optimization
   - Index review and optimization
@@ -418,6 +464,7 @@
   - Error tracking (Sentry)
 
 **Performance Targets:**
+
 - API response time: < 200ms (p95)
 - Page load time: < 2s
 - Database query time: < 50ms (average)
@@ -425,7 +472,9 @@
 ### 2.6 Phase 6: Deployment & Launch (Weeks 12-13)
 
 #### Week 12: Deployment Setup
+
 **Deliverables:**
+
 - [ ] Production environment setup
   - AWS EC2/ECS for backend
   - RDS for PostgreSQL
@@ -448,13 +497,16 @@
   - Disaster recovery plan
 
 **Acceptance Criteria:**
+
 - All environments deployed
 - CI/CD pipeline working
 - HTTPS enabled
 - Backups scheduled
 
 #### Week 13: Launch Preparation
+
 **Deliverables:**
+
 - [ ] Pre-launch testing
   - Full system testing in production
   - Load testing
@@ -475,6 +527,7 @@
   - Documentation complete
 
 **Go/No-Go Criteria:**
+
 - All P0 features working
 - Security review passed
 - Performance targets met
@@ -557,6 +610,7 @@ expat-marketplace-backend/
 ### 3.2 Key Configuration Files
 
 **application.yml (example)**
+
 ```yaml
 spring:
   application:
@@ -600,6 +654,7 @@ app:
 ### 3.3 Development Environment Setup
 
 **Prerequisites:**
+
 - Java 17+
 - PostgreSQL 15+
 - Maven 3.8+
@@ -607,6 +662,7 @@ app:
 - SendGrid account (for emails)
 
 **Local Development:**
+
 ```bash
 # Clone repository
 git clone https://github.com/org/expat-marketplace-backend.git
@@ -630,6 +686,7 @@ mvn spring-boot:run
 
 **Frontend Connection:**
 Update `/home/cisco/Documents/ExpatFrontend-main/.env.local`:
+
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8080/api
 ```
@@ -653,18 +710,21 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 ### 4.2 Testing Checklist
 
 **Unit Tests (60% of tests)**
+
 - [ ] Service layer methods
 - [ ] Utility functions
 - [ ] Validation logic
 - [ ] Business rules
 
 **Integration Tests (30% of tests)**
+
 - [ ] API endpoints
 - [ ] Database operations
 - [ ] External service integration
 - [ ] Authentication flow
 
 **E2E Tests (10% of tests)**
+
 - [ ] User registration → OTP → Login
 - [ ] Create listing → Upload images → Publish
 - [ ] Browse → View item → Contact seller
@@ -673,11 +733,13 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 ### 4.3 Performance Testing
 
 **Load Testing Scenarios:**
+
 - 100 concurrent users browsing
 - 50 concurrent image uploads
 - 200 concurrent searches
 
 **Tools:**
+
 - JMeter for load testing
 - Gatling for performance testing
 - Spring Boot Actuator for metrics
@@ -713,6 +775,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 ### 5.2 Deployment Checklist
 
 **Infrastructure:**
+
 - [ ] VPC setup with public/private subnets
 - [ ] Security groups configured
 - [ ] RDS PostgreSQL (Multi-AZ)
@@ -723,6 +786,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 - [ ] SSL certificates (ACM)
 
 **Application:**
+
 - [ ] Docker image built and pushed
 - [ ] Environment variables configured
 - [ ] Database migrations run
@@ -731,6 +795,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 - [ ] Logging configured (CloudWatch)
 
 **Security:**
+
 - [ ] Secrets stored in AWS Secrets Manager
 - [ ] IAM roles configured
 - [ ] Security groups locked down
@@ -744,30 +809,35 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 ### Phase 7: Enhanced Features (3-6 months)
 
 **Advanced Search & Discovery**
+
 - Elasticsearch integration
 - AI-powered recommendations
 - Saved searches and alerts
 - Similar items suggestions
 
 **Payment Integration**
+
 - Stripe integration
 - Escrow service
 - Multi-currency payments
 - Invoice generation
 
 **Social Features**
+
 - User profiles and ratings
 - Social media sharing
 - Referral program
 - Community forums
 
 **Mobile App**
+
 - React Native app
 - Push notifications
 - Offline support
 - Camera integration
 
 **Analytics & Insights**
+
 - Seller analytics dashboard
 - Pricing recommendations
 - Market trends
@@ -776,18 +846,21 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 ### Phase 8: Global Expansion (6-12 months)
 
 **Internationalization**
+
 - Multi-language support
 - Regional customization
 - Local payment methods
 - Currency conversion
 
 **Advanced Verification**
+
 - Document verification
 - Video verification
 - Background checks
 - Business verification
 
 **Marketplace Expansion**
+
 - B2B marketplace
 - Auction functionality
 - Service marketplace
@@ -800,12 +873,14 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 ### 7.1 Technical Metrics
 
 **Performance:**
+
 - API response time < 200ms (p95)
 - Page load time < 2s
 - Uptime > 99.9%
 - Error rate < 0.1%
 
 **Quality:**
+
 - Test coverage > 70%
 - Zero critical security vulnerabilities
 - Code review approval rate > 95%
@@ -813,18 +888,21 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 ### 7.2 Business Metrics
 
 **User Engagement:**
+
 - Daily active users (DAU)
 - Monthly active users (MAU)
 - Session duration
 - Pages per session
 
 **Marketplace Health:**
+
 - Active listings count
 - Listing-to-sale conversion rate
 - Average time to sale
 - Seller response time
 
 **Growth:**
+
 - New user registrations per week
 - Repeat user rate
 - Seller retention rate
@@ -836,29 +914,32 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 
 ### 8.1 Technical Risks
 
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-| Database performance issues | High | Medium | Implement caching, optimize queries, use read replicas |
-| S3 costs exceed budget | Medium | Medium | Implement image compression, lifecycle policies |
-| Email delivery failures | High | Low | Use reliable provider (SendGrid), implement retry logic |
-| Security breach | Critical | Low | Regular security audits, penetration testing |
-| Scaling issues | High | Medium | Use auto-scaling, load testing, performance monitoring |
+| Risk                        | Impact   | Probability | Mitigation                                              |
+| --------------------------- | -------- | ----------- | ------------------------------------------------------- |
+| Database performance issues | High     | Medium      | Implement caching, optimize queries, use read replicas  |
+| S3 costs exceed budget      | Medium   | Medium      | Implement image compression, lifecycle policies         |
+| Email delivery failures     | High     | Low         | Use reliable provider (SendGrid), implement retry logic |
+| Security breach             | Critical | Low         | Regular security audits, penetration testing            |
+| Scaling issues              | High     | Medium      | Use auto-scaling, load testing, performance monitoring  |
 
 ### 8.2 Contingency Plans
 
 **Database Failure:**
+
 - Automated backups every 6 hours
 - Multi-AZ deployment for high availability
 - Point-in-time recovery enabled
 - Disaster recovery plan tested quarterly
 
 **Application Failure:**
+
 - Health checks with automatic restart
 - Multi-instance deployment
 - Circuit breakers for external services
 - Graceful degradation
 
 **Third-Party Service Outage:**
+
 - Fallback email provider configured
 - Local image storage backup
 - Queueing for retry mechanisms
@@ -872,6 +953,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 **Total Estimated Duration:** 13 weeks (3.25 months)
 
 **Critical Path:**
+
 1. Backend foundation (3 weeks)
 2. Image upload & item management (2 weeks)
 3. Communication systems (2 weeks)
@@ -882,6 +964,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 ### 9.2 Resource Requirements
 
 **Development Team:**
+
 - 2 Backend developers (Spring Boot, PostgreSQL)
 - 1 Frontend developer (integration support)
 - 1 DevOps engineer (deployment, CI/CD)
@@ -889,6 +972,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 - 1 Product manager (coordination)
 
 **Infrastructure Costs (Monthly Estimates):**
+
 - AWS EC2/ECS: $200-500
 - RDS PostgreSQL: $100-300
 - S3 + CloudFront: $50-150
@@ -899,6 +983,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 ### 9.3 Go-Live Readiness Criteria
 
 **Must Have (P0):**
+
 - ✅ All authentication flows working
 - ✅ Item CRUD operations complete
 - ✅ Image upload functional
@@ -908,12 +993,14 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 - ✅ Performance targets met
 
 **Should Have (P1):**
+
 - Email notifications working
 - Search functionality complete
 - All frontend pages integrated
 - Admin automation running
 
 **Nice to Have (P2):**
+
 - Real-time messaging
 - Advanced analytics
 - Push notifications
@@ -923,15 +1010,19 @@ NEXT_PUBLIC_API_URL=http://localhost:8080/api
 ## Appendices
 
 ### A. API Documentation
+
 See Swagger documentation at `/api/docs` (to be generated)
 
 ### B. Database ER Diagram
+
 See `/docs/database-schema.png` (to be created)
 
 ### C. Deployment Guide
+
 See `/docs/deployment-guide.md` (to be created)
 
 ### D. Testing Guide
+
 See `/docs/testing-guide.md` (to be created)
 
 ---

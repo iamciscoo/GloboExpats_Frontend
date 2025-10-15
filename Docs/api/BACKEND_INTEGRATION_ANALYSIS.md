@@ -19,9 +19,11 @@ This document provides a comprehensive analysis of the backend-frontend integrat
 The backend exposes the following API groups at **http://10.123.22.21:8081/api/v1/**:
 
 #### 1. **Products API**
+
 APIs for retrieving and filtering product listings
 
 **Endpoints**:
+
 - `PUT /api/v1/edit-review/{productId}` - Update or create a product review
 - `POST /api/v1/rate` - Rate a product
 - `POST /api/v1/products/post-product` - Create a new product listing
@@ -37,9 +39,11 @@ APIs for retrieving and filtering product listings
 - `DELETE /api/v1/products/delete/{productId}` - Delete a product
 
 #### 2. **Cart API**
+
 Shopping cart management
 
 **Endpoints**:
+
 - `POST /api/v1/cart/add` - Add item to cart
 - `GET /api/v1/cart/User` - Get user's cart
 - `PUT /api/v1/cart/item/{cartId}` - Update cart item
@@ -47,9 +51,11 @@ Shopping cart management
 - `DELETE /api/v1/cart/clear` - Clear entire cart
 
 #### 3. **Authentication API**
+
 User authentication and registration
 
 **Endpoints**:
+
 - `POST /api/v1/auth/register` - Register new user
 - `POST /api/v1/auth/login` - User login
 - `POST /api/v1/oauth2/exchange` - Exchange OAuth code for JWT
@@ -57,9 +63,11 @@ User authentication and registration
 - `POST /api/v1/auth/logout` - User logout
 
 #### 4. **User Management API**
+
 User profile and verification management
 
 **Endpoints**:
+
 - `GET /api/v1/userManagement/user-details` - Get current user details
 - `PATCH /api/v1/userManagement/update-profile` - Update user profile
 - `POST /api/v1/email/sendOTP` - Send organization email OTP
@@ -67,18 +75,22 @@ User profile and verification management
 - `POST /api/v1/users/change-password` - Change user password
 
 #### 5. **Orders API**
+
 Order management and checkout
 
 **Endpoints**:
+
 - `POST /api/v1/checkout` - Process checkout
 - `GET /api/v1/orders` - Get user orders
 - `GET /api/v1/orders/{orderId}` - Get order details
 - `PATCH /api/v1/orders/{orderId}/status` - Update order status
 
 #### 6. **Verification API**
+
 Identity and document verification
 
 **Endpoints**:
+
 - `POST /api/v1/users/verify-passport` - Upload passport for verification
 - `POST /api/v1/users/verify-address` - Upload address proof
 - `GET /api/v1/users/verification-status` - Get verification status
@@ -92,50 +104,50 @@ Identity and document verification
 
 #### ✅ **Fully Integrated Endpoints**
 
-| Frontend File | Backend Endpoint | Status | Notes |
-|--------------|------------------|--------|-------|
-| `lib/api.ts::getProducts()` | `GET /api/v1/products/get-all-products` | ✅ Integrated | Pagination supported |
-| `lib/api.ts::getProductDetails()` | `GET /api/v1/displayItem/itemDetails/{id}` | ✅ Integrated | Product detail view |
-| `lib/api.ts::getCategories()` | `GET /api/v1/products/categories` | ✅ Integrated | Category sidebar |
-| `lib/api.ts::getTopPicks()` | `GET /api/v1/displayItem/top-picks` | ✅ Integrated | Homepage featured |
-| `lib/api.ts::getNewestListings()` | `GET /api/v1/displayItem/newest` | ✅ Integrated | Homepage new listings |
-| `lib/api.ts::createProduct()` | `POST /api/v1/products/post-product` | ✅ Integrated | Sell page |
-| `lib/api.ts::login()` | `POST /api/v1/auth/login` | ✅ Integrated | Authentication |
-| `lib/api.ts::register()` | `POST /api/v1/auth/register` | ✅ Integrated | Registration |
-| `lib/api.ts::getUserDetails()` | `GET /api/v1/userManagement/user-details` | ✅ Integrated | User profile |
-| `lib/api.ts::sendEmailOtp()` | `POST /api/v1/email/sendOTP` | ✅ Integrated | Email verification |
-| `lib/api.ts::verifyEmailOtp()` | `POST /api/v1/email/verifyOTP` | ✅ Integrated | Email OTP verification |
-| `lib/api.ts::addToCart()` | `POST /api/v1/cart/add` | ✅ Integrated | Add to cart |
-| `lib/api.ts::getUserCart()` | `GET /api/v1/cart/User` | ✅ Integrated | Cart display |
-| `lib/api.ts::updateCartItem()` | `PUT /api/v1/cart/item/{cartId}` | ✅ Integrated | Update quantity |
-| `lib/api.ts::removeFromCart()` | `DELETE /api/v1/cart/item/{itemId}` | ✅ Integrated | Remove from cart |
-| `lib/api.ts::clearCart()` | `DELETE /api/v1/cart/clear` | ✅ Integrated | Clear cart |
+| Frontend File                     | Backend Endpoint                           | Status        | Notes                  |
+| --------------------------------- | ------------------------------------------ | ------------- | ---------------------- |
+| `lib/api.ts::getProducts()`       | `GET /api/v1/products/get-all-products`    | ✅ Integrated | Pagination supported   |
+| `lib/api.ts::getProductDetails()` | `GET /api/v1/displayItem/itemDetails/{id}` | ✅ Integrated | Product detail view    |
+| `lib/api.ts::getCategories()`     | `GET /api/v1/products/categories`          | ✅ Integrated | Category sidebar       |
+| `lib/api.ts::getTopPicks()`       | `GET /api/v1/displayItem/top-picks`        | ✅ Integrated | Homepage featured      |
+| `lib/api.ts::getNewestListings()` | `GET /api/v1/displayItem/newest`           | ✅ Integrated | Homepage new listings  |
+| `lib/api.ts::createProduct()`     | `POST /api/v1/products/post-product`       | ✅ Integrated | Sell page              |
+| `lib/api.ts::login()`             | `POST /api/v1/auth/login`                  | ✅ Integrated | Authentication         |
+| `lib/api.ts::register()`          | `POST /api/v1/auth/register`               | ✅ Integrated | Registration           |
+| `lib/api.ts::getUserDetails()`    | `GET /api/v1/userManagement/user-details`  | ✅ Integrated | User profile           |
+| `lib/api.ts::sendEmailOtp()`      | `POST /api/v1/email/sendOTP`               | ✅ Integrated | Email verification     |
+| `lib/api.ts::verifyEmailOtp()`    | `POST /api/v1/email/verifyOTP`             | ✅ Integrated | Email OTP verification |
+| `lib/api.ts::addToCart()`         | `POST /api/v1/cart/add`                    | ✅ Integrated | Add to cart            |
+| `lib/api.ts::getUserCart()`       | `GET /api/v1/cart/User`                    | ✅ Integrated | Cart display           |
+| `lib/api.ts::updateCartItem()`    | `PUT /api/v1/cart/item/{cartId}`           | ✅ Integrated | Update quantity        |
+| `lib/api.ts::removeFromCart()`    | `DELETE /api/v1/cart/item/{itemId}`        | ✅ Integrated | Remove from cart       |
+| `lib/api.ts::clearCart()`         | `DELETE /api/v1/cart/clear`                | ✅ Integrated | Clear cart             |
 
 #### ⚠️ **Partially Integrated Endpoints**
 
-| Frontend Implementation | Backend Endpoint | Issue | Recommendation |
-|------------------------|------------------|-------|----------------|
-| Product rating | `POST /api/v1/rate` | Not implemented in frontend | Add rating UI component |
-| Product reviews | `POST /api/v1/post-review` | Not implemented in frontend | Add review submission form |
-| Review editing | `PUT /api/v1/edit-review/{productId}` | Not implemented | Add edit review functionality |
-| Product filtering | `POST /api/v1/displayItem/filter` | Not fully utilized | Enhance filter UI |
-| Update product | `PATCH /api/v1/products/update/{productId}` | Not implemented | Add seller edit functionality |
-| Update images | `PATCH /api/v1/products/update-images` | Not implemented | Add image management UI |
-| Delete product | `DELETE /api/v1/products/delete/{productId}` | Not implemented | Add delete option for sellers |
-| Checkout | `POST /api/v1/checkout` | Not connected | Complete checkout flow |
-| Orders list | `GET /api/v1/orders` | Not fully integrated | Complete order history page |
-| Order details | `GET /api/v1/orders/{orderId}` | Not integrated | Add order detail view |
-| Password change | `POST /api/v1/users/change-password` | Not implemented | Add password change UI |
-| Passport verification | `POST /api/v1/users/verify-passport` | Not implemented | Add passport upload UI |
-| Address verification | `POST /api/v1/users/verify-address` | Not implemented | Add address proof upload |
+| Frontend Implementation | Backend Endpoint                             | Issue                       | Recommendation                |
+| ----------------------- | -------------------------------------------- | --------------------------- | ----------------------------- |
+| Product rating          | `POST /api/v1/rate`                          | Not implemented in frontend | Add rating UI component       |
+| Product reviews         | `POST /api/v1/post-review`                   | Not implemented in frontend | Add review submission form    |
+| Review editing          | `PUT /api/v1/edit-review/{productId}`        | Not implemented             | Add edit review functionality |
+| Product filtering       | `POST /api/v1/displayItem/filter`            | Not fully utilized          | Enhance filter UI             |
+| Update product          | `PATCH /api/v1/products/update/{productId}`  | Not implemented             | Add seller edit functionality |
+| Update images           | `PATCH /api/v1/products/update-images`       | Not implemented             | Add image management UI       |
+| Delete product          | `DELETE /api/v1/products/delete/{productId}` | Not implemented             | Add delete option for sellers |
+| Checkout                | `POST /api/v1/checkout`                      | Not connected               | Complete checkout flow        |
+| Orders list             | `GET /api/v1/orders`                         | Not fully integrated        | Complete order history page   |
+| Order details           | `GET /api/v1/orders/{orderId}`               | Not integrated              | Add order detail view         |
+| Password change         | `POST /api/v1/users/change-password`         | Not implemented             | Add password change UI        |
+| Passport verification   | `POST /api/v1/users/verify-passport`         | Not implemented             | Add passport upload UI        |
+| Address verification    | `POST /api/v1/users/verify-address`          | Not implemented             | Add address proof upload      |
 
 #### ❌ **Missing/Not Integrated**
 
-| Backend Endpoint | Frontend Status | Priority | Action Required |
-|-----------------|----------------|----------|-----------------|
-| Messaging system | Not found in backend | High | Clarify if implemented |
-| Conversation endpoints | Not found in Swagger | High | Check backend implementation |
-| `GET /api/v1/messages/*` | No backend equivalent | Medium | Remove or integrate |
+| Backend Endpoint         | Frontend Status       | Priority | Action Required              |
+| ------------------------ | --------------------- | -------- | ---------------------------- |
+| Messaging system         | Not found in backend  | High     | Clarify if implemented       |
+| Conversation endpoints   | Not found in Swagger  | High     | Check backend implementation |
+| `GET /api/v1/messages/*` | No backend equivalent | Medium   | Remove or integrate          |
 
 ---
 
@@ -166,6 +178,7 @@ Identity and document verification
 #### **1. API Base URL Configuration Issues** 🔴 **CRITICAL**
 
 **Current State**:
+
 ```typescript
 // lib/api.ts line 25-28
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api').replace(
@@ -175,20 +188,23 @@ const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/
 ```
 
 **Problems**:
+
 1. Default fallback uses wrong port (`8000` instead of `8081`)
 2. Adds `/api` suffix which conflicts with backend structure
 3. Backend expects `/api/v1/` prefix, but frontend uses inconsistent paths
 
 **Backend Structure**:
+
 - Base: `http://10.123.22.21:8081`
 - All endpoints: `/api/v1/*`
 
 **Frontend Implementation**:
+
 ```typescript
 // Examples from lib/api.ts
-this.request(`/products/categories`)           // WRONG: Missing /api/v1
-this.request(`/displayItem/top-picks`)         // WRONG: Missing /api/v1
-this.request(`/userManagement/user-details`)   // WRONG: Missing /api/v1
+this.request(`/products/categories`) // WRONG: Missing /api/v1
+this.request(`/displayItem/top-picks`) // WRONG: Missing /api/v1
+this.request(`/userManagement/user-details`) // WRONG: Missing /api/v1
 ```
 
 **Impact**: All API calls are failing or being incorrectly routed
@@ -196,16 +212,19 @@ this.request(`/userManagement/user-details`)   // WRONG: Missing /api/v1
 #### **2. Environment Configuration Mismatch** 🔴 **CRITICAL**
 
 **.env.example**:
+
 ```env
 NEXT_PUBLIC_API_URL=/api/backend/v1  # Relative path for proxy
 BACKEND_URL=http://localhost:8000     # Wrong port
 ```
 
 **Actual Backend**:
+
 - Server: `http://10.123.22.21:8081`
 - Endpoints: `/api/v1/*`
 
 **Required Configuration**:
+
 ```env
 NEXT_PUBLIC_API_URL=http://10.123.22.21:8081/api/v1
 BACKEND_URL=http://10.123.22.21:8081
@@ -214,6 +233,7 @@ BACKEND_URL=http://10.123.22.21:8081
 #### **3. Proxy Configuration Issue** 🟡 **HIGH**
 
 **Current** (`next.config.mjs` line 127-130):
+
 ```javascript
 async rewrites() {
   return [
@@ -226,12 +246,14 @@ async rewrites() {
 ```
 
 **Problems**:
+
 1. Proxy expects requests to `/api/backend/*`
 2. Frontend code requests to `/products/*`, `/cart/*` directly
 3. Mismatch between proxy route and actual usage
 4. Backend expects `/api/v1/*` but destination uses `/api/*`
 
 **Solution**: Fix proxy to match backend structure:
+
 ```javascript
 async rewrites() {
   return [
@@ -248,6 +270,7 @@ async rewrites() {
 **All API calls missing `/api/v1/` prefix**:
 
 Current:
+
 ```typescript
 this.request(`/products/categories`)
 this.request(`/cart/add`)
@@ -255,6 +278,7 @@ this.request(`/auth/login`)
 ```
 
 Should be:
+
 ```typescript
 this.request(`/api/v1/products/categories`)
 this.request(`/api/v1/cart/add`)
@@ -264,6 +288,7 @@ this.request(`/api/v1/auth/login`)
 #### **5. Incomplete Feature Implementations** 🟡 **MEDIUM**
 
 Missing UI for:
+
 - ❌ Product rating system
 - ❌ Review submission & editing
 - ❌ Advanced product filtering
@@ -281,6 +306,7 @@ Missing UI for:
 **Issue**: Error messages not always user-friendly
 
 Example (`lib/api.ts` lines 160-172):
+
 ```typescript
 if (response.status === 409) {
   errorMessage = 'This email or username is already registered...'
@@ -294,6 +320,7 @@ if (response.status === 409) {
 #### **7. Cart Implementation Confusion** 🟢 **LOW**
 
 **Issue**: Three cart implementations exist
+
 - `app/cart/page.tsx` - Active
 - `app/cart/page-integrated.tsx` - Archived
 - `app/cart/page-broken.tsx` - Archived
@@ -303,6 +330,7 @@ if (response.status === 409) {
 #### **8. Missing Loading & Empty States** 🟢 **LOW**
 
 Some pages lack proper:
+
 - Loading skeletons
 - Empty state messages
 - Error boundaries
@@ -318,6 +346,7 @@ Some pages lack proper:
 **File**: `lib/api.ts`
 
 **Change** (line 25-28):
+
 ```typescript
 // BEFORE
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api').replace(
@@ -326,10 +355,10 @@ const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/
 )
 
 // AFTER
-const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_URL || 
-  'http://10.123.22.21:8081/api/v1'
-).replace(/\/$/, '')
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://10.123.22.21:8081/api/v1').replace(
+  /\/$/,
+  ''
+)
 ```
 
 #### Fix 2: Update All API Endpoint Paths
@@ -424,19 +453,19 @@ class ApiClient {
   private handleError(error: any, endpoint: string): never {
     // Log for debugging
     console.error(`API Error [${endpoint}]:`, error)
-    
+
     // Extract user-friendly message
     const message = this.extractErrorMessage(error)
-    
+
     // Show toast notification
     if (typeof window !== 'undefined') {
       // Use your toast library
       showToast(message, 'error')
     }
-    
+
     throw new Error(message)
   }
-  
+
   private extractErrorMessage(error: any): string {
     if (error.response?.data?.message) {
       return error.response.data.message
@@ -514,18 +543,18 @@ describe('Backend API Integration', () => {
   test('API base URL is correct', () => {
     expect(API_BASE_URL).toBe('http://10.123.22.21:8081/api/v1')
   })
-  
+
   test('Can fetch categories', async () => {
     const categories = await api.products.getCategories()
     expect(categories).toBeDefined()
     expect(Array.isArray(categories)).toBe(true)
   })
-  
+
   test('Can fetch products', async () => {
     const products = await api.products.getAllProducts(0)
     expect(products).toBeDefined()
   })
-  
+
   // Add more tests for each endpoint
 })
 ```
@@ -533,6 +562,7 @@ describe('Backend API Integration', () => {
 ### 2. Manual Testing Checklist
 
 #### Authentication Flow
+
 - [ ] Register new user
 - [ ] Login with credentials
 - [ ] Login with Google OAuth
@@ -540,6 +570,7 @@ describe('Backend API Integration', () => {
 - [ ] Session persistence
 
 #### Product Management
+
 - [ ] View product list
 - [ ] View product details
 - [ ] Filter products
@@ -547,6 +578,7 @@ describe('Backend API Integration', () => {
 - [ ] Create new listing (seller)
 
 #### Cart & Checkout
+
 - [ ] Add item to cart
 - [ ] Update quantity
 - [ ] Remove item
@@ -554,6 +586,7 @@ describe('Backend API Integration', () => {
 - [ ] Proceed to checkout
 
 #### User Profile
+
 - [ ] View profile
 - [ ] Update profile
 - [ ] Send OTP
@@ -570,10 +603,10 @@ import { test, expect } from '@playwright/test'
 
 test('Product listing loads correctly', async ({ page }) => {
   await page.goto('http://10.123.22.21:3000')
-  
+
   // Wait for products to load
   await page.waitForSelector('[data-testid="product-card"]')
-  
+
   // Verify products are displayed
   const products = await page.locator('[data-testid="product-card"]').count()
   expect(products).toBeGreaterThan(0)
@@ -584,15 +617,15 @@ test('Product listing loads correctly', async ({ page }) => {
 
 ## 📊 API Endpoint Coverage Matrix
 
-| Feature Area | Backend Endpoints | Frontend Implementation | Coverage |
-|-------------|-------------------|------------------------|----------|
-| **Authentication** | 4 endpoints | 3 implemented | 75% ✅ |
-| **Products** | 13 endpoints | 7 implemented | 54% ⚠️ |
-| **Cart** | 5 endpoints | 5 implemented | 100% ✅ |
-| **User Management** | 6 endpoints | 3 implemented | 50% ⚠️ |
-| **Orders** | 3 endpoints | 0 implemented | 0% ❌ |
-| **Verification** | 4 endpoints | 0 implemented | 0% ❌ |
-| **Reviews/Ratings** | 3 endpoints | 0 implemented | 0% ❌ |
+| Feature Area        | Backend Endpoints | Frontend Implementation | Coverage |
+| ------------------- | ----------------- | ----------------------- | -------- |
+| **Authentication**  | 4 endpoints       | 3 implemented           | 75% ✅   |
+| **Products**        | 13 endpoints      | 7 implemented           | 54% ⚠️   |
+| **Cart**            | 5 endpoints       | 5 implemented           | 100% ✅  |
+| **User Management** | 6 endpoints       | 3 implemented           | 50% ⚠️   |
+| **Orders**          | 3 endpoints       | 0 implemented           | 0% ❌    |
+| **Verification**    | 4 endpoints       | 0 implemented           | 0% ❌    |
+| **Reviews/Ratings** | 3 endpoints       | 0 implemented           | 0% ❌    |
 
 **Overall Coverage**: **48%** (19/39 endpoints)
 
@@ -601,6 +634,7 @@ test('Product listing loads correctly', async ({ page }) => {
 ## 🚀 Implementation Roadmap
 
 ### Phase 1: Critical Fixes (Week 1)
+
 **Goal**: Get basic API integration working
 
 - [x] Add backend folder to `.gitignore`
@@ -612,11 +646,13 @@ test('Product listing loads correctly', async ({ page }) => {
 - [ ] Fix any breaking issues
 
 **Success Criteria**:
+
 - Homepage loads products successfully
 - User can login/register
 - Cart functionality works end-to-end
 
 ### Phase 2: Core Features (Week 2-3)
+
 **Goal**: Complete essential user flows
 
 - [ ] Implement product rating UI
@@ -628,11 +664,13 @@ test('Product listing loads correctly', async ({ page }) => {
 - [ ] Add verification document uploads
 
 **Success Criteria**:
+
 - User can complete full purchase flow
 - User can rate and review products
 - User can complete identity verification
 
 ### Phase 3: Seller Features (Week 4)
+
 **Goal**: Enable seller management
 
 - [ ] Add product editing functionality
@@ -642,11 +680,13 @@ test('Product listing loads correctly', async ({ page }) => {
 - [ ] Add inventory management
 
 **Success Criteria**:
+
 - Seller can manage their listings
 - Seller can update product details
 - Seller can manage product images
 
 ### Phase 4: Polish & Optimization (Week 5-6)
+
 **Goal**: Improve UX and performance
 
 - [ ] Add loading states everywhere
@@ -658,6 +698,7 @@ test('Product listing loads correctly', async ({ page }) => {
 - [ ] Write automated tests
 
 **Success Criteria**:
+
 - 90+ Lighthouse score
 - All features have proper loading states
 - Error handling is user-friendly
@@ -709,6 +750,7 @@ test('Product listing loads correctly', async ({ page }) => {
 ### Recommendations
 
 1. **Add Request Interceptor**
+
    ```typescript
    // Auto-retry on 401 with token refresh
    ```

@@ -144,17 +144,19 @@ export function useVerification(): UseVerificationReturn {
         return true
       }
 
-      // If user can't perform action, log warning but still return true to prevent blocking
+      // If user can't perform action, still allow access
       // The actual feature protection happens at the API level
       if (!canPerformAction) {
-        console.warn(`[useVerification] User cannot ${action} - verification needed`)
-        console.info('[useVerification] Allowing access - feature will show verification prompt if needed')
-        
+        // Only log in development mode
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[useVerification] User verification pending for '${action}' action`)
+        }
+
         // Don't block access - let the page load and show verification UI there
         // setCurrentAction(action)
         // setIsVerificationPopupOpen(true)
-        
-        return true // Changed from false to true - don't block page access
+
+        return true // Don't block page access - show verification prompt in UI
       }
 
       // User is verified and can proceed

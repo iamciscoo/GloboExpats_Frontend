@@ -19,9 +19,8 @@ export default function TermsOfServicePage() {
         <Card className="max-w-4xl mx-auto bg-white shadow-sm">
           <CardContent className="p-8 prose prose-neutral max-w-none">
             <p className="text-lg text-neutral-600 mb-8">
-              Welcome to Globoexpat. These terms of service ("Terms") govern your use of our
-              website and services. By accessing or using Globoexpat, you agree to be bound by
-              these Terms.
+              Welcome to Globoexpat. These terms of service ("Terms") govern your use of our website
+              and services. By accessing or using Globoexpat, you agree to be bound by these Terms.
             </p>
 
             <h2 className="text-2xl font-semibold text-neutral-800 mt-8 mb-4">

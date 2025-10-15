@@ -318,13 +318,12 @@ const nextConfig = {
    * =============================================================================
    */
 
-  // Skip type checking and linting during builds for faster CI/CD
-  // These should be handled separately in the pipeline
+  // Enable type checking and linting during builds for production safety
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
 
   /**

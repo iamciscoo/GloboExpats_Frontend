@@ -22,12 +22,14 @@ assets/
 ## Usage Guidelines
 
 ### Images
+
 - **Products**: Real product photos, optimized for web
 - **Avatars**: User profile pictures, standardized sizes
 - **Heroes**: Large banner images for homepage/categories
 - **Placeholders**: Generic stock photos for demo listings
 
 ### Data Files
+
 - **api-config.json**: Central configuration for API endpoints and fallbacks
 - **users.json**: Mock user data with proper avatar paths
 - **products.json**: Sample product listings with metadata
@@ -51,6 +53,7 @@ The structure supports seamless transition from mock data to live APIs:
 ## Optimization
 
 All images should be:
+
 - Compressed for web delivery
 - Properly sized for their use case
 - Include alt text in implementation

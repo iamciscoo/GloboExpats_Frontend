@@ -5,6 +5,7 @@ This document describes the implementation of cart functionality with backend AP
 ## Overview
 
 The cart system provides complete shopping cart functionality with the following features:
+
 - Add items to cart
 - Get user's cart contents
 - Update item quantities
@@ -16,6 +17,7 @@ The cart system provides complete shopping cart functionality with the following
 ## API Endpoints Implemented
 
 ### 1. Add to Cart
+
 ```bash
 curl -X 'POST' \
   'http://10.123.22.21:8081/api/v1/cart/add' \
@@ -29,6 +31,7 @@ curl -X 'POST' \
 ```
 
 ### 2. Get User Cart
+
 ```bash
 curl -X 'GET' \
   'http://10.123.22.21:8081/api/v1/cart/User' \
@@ -37,6 +40,7 @@ curl -X 'GET' \
 ```
 
 **Response Example:**
+
 ```json
 {
   "items": [
@@ -57,6 +61,7 @@ curl -X 'GET' \
 ```
 
 ### 3. Update Cart Item
+
 ```bash
 curl -X 'PUT' \
   'http://10.123.22.21:8081/api/v1/cart/item/1' \
@@ -70,6 +75,7 @@ curl -X 'PUT' \
 ```
 
 ### 4. Remove Item from Cart
+
 ```bash
 curl -X 'DELETE' \
   'http://10.123.22.21:8081/api/v1/cart/item/11' \
@@ -138,10 +144,7 @@ function ProductCard({ product }) {
   }
 
   return (
-    <button 
-      onClick={handleAddToCart}
-      disabled={isLoading}
-    >
+    <button onClick={handleAddToCart} disabled={isLoading}>
       Add to Cart
     </button>
   )

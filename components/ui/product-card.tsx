@@ -2,8 +2,9 @@
 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { Star, MapPin, ArrowRight } from 'lucide-react'
+import { Star, MapPin, ArrowRight, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { FeaturedItem } from '@/lib/types'
@@ -27,6 +28,7 @@ export function ProductCard({
 
   // Check for problematic review objects in product
   Object.keys(product).forEach((key) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = (product as any)[key]
     if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
       if (value.reviewId || value.reviewerName || value.reviewText || value.formattedCreatedAt) {
@@ -72,7 +74,9 @@ export function ProductCard({
           <div
             className={cn(
               'relative overflow-hidden flex-shrink-0 bg-white',
-              viewMode === 'list' ? 'w-48 aspect-square rounded-l-2xl' : 'aspect-square rounded-t-2xl'
+              viewMode === 'list'
+                ? 'w-48 aspect-square rounded-l-2xl'
+                : 'aspect-square rounded-t-2xl'
             )}
           >
             <Image
@@ -149,14 +153,33 @@ export function ProductCard({
               className="flex items-center gap-1 mb-2 min-h-[1.25rem]"
               aria-label={`Location: ${product.location}`}
             >
-              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-400 flex-shrink-0" aria-hidden="true" />
-              <span className="text-xs sm:text-sm text-neutral-600 truncate">{product.location}</span>
+              <MapPin
+                className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-neutral-400 flex-shrink-0"
+                aria-hidden="true"
+              />
+              <span className="text-xs sm:text-sm text-neutral-600 truncate">
+                {product.location}
+              </span>
             </div>
+
+            {/* Category Badge - if available */}
+            {product.category && (
+              <div className="flex items-center gap-1 mb-2 min-h-[1.25rem]">
+                <Tag className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" aria-hidden="true" />
+                <Badge
+                  variant="secondary"
+                  className="text-xs bg-blue-50 text-blue-700 hover:bg-blue-100"
+                  aria-label={`Category: ${product.category}`}
+                >
+                  {product.category}
+                </Badge>
+              </div>
+            )}
 
             {/* Bottom Section - Pushed to bottom */}
             <div className="mt-auto pt-2">
               <Button
-                className="w-full bg-gradient-to-r from-brand-primary to-brand-accent hover:from-blue-800 hover:to-cyan-600 text-white font-semibold py-1.5 sm:py-2 rounded-lg shadow-futuristic hover:shadow-xl focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 transition-all duration-300 group/btn text-xs sm:text-sm"
+                className="w-full bg-gradient-to-r from-brand-primary to-brand-accent hover:from-blue-800 hover:to-cyan-600 text-white font-semibold py-1.5 sm:py-2 rounded-full shadow-futuristic hover:shadow-xl focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 transition-all duration-300 group/btn text-xs sm:text-sm"
                 onClick={(e) => {
                   e.stopPropagation()
                   handleViewDetails()

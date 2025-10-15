@@ -2,14 +2,11 @@ import type React from 'react'
 import type { Metadata, Viewport } from 'next'
 import { Inter, Lexend } from 'next/font/google'
 import './globals.css'
-import Header from '@/components/header'
-import Footer from '@/components/footer'
-import Breadcrumb from '@/components/breadcrumb'
+import { LayoutContent } from '@/components/layout-content'
 import ErrorBoundary from '@/components/error-boundary'
 import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/providers/auth-provider'
 import { CartProvider } from '@/providers/cart-provider'
-import { VerificationBanner } from '@/components/verification-banner'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -47,29 +44,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <AuthProvider>
           <CartProvider>
             <ErrorBoundary level="page" name="Application">
-              <div className="flex min-h-screen flex-col">
-                <ErrorBoundary level="component" name="Header">
-                  <Header />
-                </ErrorBoundary>
-
-                {/* Show warning to unverified accounts */}
-                <VerificationBanner />
-
-                <ErrorBoundary level="component" name="Breadcrumb">
-                  <Breadcrumb />
-                </ErrorBoundary>
-
-                <main className="flex-1">
-                  <ErrorBoundary level="page" name="Main Content">
-                    {children}
-                  </ErrorBoundary>
-                </main>
-
-                <ErrorBoundary level="component" name="Footer">
-                  <Footer />
-                </ErrorBoundary>
-              </div>
-
+              <LayoutContent>{children}</LayoutContent>
               <Toaster />
             </ErrorBoundary>
           </CartProvider>

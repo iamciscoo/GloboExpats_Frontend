@@ -3,6 +3,7 @@
 **Date:** 2025-10-13  
 **Component:** Browse Page  
 **Files Modified:**
+
 - `app/browse/page.tsx`
 
 ## Problem
@@ -21,6 +22,7 @@ Error: Expression expected at line 92
 
 **Root Cause:**
 The code had become corrupted with:
+
 1. Missing `arr.sort(` call on line 88 in the 'date-desc' case
 2. Duplicate, malformed `sortedProducts` logic embedded inside the `FilterContentEl` component (lines 74-133)
 3. Missing `hasActiveFilters` variable definition
@@ -33,6 +35,7 @@ The code had become corrupted with:
 Removed the corrupted code block containing duplicate sortedProducts logic and orphaned fragments. Added proper `hasActiveFilters` calculation:
 
 **Before (corrupted):**
+
 ```tsx
 const FilterContentEl = ({ filters, setFilters, clearAllFilters }: FilterProps) => {
   const updateFilter = (key: keyof FilterState, value: any) => {
@@ -46,6 +49,7 @@ const FilterContentEl = ({ filters, setFilters, clearAllFilters }: FilterProps) 
 ```
 
 **After (fixed):**
+
 ```tsx
 const FilterContentEl = ({ filters, setFilters, clearAllFilters }: FilterProps) => {
   const updateFilter = (key: keyof FilterState, value: any) => {
@@ -72,6 +76,7 @@ const FilterContentEl = ({ filters, setFilters, clearAllFilters }: FilterProps) 
 Properly placed the `sortedProducts` memoized calculation in the BrowsePage component where it belongs, after `filteredProducts` and before pagination:
 
 **Added at line 509:**
+
 ```tsx
 // Sorted products (client-side) to keep pagination, filtering and sorting in sync
 const sortedProducts = useMemo(() => {
@@ -112,11 +117,13 @@ const sortedProducts = useMemo(() => {
 ## Prevention
 
 This type of error typically occurs from:
+
 - Copy-paste accidents during refactoring
 - Incomplete git merges/conflicts
 - Editor autocomplete mishaps
 
 **Recommendations:**
+
 1. Always run `npm run dev` or `npm run build` after major changes
 2. Use ESLint and TypeScript strict mode
 3. Review git diffs carefully before committing

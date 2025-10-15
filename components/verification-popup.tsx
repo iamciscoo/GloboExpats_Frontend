@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertTriangle, Shield, X } from 'lucide-react'
+import { Shield, AlertTriangle } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -47,7 +47,7 @@ export function VerificationPopup({ isOpen, onClose, action }: VerificationPopup
         </DialogHeader>
 
         <div className="space-y-4">
-          <Alert variant="warning" className="bg-amber-50 text-amber-900 border-amber-200">
+          <Alert className="bg-amber-50 text-amber-900 border-amber-200">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
               Only verified expats can {actionMessages[action]} on our platform.

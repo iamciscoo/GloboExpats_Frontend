@@ -24,13 +24,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   return (
     <div className="min-h-screen bg-neutral-50 py-12">
       <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold text-neutral-800 mb-6">{category.name}</h1>
         <p className="text-neutral-600 mb-8 max-w-2xl">
           Browse items in the {category.name} category. Listings will appear here as soon as sellers
           start posting.
         </p>
         <div className="text-center text-neutral-500 py-20 border-2 border-dashed rounded-lg">
-          <p>We're working on bringing you great deals in this category.</p>
+          <p>We&apos;re working on bringing you great deals in this category.</p>
           <p>Check back soon!</p>
         </div>
       </div>

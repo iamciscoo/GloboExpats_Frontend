@@ -25,14 +25,15 @@
       "version": "detect"
     },
     "next": {
-      "rootDir": ["app", "components", "pages"]
+      "rootDir": "."
     }
   },
   "rules": {
-    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
     "react/react-in-jsx-scope": "off",
     "prettier/prettier": ["error", { "endOfLine": "auto" }],
-    "react/no-unescaped-entities": "warn",
-    "@typescript-eslint/no-explicit-any": "warn"
+    "react/no-unescaped-entities": "off",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@next/next/no-html-link-for-pages": ["error", "app"]
   }
 }

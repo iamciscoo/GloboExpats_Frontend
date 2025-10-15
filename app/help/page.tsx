@@ -4,8 +4,6 @@ import { useState } from 'react'
 import Link from 'next/link'
 import {
   Search,
-  ChevronDown,
-  ChevronRight,
   ShoppingCart,
   Package,
   CreditCard,

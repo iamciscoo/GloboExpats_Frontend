@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Globe, Users, Shield, Sparkles, ChevronRight, Award } from 'lucide-react'
+import { Globe, Users, Shield, Sparkles, ChevronRight } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import type { Metadata } from 'next'
@@ -124,7 +124,8 @@ export default function AboutPage() {
           <div className="text-center mb-10">
             <h2 className="text-3xl font-bold text-neutral-800 mb-4">Why Join Globoexpat?</h2>
             <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-              We're just getting started—here's what makes our community special from day one.
+              We&apos;re just getting started—here&apos;s what makes our community special from day
+              one.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto">
@@ -270,8 +271,8 @@ export default function AboutPage() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Join Globoexpat?</h2>
           <p className="text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
-            Whether you're looking to buy products from home or start selling to the expat
-            community, we're here to help you succeed.
+            Whether you&apos;re looking to buy products from home or start selling to the expat
+            community, we&apos;re here to help you succeed.
           </p>
           <div className="flex gap-4 justify-center">
             <Link href="/register">

@@ -268,7 +268,7 @@ export function useComponentLifecycle(componentName: string, enabled = false) {
 export function useBatchedUpdates<T>(initialState: T) {
   const [state, setState] = useState(initialState)
   const pendingUpdates = useRef<Partial<T>[]>([])
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
 
   const batchUpdate = useCallback((update: Partial<T>) => {
     pendingUpdates.current.push(update)

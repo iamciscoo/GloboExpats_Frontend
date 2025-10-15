@@ -22,6 +22,7 @@ import { Separator } from '@/components/ui/separator'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useCart } from '@/hooks/use-cart'
+import { cleanLocationString } from '@/lib/image-utils'
 
 export default function CartPage() {
   const {
@@ -223,7 +224,7 @@ export default function CartPage() {
                                   className="text-sm border-brand-primary/20 text-brand-primary bg-brand-primary/5"
                                 >
                                   <MapPin className="w-3 h-3 mr-1" />
-                                  {item.location}
+                                  {cleanLocationString(item.location)}
                                 </Badge>
                               </div>
 

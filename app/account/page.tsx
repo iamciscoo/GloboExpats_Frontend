@@ -4,11 +4,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
-  User,
   Package,
   Heart,
-  MapPin,
-  CreditCard,
   Settings,
   History,
   Shield,
@@ -16,8 +13,6 @@ import {
   Bell,
   Download,
   MessageCircle,
-  ShoppingBag,
-  Loader2,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -25,8 +20,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useAuth } from '@/hooks/use-auth'
+import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/use-toast'
+import { useAuth } from '@/hooks/use-auth'
 
 const accountMenuItems = [
   {
@@ -44,22 +40,6 @@ const accountMenuItems = [
     href: '/account/wishlist',
     description: 'View your saved items',
     count: 8,
-  },
-  {
-    id: 'addresses',
-    label: 'Addresses',
-    icon: MapPin,
-    href: '/account/addresses',
-    description: 'Edit addresses for orders and gifts',
-    count: 2,
-  },
-  {
-    id: 'payment',
-    label: 'Payment Methods',
-    icon: CreditCard,
-    href: '/account/payment-methods',
-    description: 'Edit or add payment methods',
-    count: 3,
   },
   {
     id: 'settings',
@@ -132,17 +112,11 @@ const accountStats = [
     icon: MessageCircle,
     color: 'text-green-600',
   },
-  {
-    label: 'Saved Addresses',
-    value: 2,
-    href: '/account/addresses',
-    icon: MapPin,
-    color: 'text-purple-600',
-  },
 ]
 
 export default function AccountDashboard() {
   const { user, isVerifiedBuyer, isLoading: authLoading } = useAuth()
+  useRouter() // Router available if needed
   const [activeTab, setActiveTab] = useState('overview')
   const [isLoading, setIsLoading] = useState(true)
   const [stats, setStats] = useState(accountStats)
@@ -156,6 +130,7 @@ export default function AccountDashboard() {
         await new Promise((resolve) => setTimeout(resolve, 1000))
         setStats(accountStats)
       } catch (error) {
+        console.error('Failed to load account data:', error)
         toast({
           title: 'Error loading account data',
           description: 'Some information may not be up to date.',
@@ -284,7 +259,7 @@ export default function AccountDashboard() {
                     <CardTitle>Account Summary</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                       {stats.map((stat) => {
                         const Icon = stat.icon
                         return (

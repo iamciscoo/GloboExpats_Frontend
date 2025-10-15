@@ -11,12 +11,13 @@ import { apiClient } from '@/lib/api'
 
 interface SearchBarProps {
   autoExpand?: boolean
+  onClose?: () => void
 }
 
-export default function SearchBar({ autoExpand = false }: SearchBarProps) {
+export default function SearchBar({ autoExpand = false, onClose }: SearchBarProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [isExpanded, setIsExpanded] = useState(autoExpand)
-  const [products, setProducts] = useState<any[]>([])
+  const [products, setProducts] = useState<Record<string, unknown>[]>([])
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -27,8 +28,13 @@ export default function SearchBar({ autoExpand = false }: SearchBarProps) {
         // ...existing code...
         const response = await apiClient.getAllProducts(0)
         // Access content directly from response (backend returns {content: Array, ...})
-        const productsData = response.content || response.data?.content || response.data || []
-        setProducts(productsData)
+        const responseData = response as Record<string, unknown>
+        const productsData =
+          (responseData.content as unknown[]) ||
+          ((responseData.data as Record<string, unknown>)?.content as unknown[]) ||
+          (responseData.data as unknown[]) ||
+          []
+        setProducts(productsData as Record<string, unknown>[])
         // ...existing code...
       } catch (error) {
         console.error('🚨 SearchBar: Failed to fetch products:', error)
@@ -60,10 +66,9 @@ export default function SearchBar({ autoExpand = false }: SearchBarProps) {
         href: `/browse?category=${c.slug}${searchQuery.trim() ? `&q=${encodeURIComponent(searchQuery.trim())}` : ''}`,
       }))
 
-    const uniqueProductsMap = new Map<string, any>()
+    const uniqueProductsMap = new Map<string, Record<string, unknown>>()
     for (const p of products) {
-      const productTitle = p.productName || p.title || ''
-      const productId = p.productId || p.id || ''
+      const productTitle = String(p.productName || p.title || '')
       if (
         productTitle.toLowerCase().includes(q) &&
         !uniqueProductsMap.has(productTitle.toLowerCase())
@@ -74,19 +79,22 @@ export default function SearchBar({ autoExpand = false }: SearchBarProps) {
     }
     const productMatches: Suggestion[] = Array.from(uniqueProductsMap.values()).map((p) => ({
       id: `prod-${p.productId || p.id}`,
-      label: p.productName || p.title || 'Unknown Product',
+      label: String(p.productName || p.title || 'Unknown Product'),
       type: 'product' as const,
-      href: `/browse?q=${encodeURIComponent(p.productName || p.title || '')}`,
+      href: `/browse?q=${encodeURIComponent(String(p.productName || p.title || ''))}`,
     }))
 
     return [...categoryMatches, ...productMatches].slice(0, 8)
-  }, [searchQuery])
+  }, [searchQuery, products])
 
   const navigateTo = (href: string) => {
     router.push(href)
     setIsExpanded(false)
     setSearchQuery('')
     setActiveIndex(-1)
+    if (onClose) {
+      onClose()
+    }
   }
 
   const handleSearch = (e: React.FormEvent) => {
@@ -96,6 +104,9 @@ export default function SearchBar({ autoExpand = false }: SearchBarProps) {
       setIsExpanded(false)
       setSearchQuery('')
       setActiveIndex(-1)
+      if (onClose) {
+        onClose()
+      }
     }
   }
 
@@ -107,6 +118,9 @@ export default function SearchBar({ autoExpand = false }: SearchBarProps) {
     setIsExpanded(false)
     setSearchQuery('')
     setActiveIndex(-1)
+    if (onClose) {
+      onClose()
+    }
   }
 
   // Focus input when expanded
@@ -189,7 +203,12 @@ export default function SearchBar({ autoExpand = false }: SearchBarProps) {
   }
 
   return (
-    <form onSubmit={handleSearch} className="relative w-full" role="search" aria-label="Search products">
+    <form
+      onSubmit={handleSearch}
+      className="relative w-full"
+      role="search"
+      aria-label="Search products"
+    >
       <Label htmlFor="search-input" className="sr-only">
         Search for products in the global marketplace
       </Label>
@@ -197,14 +216,14 @@ export default function SearchBar({ autoExpand = false }: SearchBarProps) {
         <Input
           ref={inputRef}
           id="search-input"
-          type="search"
+          type="text"
           placeholder="Search global marketplace..."
           value={searchQuery}
           onChange={(e) => {
             setSearchQuery(e.target.value)
             setActiveIndex(-1)
           }}
-          className="w-full sm:w-64 h-10 sm:h-8 pl-4 pr-20 sm:pr-16 bg-white border-slate-300 rounded-full text-sm sm:text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-neutral-900 placeholder-neutral-500"
+          className="w-full sm:w-96 h-10 sm:h-9 pl-4 pr-20 bg-white border-slate-300 rounded-full text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-neutral-900 placeholder-neutral-500"
           autoComplete="off"
           role="combobox"
           aria-expanded={suggestions.length > 0}
@@ -237,32 +256,32 @@ export default function SearchBar({ autoExpand = false }: SearchBarProps) {
             }
           }}
         />
-        <div className="absolute right-1.5 flex items-center gap-1">
+        <div className="absolute right-2 flex items-center gap-1.5">
           {searchQuery && (
             <Button
               type="submit"
               size="icon"
-              className="h-7 w-7 sm:h-6 sm:w-6 bg-cyan-500 hover:bg-cyan-600 rounded-full flex items-center justify-center"
+              className="h-7 w-7 sm:h-7 sm:w-7 bg-cyan-500 hover:bg-cyan-600 rounded-full flex items-center justify-center"
               aria-label="Search"
             >
-              <Search className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
+              <Search className="h-4 w-4" />
             </Button>
           )}
           <Button
             type="button"
             size="icon"
             onClick={handleClose}
-            className="h-7 w-7 sm:h-6 sm:w-6 bg-gray-400 hover:bg-gray-500 rounded-full flex items-center justify-center"
+            className="h-7 w-7 sm:h-7 sm:w-7 bg-gray-400 hover:bg-gray-500 rounded-full flex items-center justify-center"
             aria-label="Close search"
           >
-            <X className="h-3.5 w-3.5 sm:h-3 sm:w-3" />
+            <X className="h-4 w-4" />
           </Button>
         </div>
         {searchQuery.trim() && suggestions.length > 0 && (
           <ul
             id="search-suggestions"
             role="listbox"
-            className="absolute top-full left-0 mt-2 w-full sm:w-64 max-h-72 overflow-auto rounded-lg border-2 border-slate-300 bg-white shadow-2xl z-[100]"
+            className="absolute top-full left-0 mt-2 w-full sm:w-96 max-h-72 overflow-auto rounded-lg border-2 border-slate-300 bg-white shadow-2xl z-[100]"
           >
             {suggestions.map((s, idx) => (
               <li
@@ -271,7 +290,9 @@ export default function SearchBar({ autoExpand = false }: SearchBarProps) {
                 role="option"
                 aria-selected={idx === activeIndex}
                 className={`flex items-center gap-2 px-4 py-3 cursor-pointer text-sm font-medium transition-colors ${
-                  idx === activeIndex ? 'bg-cyan-100 text-cyan-900' : 'bg-white text-slate-900 hover:bg-slate-100'
+                  idx === activeIndex
+                    ? 'bg-cyan-100 text-cyan-900'
+                    : 'bg-white text-slate-900 hover:bg-slate-100'
                 }`}
                 onMouseEnter={() => setActiveIndex(idx)}
                 onMouseDown={(e) => {

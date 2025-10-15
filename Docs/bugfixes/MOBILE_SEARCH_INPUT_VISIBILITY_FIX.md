@@ -3,6 +3,7 @@
 **Date:** 2025-10-13  
 **Component:** Mobile Search Feature  
 **Files Modified:**
+
 - `components/search-bar.tsx`
 - `components/header/mobile-menu.tsx`
 
@@ -11,6 +12,7 @@
 When clicking the search icon on mobile devices, the search modal/sheet opened but only showed a search icon button instead of the actual search input field. The SearchBar component was rendering in its collapsed state even when inside the mobile search overlay.
 
 **User Experience:**
+
 - User clicks search icon ✅
 - Blue search modal opens ✅
 - Only search icon visible (not the input field) ❌
@@ -21,14 +23,15 @@ When clicking the search icon on mobile devices, the search modal/sheet opened b
 The `SearchBar` component has an internal `isExpanded` state that defaults to `false`. When `isExpanded` is false, it renders only a search icon button (lines 175-179). When the SearchBar was used inside the mobile Sheet component, it would render in this collapsed state, requiring an additional click on the icon to expand it.
 
 **Before:**
+
 ```tsx
 export default function SearchBar() {
-  const [isExpanded, setIsExpanded] = useState(false)  // Always starts collapsed
+  const [isExpanded, setIsExpanded] = useState(false) // Always starts collapsed
   // ...
   if (!isExpanded) {
-    return <Button>🔍</Button>  // Only shows icon
+    return <Button>🔍</Button> // Only shows icon
   }
-  return <Input />  // Shows actual search input
+  return <Input /> // Shows actual search input
 }
 ```
 
@@ -39,24 +42,27 @@ Added an `autoExpand` prop to the SearchBar component that controls the initial 
 ### 1. SearchBar Component Changes (`components/search-bar.tsx`)
 
 **Added interface and prop:**
+
 ```tsx
 interface SearchBarProps {
   autoExpand?: boolean
 }
 
 export default function SearchBar({ autoExpand = false }: SearchBarProps) {
-  const [isExpanded, setIsExpanded] = useState(autoExpand)  // Start expanded if prop is true
+  const [isExpanded, setIsExpanded] = useState(autoExpand) // Start expanded if prop is true
   // ...
 }
 ```
 
 **Updated click-outside handler:**
+
 ```tsx
 // Don't attach click-outside handler if auto-expanded (mobile sheet handles closing)
 if (autoExpand) return
 ```
 
 **Updated keyboard shortcuts:**
+
 ```tsx
 // Don't attach keyboard shortcuts if auto-expanded (mobile sheet handles its own)
 if (autoExpand) return
@@ -65,9 +71,10 @@ if (autoExpand) return
 ### 2. Mobile Menu Changes (`components/header/mobile-menu.tsx`)
 
 **Updated SearchBar usage:**
+
 ```tsx
 <div className="w-full max-w-md">
-  <SearchBar autoExpand />  {/* Added autoExpand prop */}
+  <SearchBar autoExpand /> {/* Added autoExpand prop */}
 </div>
 ```
 
@@ -82,6 +89,7 @@ if (autoExpand) return
 ## Behavior Differences
 
 ### Desktop Header Search
+
 - **Default:** Collapsed (shows search icon button)
 - **On Click:** Expands to show input field
 - **Keyboard Shortcuts:** / or Ctrl+K to open
@@ -89,6 +97,7 @@ if (autoExpand) return
 - **Escape Key:** Closes the search input
 
 ### Mobile Sheet Search
+
 - **Default:** Auto-expanded (shows input field immediately)
 - **Auto-Focus:** Input field receives focus automatically
 - **Keyboard Shortcuts:** Disabled (sheet handles its own)
@@ -98,6 +107,7 @@ if (autoExpand) return
 ## Testing
 
 1. **Mobile Search:**
+
    ```
    - Open mobile view (< 1024px width)
    - Click search icon in header

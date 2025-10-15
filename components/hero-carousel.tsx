@@ -2,17 +2,20 @@
 
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function HeroCarousel() {
   return (
     <section className="mb-8 mx-4 sm:mx-6 lg:mx-8">
       <div className="relative h-[400px] sm:h-[500px] lg:h-[600px] text-white overflow-hidden rounded-2xl shadow-xl">
         {/* Background Image */}
-        <img
+        <Image
           src="/assets/images/heroes/home-bottom-hero.jpeg"
           alt="Storage boxes for expat items"
-          className="absolute top-0 left-0 w-full h-full object-cover z-0"
+          fill
+          className="object-cover z-0"
           loading="eager"
+          priority
         />
 
         {/* Gradient Overlay */}
@@ -26,7 +29,9 @@ export default function HeroCarousel() {
             </h1>
 
             <p className="text-lg sm:text-xl lg:text-2xl text-neutral-200 mb-6 sm:mb-8 leading-relaxed">
-              Moving, relocating, or just need to declutter? Connect with fellow expats who need exactly what you're ready to let go. Turn your unused items into someone else's perfect find.
+              Moving, relocating, or just need to declutter? Connect with fellow expats who need
+              exactly what you&apos;re ready to let go. Turn your unused items into someone
+              else&apos;s perfect find.
             </p>
 
             <Link href="/browse">

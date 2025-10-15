@@ -8,7 +8,6 @@ import {
   MapPin,
   Shield,
   Heart,
-  Share2,
   ChevronLeft,
   ChevronRight,
   Truck,
@@ -16,9 +15,7 @@ import {
   CreditCard,
   MessageCircle,
   ExternalLink,
-  Eye,
   TrendingUp,
-  Clock,
   Loader2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -29,7 +26,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ProductActions } from '@/components/product-actions'
 import { useParams, useRouter } from 'next/navigation'
 import { apiClient } from '@/lib/api'
-import { getSellerInfo } from '@/lib/seller-data'
 import { transformBackendProduct } from '@/lib/image-utils'
 import type { FeaturedItem } from '@/lib/types'
 
@@ -39,6 +35,8 @@ export default function ProductPage() {
   const id = params?.id as string
 
   const [product, setProduct] = useState<FeaturedItem | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [rawProductData, setRawProductData] = useState<any>(null)
   const [similarProducts, setSimilarProducts] = useState<FeaturedItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -46,6 +44,7 @@ export default function ProductPage() {
   const [isSaved, setIsSaved] = useState(false)
 
   // Transform backend data to FeaturedItem format
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const transformToFeaturedItem = (item: any): FeaturedItem => {
     return transformBackendProduct(item)
   }
@@ -72,8 +71,17 @@ export default function ProductPage() {
         console.log('All Products:', allProductsResponse)
 
         // Process product details
-        const productData = productResponse.data || productResponse
+        const productResp = productResponse as
+          | { data?: Record<string, unknown> }
+          | Record<string, unknown>
+        const productData =
+          (productResp as { data?: Record<string, unknown> }).data ||
+          (productResp as Record<string, unknown>)
         if (productData && productData.productId) {
+          console.log('📦 PRODUCT PAGE: Raw product data:', productData)
+          console.log('📦 PRODUCT PAGE: Category:', productData.category)
+          console.log('📦 PRODUCT PAGE: Condition:', productData.productCondition)
+          setRawProductData(productData)
           const transformedProduct = transformToFeaturedItem(productData)
           setProduct(transformedProduct)
         } else {
@@ -81,11 +89,20 @@ export default function ProductPage() {
         }
 
         // Process similar products (exclude current product)
-        const allProducts = allProductsResponse.data?.content || allProductsResponse.data || []
+        const allProductsResp = allProductsResponse as {
+          data?: { content?: unknown[] } | unknown[]
+        }
+        const allProducts =
+          (allProductsResp.data as { content?: unknown[] })?.content ||
+          (allProductsResp.data as unknown[]) ||
+          []
         const similar = allProducts
-          .filter((item: any) => (item.productId || item.id) !== Number(id))
+          .filter((item) => {
+            const product = item as Record<string, unknown>
+            return (product.productId || product.id) !== Number(id)
+          })
           .slice(0, 4)
-          .map(transformToFeaturedItem)
+          .map((item) => transformToFeaturedItem(item as Record<string, unknown>))
         setSimilarProducts(similar)
       } catch (err) {
         console.error('Error fetching product:', err)
@@ -97,9 +114,6 @@ export default function ProductPage() {
 
     fetchProductData()
   }, [id])
-
-  // Get dynamic seller information
-  const sellerInfo = product ? getSellerInfo(product.listedBy) : null
 
   // Multiple product images for gallery
   const productImages = product
@@ -141,22 +155,6 @@ export default function ProductPage() {
 
   const prevImage = () => {
     setCurrentImage((prev) => (prev - 1 + productImages.length) % productImages.length)
-  }
-
-  const handleShare = async () => {
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: product.title,
-          text: 'Check out this amazing product!',
-          url: window.location.href,
-        })
-      } else {
-        await navigator.clipboard.writeText(window.location.href)
-      }
-    } catch (error) {
-      console.log('Error sharing:', error)
-    }
   }
 
   return (
@@ -273,20 +271,6 @@ export default function ProductPage() {
                             technology with reliable build quality. Each item is carefully inspected
                             to ensure it meets our high standards.
                           </p>
-                          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="bg-white rounded-lg p-4">
-                              <h4 className="font-semibold text-gray-800 mb-2">Condition</h4>
-                              <p className="text-sm text-gray-600">
-                                Like new - minimal signs of use
-                              </p>
-                            </div>
-                            <div className="bg-white rounded-lg p-4">
-                              <h4 className="font-semibold text-gray-800 mb-2">Warranty</h4>
-                              <p className="text-sm text-gray-600">
-                                6 months seller warranty included
-                              </p>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     </TabsContent>
@@ -302,27 +286,24 @@ export default function ProductPage() {
                               <div className="bg-white rounded-lg p-4">
                                 <div className="flex justify-between items-center">
                                   <span className="font-medium text-gray-800">Condition</span>
-                                  <span className="text-gray-600">Excellent</span>
-                                </div>
-                              </div>
-                              <div className="bg-white rounded-lg p-4">
-                                <div className="flex justify-between items-center">
-                                  <span className="font-medium text-gray-800">Age</span>
-                                  <span className="text-gray-600">Less than 1 year</span>
+                                  <span className="text-gray-600 capitalize">
+                                    {rawProductData?.productCondition ||
+                                      product?.condition ||
+                                      'Not specified'}
+                                  </span>
                                 </div>
                               </div>
                             </div>
                             <div className="space-y-4">
                               <div className="bg-white rounded-lg p-4">
                                 <div className="flex justify-between items-center">
-                                  <span className="font-medium text-gray-800">Original Box</span>
-                                  <span className="text-gray-600">Yes</span>
-                                </div>
-                              </div>
-                              <div className="bg-white rounded-lg p-4">
-                                <div className="flex justify-between items-center">
-                                  <span className="font-medium text-gray-800">Accessories</span>
-                                  <span className="text-gray-600">Complete</span>
+                                  <span className="font-medium text-gray-800">Category</span>
+                                  <span className="text-gray-600">
+                                    {rawProductData?.category?.categoryName ||
+                                      rawProductData?.categoryName ||
+                                      product?.category ||
+                                      'Not specified'}
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -369,23 +350,6 @@ export default function ProductPage() {
                   <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 px-3 py-1 font-medium">
                     Featured
                   </Badge>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="rounded-full border-gray-200 hover:bg-gray-50"
-                      onClick={handleShare}
-                    >
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="rounded-full border-gray-200 hover:bg-gray-50"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </div>
                 </div>
 
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 leading-tight">
@@ -457,10 +421,7 @@ export default function ProductPage() {
               <CardContent className="p-6">
                 <div className="flex items-center gap-4 mb-4">
                   <Avatar className="w-16 h-16 border-2 border-blue-100 shadow-lg">
-                    <AvatarImage
-                      src={sellerInfo?.avatar || '/placeholder.svg'}
-                      alt={product.listedBy}
-                    />
+                    <AvatarImage src="/placeholder.svg" alt={product.listedBy} />
                     <AvatarFallback className="bg-gradient-to-br from-blue-400 to-cyan-500 text-white font-semibold">
                       {product.listedBy?.slice(0, 2) || 'UN'}
                     </AvatarFallback>
@@ -471,30 +432,18 @@ export default function ProductPage() {
                     </h3>
                     <div className="flex items-center gap-1 text-sm mb-1">
                       <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                      <span className="font-medium text-gray-700">
-                        {sellerInfo?.rating || product.rating}
-                      </span>
-                      <span className="text-gray-500">
-                        ({sellerInfo?.reviewCount || product.reviews} reviews)
-                      </span>
+                      <span className="font-medium text-gray-700">{product.rating}</span>
+                      <span className="text-gray-500">({product.reviews} reviews)</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <MapPin className="w-4 h-4 text-gray-400" />
-                      <span className="text-gray-600 truncate">
-                        {sellerInfo?.location || product.location}
-                      </span>
+                      <span className="text-gray-600 truncate">{product.location}</span>
                     </div>
-                    {sellerInfo?.responseTime && (
-                      <div className="flex items-center gap-2 text-sm mt-1">
-                        <Clock className="w-4 h-4 text-gray-400" />
-                        <span className="text-gray-600">Responds {sellerInfo.responseTime}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
 
                 {product.isVerified && (
-                  <div className="bg-green-50 rounded-lg p-3 mb-4 border border-green-200">
+                  <div className="bg-green-50 rounded-lg p-3 border border-green-200">
                     <div className="flex items-center gap-2">
                       <Shield className="w-5 h-5 text-green-600" />
                       <span className="font-medium text-green-700">Verified Seller</span>
@@ -504,22 +453,6 @@ export default function ProductPage() {
                     </p>
                   </div>
                 )}
-
-                <Link
-                  href={
-                    sellerInfo?.profileSlug
-                      ? `/expat/profile/${sellerInfo.profileSlug}`
-                      : `/expat/profile/1`
-                  }
-                >
-                  <Button
-                    variant="outline"
-                    className="w-full border-gray-200 hover:bg-gray-50 transition-all duration-200"
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    View Profile
-                  </Button>
-                </Link>
               </CardContent>
             </Card>
 

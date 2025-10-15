@@ -58,11 +58,13 @@ app/layout.tsx (Root Layout)
 
 **Purpose**: Manages global authentication state and user data
 
-**Dependencies**: 
+**Dependencies**:
+
 - `lib/types.ts` - User and VerificationStatus types
 - `localStorage` - Session persistence
 
 **Provides**:
+
 ```typescript
 interface AuthContextType {
   // State
@@ -71,13 +73,13 @@ interface AuthContextType {
   isLoading: boolean
   error: string | null
   verificationStatus: VerificationStatus | null
-  
+
   // Actions
   login: (userData: Partial<User>) => Promise<void>
   logout: () => Promise<void>
   updateUser: (userData: Partial<User>) => void
   verifyOrganizationEmail: (email: string) => Promise<void>
-  
+
   // Computed Properties
   canBuy: boolean
   canSell: boolean
@@ -89,6 +91,7 @@ interface AuthContextType {
 ```
 
 **Connected Components**:
+
 - ✅ `components/header.tsx` - User status display
 - ✅ `components/verification-banner.tsx` - Verification prompts
 - ✅ `app/login/page.tsx` - Authentication UI
@@ -100,25 +103,27 @@ interface AuthContextType {
 
 **Purpose**: Manages shopping cart state and operations
 
-**Dependencies**: 
+**Dependencies**:
+
 - `hooks/use-auth.ts` - User authentication status
 - `localStorage` - Cart persistence
 - `components/ui/use-toast.ts` - User notifications
 
 **Provides**:
+
 ```typescript
 interface CartContextType {
   // State
   items: CartItem[]
   isLoading: boolean
   error: string | null
-  
+
   // Computed Properties
   itemCount: number
   subtotal: number
   savings: number
   isEmpty: boolean
-  
+
   // Actions
   addToCart: (product: CartItem, quantity?: number) => Promise<void>
   removeFromCart: (itemId: string) => Promise<void>
@@ -128,6 +133,7 @@ interface CartContextType {
 ```
 
 **Connected Components**:
+
 - ✅ `components/header.tsx` - Cart count display
 - ✅ `components/product-actions.tsx` - Add to cart buttons
 - ✅ `app/cart/page.tsx` - Cart management
@@ -146,20 +152,20 @@ graph TD
     A --> E[Navigation Component]
     A --> F[SearchBar Component]
     A --> G[User Actions]
-    
+
     B --> H[AuthProvider]
     C --> I[CartProvider]
-    
+
     G --> J{User Logged In?}
     J -->|Yes| K[ProfileDropdown]
     J -->|Yes| L[NotificationBadge]
     J -->|No| M[AuthButtons]
-    
+
     K --> N[User Menu Items]
     L --> O[Cart Count]
     L --> P[Notifications Count]
     L --> Q[Messages Count]
-    
+
     M --> R[Login Button]
     M --> S[Register Button]
 ```
@@ -170,19 +176,19 @@ graph TD
 graph TD
     A[FeaturedListings] --> B[useProducts Hook]
     A --> C[ProductCard Components]
-    
+
     B --> D[API Call]
     D --> E[lib/api.ts]
     E --> F[Backend API]
-    
+
     C --> G[ProductActions]
     G --> H[useCart Hook]
     G --> I[useAuth Hook]
-    
+
     H --> J{User Can Buy?}
     J -->|Yes| K[Add to Cart]
     J -->|No| L[Verification Prompt]
-    
+
     I --> M[User Verification Status]
     M --> N[Show/Hide Actions]
 ```
@@ -217,7 +223,7 @@ graph TD
 // Header Component
 const Header = () => {
   const { isLoggedIn, user, logout } = useAuth() // ← AuthProvider
-  
+
   if (isLoggedIn) {
     return <UserNavigation user={user} onLogout={logout} />
   }
@@ -227,7 +233,7 @@ const Header = () => {
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { isLoggedIn, isLoading } = useAuth() // ← AuthProvider
-  
+
   if (isLoading) return <LoadingSpinner />
   if (!isLoggedIn) return <Navigate to="/login" />
   return children
@@ -237,7 +243,7 @@ const ProtectedRoute = ({ children }) => {
 const ProductActions = ({ product }) => {
   const { canBuy } = useAuth() // ← AuthProvider
   const { addToCart } = useCart() // ← CartProvider
-  
+
   const handleAddToCart = () => {
     if (!canBuy) {
       // Show verification prompt
@@ -268,13 +274,13 @@ const ProductActions = ({ product }) => {
 const ProductCard = ({ product }) => {
   const { addToCart, isInCart } = useCart() // ← CartProvider
   const { canBuy } = useAuth() // ← AuthProvider
-  
+
   const handleAddToCart = async () => {
     if (!canBuy) {
       // Redirect to verification
       return
     }
-    
+
     await addToCart({
       id: product.id,
       title: product.title,
@@ -282,13 +288,13 @@ const ProductCard = ({ product }) => {
       // ... other required fields
     })
   }
-  
+
   return (
     <Card>
       <CardContent>
         <h3>{product.title}</h3>
         <p>{product.price}</p>
-        <Button 
+        <Button
           onClick={handleAddToCart}
           disabled={!canBuy}
         >
@@ -301,19 +307,19 @@ const ProductCard = ({ product }) => {
 
 // Cart Page Component
 const CartPage = () => {
-  const { 
-    items, 
-    itemCount, 
-    subtotal, 
-    removeFromCart, 
-    updateQuantity 
+  const {
+    items,
+    itemCount,
+    subtotal,
+    removeFromCart,
+    updateQuantity
   } = useCart() // ← CartProvider
-  
+
   return (
     <div>
       <h1>Shopping Cart ({itemCount} items)</h1>
       {items.map(item => (
-        <CartItem 
+        <CartItem
           key={item.id}
           item={item}
           onRemove={removeFromCart}
@@ -360,7 +366,7 @@ const Navigation = ({ isLoggedIn, isAdmin }) => {
     <nav>
       <NavLink href="/">Home</NavLink>
       <NavLink href="/browse">Browse</NavLink>
-      
+
       {isLoggedIn && (
         <>
           <NavLink href="/sell">Sell</NavLink>
@@ -368,7 +374,7 @@ const Navigation = ({ isLoggedIn, isAdmin }) => {
           <NavLink href="/messages">Messages</NavLink>
         </>
       )}
-      
+
       {isAdmin && (
         <NavLink href="/admin">Admin</NavLink>
       )}
@@ -380,7 +386,7 @@ const Navigation = ({ isLoggedIn, isAdmin }) => {
 const Breadcrumb = () => {
   const pathname = usePathname()
   const breadcrumbs = generateBreadcrumbs(pathname)
-  
+
   return (
     <nav aria-label="Breadcrumb">
       {breadcrumbs.map((crumb, index) => (
@@ -406,25 +412,25 @@ export const api = {
     register: (userData: any) => apiClient.register(userData),
     logout: () => apiClient.logout(),
   },
-  
+
   // Products
   products: {
     list: (params?: ProductListParams) => apiClient.getProducts(params),
     get: (id: string) => apiClient.getProduct(id),
     create: (data: any) => apiClient.createProduct(data),
   },
-  
+
   // User Management
   users: {
     get: (id: string) => apiClient.getUser(id),
     update: (id: string, data: any) => apiClient.updateUser(id, data),
   },
-  
+
   // Cart & Orders
   cart: {
     sync: (items: CartItem[]) => apiClient.syncCart(items),
   },
-  
+
   orders: {
     list: () => apiClient.getOrders(),
     create: (data: any) => apiClient.createOrder(data),
@@ -439,7 +445,7 @@ export const api = {
 const useProducts = (category?: string) => {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -451,19 +457,19 @@ const useProducts = (category?: string) => {
         setLoading(false)
       }
     }
-    
+
     fetchProducts()
   }, [category])
-  
+
   return { products, loading }
 }
 
 // Component Usage
 const ProductsList = () => {
   const { products, loading } = useProducts() // ← Custom hook
-  
+
   if (loading) return <LoadingSpinner />
-  
+
   return (
     <div>
       {products.map(product => (
@@ -498,46 +504,46 @@ ErrorBoundary (level: page, name: Application)
 
 ```typescript
 // Error Boundary Component
-const ErrorBoundary = ({ 
-  level, 
-  name, 
-  children 
+const ErrorBoundary = ({
+  level,
+  name,
+  children
 }: ErrorBoundaryProps) => {
   const [hasError, setHasError] = useState(false)
   const [error, setError] = useState<Error | null>(null)
-  
+
   useEffect(() => {
     const handleError = (error: ErrorEvent) => {
       setHasError(true)
       setError(new Error(error.message))
-      
+
       // Log error with context
       console.error(`Error in ${level}:${name}:`, error)
     }
-    
+
     window.addEventListener('error', handleError)
     return () => window.removeEventListener('error', handleError)
   }, [level, name])
-  
+
   if (hasError) {
     return <ErrorFallback error={error} level={level} name={name} />
   }
-  
+
   return children
 }
 
 // Component Error Handling
 const FeaturedListings = () => {
   const { products, loading, error } = useProducts()
-  
+
   if (error) {
     return <ErrorMessage error={error} />
   }
-  
+
   if (loading) {
     return <LoadingSpinner />
   }
-  
+
   return (
     <div>
       {products.map(product => (
@@ -557,21 +563,21 @@ graph TD
     A[User Login] --> B[AuthProvider]
     B --> C[VerificationStatus Created]
     C --> D[VerificationBanner]
-    
+
     D --> E{Fully Verified?}
     E -->|No| F[Show Banner]
     E -->|Yes| G[Hide Banner]
-    
+
     F --> H[Click Verify]
     H --> I[Navigate to Verification]
     I --> J[VerificationPage]
-    
+
     J --> K[Email Verification]
     J --> L[Identity Verification]
-    
+
     K --> M[AuthProvider.verifyOrganizationEmail]
     L --> N[Document Upload]
-    
+
     M --> O[Update VerificationStatus]
     N --> O
     O --> P[UI Updates]
@@ -584,18 +590,18 @@ graph TD
 // Verification Banner Component
 const VerificationBanner = () => {
   const { verificationStatus, currentVerificationStep } = useAuth()
-  
+
   if (!verificationStatus || verificationStatus.isFullyVerified) {
     return null
   }
-  
+
   return (
     <Banner variant="warning">
       <p>Complete verification to access all features</p>
       <Button asChild>
         <Link href="/account/verification">
-          {currentVerificationStep === 'organization' 
-            ? 'Verify Email' 
+          {currentVerificationStep === 'organization'
+            ? 'Verify Email'
             : 'Upload Documents'
           }
         </Link>
@@ -608,7 +614,7 @@ const VerificationBanner = () => {
 const ProductActions = ({ product }) => {
   const { canBuy, canSell, verificationStatus } = useAuth()
   const { addToCart } = useCart()
-  
+
   const getActionButton = () => {
     if (!canBuy) {
       return (
@@ -619,18 +625,18 @@ const ProductActions = ({ product }) => {
         </Button>
       )
     }
-    
+
     return (
       <Button onClick={() => addToCart(product)}>
         Add to Cart
       </Button>
     )
   }
-  
+
   return (
     <div>
       {getActionButton()}
-      <ContactSellerButton 
+      <ContactSellerButton
         disabled={!verificationStatus?.canContact}
         sellerId={product.sellerId}
       />
@@ -648,11 +654,11 @@ const ProductActions = ({ product }) => {
 const Header = memo(() => {
   const { isLoggedIn, user, logout } = useAuth()
   const { itemCount } = useCart()
-  
+
   // Memoized user navigation to prevent re-renders
   const userNavigation = useMemo(() => {
     if (!isLoggedIn) return null
-    
+
     return (
       <UserNavigation
         user={user}
@@ -661,7 +667,7 @@ const Header = memo(() => {
       />
     )
   }, [isLoggedIn, user, itemCount, logout])
-  
+
   return (
     <header>
       <Logo />
@@ -672,16 +678,16 @@ const Header = memo(() => {
 })
 
 // Product Card - Memoized with specific props
-const ProductCard = memo(({ 
-  product, 
-  onAddToCart, 
-  isInCart 
+const ProductCard = memo(({
+  product,
+  onAddToCart,
+  isInCart
 }: ProductCardProps) => {
   // Memoized click handler
   const handleAddToCart = useCallback(() => {
     onAddToCart(product.id)
   }, [onAddToCart, product.id])
-  
+
   return (
     <Card>
       <CardContent>
@@ -715,24 +721,24 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/browse" element={<BrowsePage />} />
-      
+
       {/* Lazy loaded routes */}
-      <Route 
-        path="/admin/*" 
+      <Route
+        path="/admin/*"
         element={
           <Suspense fallback={<AdminLoadingSkeleton />}>
             <AdminDashboard />
           </Suspense>
-        } 
+        }
       />
-      
-      <Route 
-        path="/messages" 
+
+      <Route
+        path="/messages"
         element={
           <Suspense fallback={<MessagesLoadingSkeleton />}>
             <MessagesPage />
           </Suspense>
-        } 
+        }
       />
     </Routes>
   )
@@ -750,4 +756,4 @@ This component connection system provides:
 5. **Error Handling**: Comprehensive error boundaries protect the application
 6. **Scalability**: Modular architecture supports easy feature additions
 
-The architecture ensures that components are loosely coupled but effectively communicate through well-defined interfaces, making the application maintainable and scalable. 
+The architecture ensures that components are loosely coupled but effectively communicate through well-defined interfaces, making the application maintainable and scalable.

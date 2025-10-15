@@ -69,6 +69,7 @@ experimental: {
 ### React Optimizations
 
 #### Server Components (Default)
+
 Most components are server components for optimal performance:
 
 ```tsx
@@ -80,6 +81,7 @@ export default async function ProductPage() {
 ```
 
 #### Client Components (Selective)
+
 Only when interactivity is required:
 
 ```tsx
@@ -105,11 +107,14 @@ const ProductCard = React.memo(({ product }) => {
 })
 
 // ✅ Memoize with custom comparison
-const UserProfile = React.memo(({ user }) => {
-  // Component logic
-}, (prevProps, nextProps) => {
-  return prevProps.user.id === nextProps.user.id
-})
+const UserProfile = React.memo(
+  ({ user }) => {
+    // Component logic
+  },
+  (prevProps, nextProps) => {
+    return prevProps.user.id === nextProps.user.id
+  }
+)
 ```
 
 #### Hook Optimizations
@@ -126,10 +131,7 @@ const handleSubmit = useCallback(async (formData) => {
 }, [])
 
 // ✅ Debounce search input
-const debouncedSearch = useMemo(
-  () => debounce((query) => setSearchQuery(query), 300),
-  []
-)
+const debouncedSearch = useMemo(() => debounce((query) => setSearchQuery(query), 300), [])
 ```
 
 ### Image Optimization
@@ -187,9 +189,10 @@ import Image from 'next/image'
 **Target**: < 2.5 seconds
 
 **Optimizations**:
+
 ```tsx
 // ✅ Preload critical resources
-<head>
+;<head>
   <link rel="preload" href="/hero-image.jpg" as="image" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
 </head>
@@ -197,13 +200,7 @@ import Image from 'next/image'
 // ✅ Optimize hero section
 const HeroSection = () => (
   <section className="hero">
-    <Image
-      src="/hero-image.jpg"
-      alt="Hero"
-      priority
-      fill
-      sizes="100vw"
-    />
+    <Image src="/hero-image.jpg" alt="Hero" priority fill sizes="100vw" />
   </section>
 )
 ```
@@ -213,6 +210,7 @@ const HeroSection = () => (
 **Target**: < 100 milliseconds
 
 **Optimizations**:
+
 ```tsx
 // ✅ Minimize JavaScript execution time
 const [isClient, setIsClient] = useState(false)
@@ -223,10 +221,7 @@ useEffect(() => {
 
 // ✅ Use Intersection Observer for lazy loading
 const useIntersectionObserver = (callback) => {
-  const observer = useMemo(
-    () => new IntersectionObserver(callback),
-    [callback]
-  )
+  const observer = useMemo(() => new IntersectionObserver(callback), [callback])
   // Observer logic
 }
 ```
@@ -236,15 +231,11 @@ const useIntersectionObserver = (callback) => {
 **Target**: < 0.1
 
 **Optimizations**:
+
 ```tsx
 // ✅ Reserve space for images
-<div className="aspect-w-16 aspect-h-9">
-  <Image
-    src="/image.jpg"
-    alt="Image"
-    fill
-    className="object-cover"
-  />
+;<div className="aspect-w-16 aspect-h-9">
+  <Image src="/image.jpg" alt="Image" fill className="object-cover" />
 </div>
 
 // ✅ Skeleton loaders to prevent layout shifts
@@ -262,6 +253,7 @@ const ProductSkeleton = () => (
 ### Current Bundle Analysis
 
 Run bundle analysis:
+
 ```bash
 npm run build:analyze
 ```
@@ -280,7 +272,7 @@ npm run build:analyze
 // ✅ Dynamic import for heavy components
 const AdminDashboard = dynamic(() => import('./AdminDashboard'), {
   loading: () => <DashboardSkeleton />,
-  ssr: false
+  ssr: false,
 })
 
 // ✅ Dynamic import with named exports
@@ -323,7 +315,7 @@ import { useRenderTracker } from '@/hooks/use-performance'
 
 export const Component = () => {
   useRenderTracker('ComponentName', process.env.NODE_ENV === 'development')
-  
+
   return <div>Component content</div>
 }
 ```
@@ -343,7 +335,7 @@ export const trackWebVitals = (metric) => {
       analytics.track('web-vitals', {
         name: metric.name,
         value: metric.value,
-        id: metric.id
+        id: metric.id,
       })
       break
   }
@@ -360,7 +352,7 @@ export default function RootLayout({ children }) {
       getTTFB(trackWebVitals)
     })
   }, [])
-  
+
   return children
 }
 ```
@@ -372,12 +364,13 @@ export default function RootLayout({ children }) {
 const usePerformanceMetrics = (componentName) => {
   useEffect(() => {
     const startTime = performance.now()
-    
+
     return () => {
       const endTime = performance.now()
       const renderTime = endTime - startTime
-      
-      if (renderTime > 16) { // Longer than one frame
+
+      if (renderTime > 16) {
+        // Longer than one frame
         console.warn(`${componentName} took ${renderTime}ms to render`)
       }
     }
@@ -408,14 +401,14 @@ npm run build:analyze
 export const useRenderTracker = (componentName: string, enabled = false) => {
   const renderCount = useRef(0)
   const startTime = useRef(performance.now())
-  
+
   useEffect(() => {
     if (!enabled) return
-    
+
     renderCount.current++
     const endTime = performance.now()
     const renderTime = endTime - startTime.current
-    
+
     console.log(`${componentName} render #${renderCount.current}: ${renderTime}ms`)
     startTime.current = endTime
   })
@@ -429,11 +422,11 @@ export const useMemoryMonitor = () => {
         console.log({
           used: Math.round(memory.usedJSHeapSize / 1048576),
           total: Math.round(memory.totalJSHeapSize / 1048576),
-          limit: Math.round(memory.jsHeapSizeLimit / 1048576)
+          limit: Math.round(memory.jsHeapSizeLimit / 1048576),
         })
       }
     }, 5000)
-    
+
     return () => clearInterval(interval)
   }, [])
 }
@@ -451,13 +444,13 @@ describe('ProductList Performance', () => {
     const products = Array.from({ length: 1000 }, (_, i) => ({
       id: i,
       title: `Product ${i}`,
-      price: 100
+      price: 100,
     }))
-    
+
     const startTime = performance.now()
     render(<ProductList products={products} />)
     const endTime = performance.now()
-    
+
     expect(endTime - startTime).toBeLessThan(100) // Should render in < 100ms
   })
 })
@@ -466,6 +459,7 @@ describe('ProductList Performance', () => {
 ## Performance Checklist
 
 ### Build Optimization
+
 - [ ] Bundle size analyzed and optimized
 - [ ] Dynamic imports for heavy components
 - [ ] Tree shaking configured
@@ -473,6 +467,7 @@ describe('ProductList Performance', () => {
 - [ ] Image optimization enabled
 
 ### Runtime Performance
+
 - [ ] Server components used by default
 - [ ] Client components minimized
 - [ ] Component memoization applied
@@ -480,6 +475,7 @@ describe('ProductList Performance', () => {
 - [ ] Loading states and skeletons added
 
 ### Core Web Vitals
+
 - [ ] LCP < 2.5 seconds
 - [ ] FID < 100 milliseconds
 - [ ] CLS < 0.1
@@ -487,6 +483,7 @@ describe('ProductList Performance', () => {
 - [ ] Critical resources preloaded
 
 ### Monitoring
+
 - [ ] Performance tracking enabled
 - [ ] Real user monitoring implemented
 - [ ] Error boundary coverage
@@ -522,23 +519,24 @@ module.exports = {
   ci: {
     collect: {
       url: ['http://localhost:3000'],
-      numberOfRuns: 3
+      numberOfRuns: 3,
     },
     assert: {
       assertions: {
         'categories:performance': ['warn', { minScore: 0.9 }],
         'categories:accessibility': ['error', { minScore: 0.9 }],
-        'categories:seo': ['warn', { minScore: 0.9 }]
-      }
-    }
-  }
+        'categories:seo': ['warn', { minScore: 0.9 }],
+      },
+    },
+  },
 }
 ```
 
 ---
 
 **Performance Targets:**
+
 - **Lighthouse Score**: 95+ (Performance, Accessibility, SEO)
 - **Build Time**: < 45 seconds
 - **First Load**: < 2 seconds on 3G
-- **Time to Interactive**: < 3 seconds 
+- **Time to Interactive**: < 3 seconds

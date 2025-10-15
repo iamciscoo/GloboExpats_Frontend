@@ -3,12 +3,11 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { MapPin, Plus, Edit2, Trash2, ChevronRight, Home, Building, Check } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
@@ -87,7 +86,7 @@ const countries = [
 export default function AddressesPage() {
   const [addresses, setAddresses] = useState(mockAddresses)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [editingAddress, setEditingAddress] = useState<any>(null)
+  const [editingAddress, setEditingAddress] = useState<(typeof mockAddresses)[0] | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     type: 'home',
@@ -102,7 +101,7 @@ export default function AddressesPage() {
   })
   const { toast } = useToast()
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -144,7 +143,7 @@ export default function AddressesPage() {
     resetForm()
   }
 
-  const handleEditAddress = (address: any) => {
+  const handleEditAddress = (address: (typeof mockAddresses)[0]) => {
     setEditingAddress(address)
     setFormData(address)
     setIsAddDialogOpen(true)

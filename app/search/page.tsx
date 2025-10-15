@@ -1,25 +1,9 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import {
-  Search,
-  Filter,
-  SlidersHorizontal,
-  Grid,
-  List,
-  Heart,
-  Star,
-  MapPin,
-  Shield,
-  Eye,
-  ChevronDown,
-  X,
-  Plus,
-  Minus,
-} from 'lucide-react'
+import { Search, Filter, Grid, List, Heart, Star, MapPin, Shield, Eye, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -35,9 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { useSearch, type SearchProduct } from '@/hooks/use-search'
 import { useCart } from '@/hooks/use-cart'
 import { formatPrice } from '@/lib/utils'
@@ -490,6 +472,7 @@ function SearchPageContent() {
             <div className="flex items-center gap-3">
               <Select
                 value={filters.sortBy || 'relevance'}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onValueChange={(value) => updateFilters({ sortBy: value as any })}
               >
                 <SelectTrigger className="w-48">

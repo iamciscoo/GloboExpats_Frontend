@@ -69,7 +69,12 @@ import { useAuth } from '@/hooks/use-auth'
 import { apiClient } from '@/lib/api'
 import { backendCartToFrontendItems } from '@/lib/cart-utils'
 import type { BackendCartResponse, BackendCartItem } from '@/lib/types'
-import { setItemDebounced, getItem, removeItem as removeStorageItem, flushPendingWrites } from '@/lib/storage-utils'
+import {
+  setItemDebounced,
+  getItem,
+  removeItem as removeStorageItem,
+  flushPendingWrites,
+} from '@/lib/storage-utils'
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -317,7 +322,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           const response = await apiClient.getUserCart()
 
           if (response.success || response.data) {
-            const backendCart: BackendCartResponse = response.data || response
+            const backendCart = (response.data || response) as BackendCartResponse
             const frontendItems = backendCartToFrontendItems(backendCart)
 
             setCart((prev) => ({
@@ -335,12 +340,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
           }
         } catch (backendError: any) {
           // Check if this is a buyer profile / verification error
-          const isBuyerProfileError = 
+          const isBuyerProfileError =
             backendError?.message?.includes('Buyer profile not found') ||
             backendError?.message?.includes('not verified') ||
             backendError?.message?.includes('verification required') ||
             backendError?.message?.includes('cannot add items to cart')
-          
+
           if (isBuyerProfileError) {
             // Silently handle buyer profile errors - user just needs to verify
             // Don't spam console with errors for expected behavior
@@ -355,7 +360,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             }))
             return
           }
-          
+
           // For other errors, log warning and fallback to localStorage
           console.warn('Failed to load cart from backend, using local storage:', backendError)
 
@@ -417,7 +422,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (!isLoggedIn && cart.isInitialized) {
       // Flush any pending writes before clearing
       flushPendingWrites()
-      
+
       setCart((prev) => ({
         ...prev,
         items: [],
@@ -533,7 +538,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           // Refresh cart from backend to get updated state
           const cartResponse = await apiClient.getUserCart()
           if (cartResponse.success || cartResponse.data) {
-            const backendCart: BackendCartResponse = cartResponse.data || cartResponse
+            const backendCart = (cartResponse.data || cartResponse) as BackendCartResponse
             const frontendItems = backendCartToFrontendItems(backendCart)
 
             setCart((prev) => {
@@ -598,7 +603,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           // Refresh cart from backend to get updated state
           const cartResponse = await apiClient.getUserCart()
           if (cartResponse.success || cartResponse.data) {
-            const backendCart: BackendCartResponse = cartResponse.data || cartResponse
+            const backendCart = (cartResponse.data || cartResponse) as BackendCartResponse
             const frontendItems = backendCartToFrontendItems(backendCart)
 
             setCart((prev) => {
@@ -686,7 +691,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           // Refresh cart from backend to get updated state
           const cartResponse = await apiClient.getUserCart()
           if (cartResponse.success || cartResponse.data) {
-            const backendCart: BackendCartResponse = cartResponse.data || cartResponse
+            const backendCart = (cartResponse.data || cartResponse) as BackendCartResponse
             const frontendItems = backendCartToFrontendItems(backendCart)
 
             setCart((prev) => {
@@ -770,7 +775,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       const response = await apiClient.getUserCart()
       if (response.success || response.data) {
-        const backendCart: BackendCartResponse = response.data || response
+        const backendCart = (response.data || response) as BackendCartResponse
         const frontendItems = backendCartToFrontendItems(backendCart)
 
         setCart((prev) => {

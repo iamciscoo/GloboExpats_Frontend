@@ -2,10 +2,10 @@
  * =============================================================================
  * Storage Utilities - Optimized localStorage Management
  * =============================================================================
- * 
+ *
  * Provides debounced and throttled storage operations to prevent aggressive
  * writes that can cause performance issues and delays in UI updates.
- * 
+ *
  * Key Features:
  * - Debounced writes (batches multiple updates)
  * - Error handling with fallback
@@ -17,7 +17,7 @@
 const debounceTimers: Map<string, NodeJS.Timeout> = new Map()
 
 // Memory cache for frequently accessed values
-const memoryCache: Map<string, { value: any; timestamp: number }> = new Map()
+const memoryCache: Map<string, { value: unknown; timestamp: number }> = new Map()
 
 // Cache TTL in milliseconds (5 seconds)
 const CACHE_TTL = 5000
@@ -25,12 +25,12 @@ const CACHE_TTL = 5000
 /**
  * Debounced localStorage setter
  * Batches multiple rapid updates to prevent excessive writes
- * 
+ *
  * @param key - Storage key
  * @param value - Value to store
  * @param delay - Debounce delay in ms (default: 300ms)
  */
-export function setItemDebounced(key: string, value: any, delay: number = 300): void {
+export function setItemDebounced(key: string, value: unknown, delay: number = 300): void {
   // Clear existing timer for this key
   const existingTimer = debounceTimers.get(key)
   if (existingTimer) {
@@ -55,10 +55,11 @@ export function setItemDebounced(key: string, value: any, delay: number = 300): 
 
 /**
  * Get item from localStorage with memory cache fallback
- * 
+ *
  * @param key - Storage key
  * @returns Parsed value or null
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getItem<T = any>(key: string): T | null {
   try {
     // Check memory cache first
@@ -72,10 +73,10 @@ export function getItem<T = any>(key: string): T | null {
     if (!item) return null
 
     const parsed = JSON.parse(item) as T
-    
+
     // Update memory cache
     memoryCache.set(key, { value: parsed, timestamp: Date.now() })
-    
+
     return parsed
   } catch (error) {
     console.error(`Failed to read from localStorage (key: ${key}):`, error)
@@ -85,7 +86,7 @@ export function getItem<T = any>(key: string): T | null {
 
 /**
  * Remove item from localStorage and memory cache
- * 
+ *
  * @param key - Storage key
  */
 export function removeItem(key: string): void {
@@ -114,7 +115,7 @@ export function removeItem(key: string): void {
 export function flushPendingWrites(): void {
   debounceTimers.forEach((timer, key) => {
     clearTimeout(timer)
-    
+
     const cached = memoryCache.get(key)
     if (cached) {
       try {
@@ -124,7 +125,7 @@ export function flushPendingWrites(): void {
       }
     }
   })
-  
+
   debounceTimers.clear()
 }
 
@@ -138,11 +139,11 @@ export function clearCache(): void {
 /**
  * Set item immediately without debouncing
  * Use sparingly for critical data that must be persisted immediately
- * 
+ *
  * @param key - Storage key
  * @param value - Value to store
  */
-export function setItemImmediate(key: string, value: any): void {
+export function setItemImmediate(key: string, value: unknown): void {
   try {
     localStorage.setItem(key, JSON.stringify(value))
     memoryCache.set(key, { value, timestamp: Date.now() })

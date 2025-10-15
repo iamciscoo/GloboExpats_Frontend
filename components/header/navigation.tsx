@@ -21,7 +21,7 @@ export const Navigation = React.memo<NavigationProps>(
 
         {isLoggedIn && (
           <Link
-            href="/expat/dashboard"
+            href="/expat/dashboard?tab=listings"
             className="text-sm font-medium text-neutral-200 hover:text-white hover:bg-white/10 px-3 py-2 rounded-md transition-colors flex items-center gap-1"
           >
             <Package className="h-4 w-4" />

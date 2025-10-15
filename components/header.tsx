@@ -50,38 +50,19 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react'
-import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-  ChevronDown,
-  Menu,
-  Package,
-  Shield,
-  LogIn,
-  UserPlus,
-  MessageCircle,
-  User,
-  Bell,
-  Search,
-  ShoppingCart,
-} from 'lucide-react'
+import { ChevronDown, MessageCircle, Bell, ShoppingCart, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/hooks/use-auth'
 import { useCurrency } from '@/hooks/use-currency'
 import { useCart } from '@/hooks/use-cart'
-import { getInitials } from '@/lib/utils'
 import SearchBar from '@/components/search-bar'
-import { CATEGORIES } from '@/lib/constants'
 import { useRenderTracker } from '@/hooks/use-performance'
 import { AuthButtons } from '@/components/header/auth-buttons'
 import { NotificationBadge } from '@/components/header/notification-badge'
@@ -90,6 +71,7 @@ import { Logo } from '@/components/header/logo'
 import { Navigation } from '@/components/header/navigation'
 import { MobileMenu } from '@/components/header/mobile-menu'
 import { useNotifications } from '@/hooks/use-notifications'
+import { CartSidePanelTrigger } from '@/components/cart-sidepanel'
 
 /**
  * =============================================================================
@@ -103,7 +85,7 @@ import { useNotifications } from '@/hooks/use-notifications'
  * Design matches the actual header layout for seamless transition.
  */
 const HeaderSkeleton = React.memo(() => (
-  <header className="bg-brand-primary text-neutral-100 shadow-md sticky top-0 z-50">
+  <header className="bg-brand-primary text-neutral-100 shadow-md sticky top-0 z-[60]">
     <div className="container mx-auto px-4">
       <div className="flex items-center justify-between h-16">
         {/* Logo skeleton - represents brand logo area */}
@@ -149,6 +131,7 @@ HeaderSkeleton.displayName = 'HeaderSkeleton'
  * @param cartItemCount - Number of items in shopping cart
  */
 const UserNavigation = React.memo<{
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   user: any
   isVerifiedBuyer: boolean
   isAdmin: boolean
@@ -159,15 +142,15 @@ const UserNavigation = React.memo<{
 
   return (
     <div className="flex items-center gap-2" role="navigation" aria-label="User navigation">
-      {/* Shopping Cart - Always visible for easy access */}
-      <NotificationBadge
-        href="/cart"
-        icon={ShoppingCart}
-        count={cartItemCount}
-        ariaLabel={`View shopping cart (${cartItemCount} items)`}
-        testId="cart-button"
-        className="hover:bg-brand-primary/80 transition-colors"
-      />
+      {/* Shopping Cart - Quick access side panel with keyboard shortcut (Ctrl/Cmd+K) */}
+      <CartSidePanelTrigger className="relative p-2 rounded-md text-white hover:bg-brand-primary/80 transition-colors">
+        <ShoppingCart className="h-5 w-5" />
+        {cartItemCount > 0 && (
+          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs font-semibold flex items-center justify-center">
+            {cartItemCount > 9 ? '9+' : cartItemCount}
+          </span>
+        )}
+      </CartSidePanelTrigger>
 
       {/* Notifications - Real-time updates from backend - HIDDEN ON MOBILE */}
       <div className="hidden md:block">
@@ -224,18 +207,18 @@ const GuestNavigation = React.memo<{
   cartItemCount: number
   isAuthPage: boolean
 }>(({ cartItemCount, isAuthPage }) => (
-  <div className="flex items-center gap-2">
-    {/* Guest cart access - Allow guests to view cart items */}
-    <NotificationBadge
-      href="/cart"
-      icon={ShoppingCart}
-      count={cartItemCount}
-      ariaLabel={`View shopping cart (${cartItemCount} items)`}
-      testId="guest-cart-button"
-      className="hover:bg-brand-primary/80 transition-colors"
-    />
+  <div className="flex items-center gap-1 sm:gap-2">
+    {/* Guest cart access - Quick access side panel */}
+    <CartSidePanelTrigger className="relative p-2 rounded-md text-white hover:bg-brand-primary/80 transition-colors">
+      <ShoppingCart className="h-5 w-5" />
+      {cartItemCount > 0 && (
+        <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs font-semibold flex items-center justify-center">
+          {cartItemCount > 9 ? '9+' : cartItemCount}
+        </span>
+      )}
+    </CartSidePanelTrigger>
 
-    {/* Authentication buttons - Only show if not on auth pages */}
+    {/* Authentication buttons - Always show if not on auth pages */}
     {!isAuthPage && <AuthButtons />}
   </div>
 ))
@@ -256,6 +239,7 @@ GuestNavigation.displayName = 'GuestNavigation'
  */
 const CurrencySelector = React.memo<{
   currency: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   currencies: readonly any[]
   setCurrency: (currency: string) => void
 }>(({ currency, currencies, setCurrency }) => (
@@ -321,10 +305,11 @@ const Header = React.memo(() => {
 
   // Application state hooks
   const { currency, setCurrency, currencies } = useCurrency()
-  const { itemCount: cartItemCount, isLoading: cartLoading } = useCart()
+  const { itemCount: cartItemCount } = useCart()
 
   // Component internal state
   const [isMounted, setIsMounted] = useState(false)
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false)
 
   // Current route for conditional rendering
   const pathname = usePathname()
@@ -381,7 +366,7 @@ const Header = React.memo(() => {
    */
   return (
     <header
-      className="bg-brand-primary text-neutral-100 shadow-md sticky top-0 z-50"
+      className="bg-brand-primary text-neutral-100 shadow-md sticky top-0 z-[60]"
       role="banner"
       aria-label="Main navigation"
     >
@@ -394,7 +379,30 @@ const Header = React.memo(() => {
             Brand logo with link to homepage. Always visible and positioned
             on the left side for consistent navigation expectations.
           */}
-          <Logo />
+          {/* Responsive Logo to avoid pushing actions off-screen on small devices */}
+          <div className="flex items-center gap-2">
+            <div className="md:hidden max-w-[120px] overflow-hidden">
+              <Logo size="sm" className="whitespace-nowrap" />
+            </div>
+            <div className="hidden md:block">
+              <Logo size="md" />
+            </div>
+
+            {/* Mobile Search Icon - positioned right after logo */}
+            {!routeConfig.isAuthPage && !routeConfig.isBrowsePage && (
+              <div className="md:hidden">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/10 h-8 w-8 rounded-full"
+                  aria-label="Toggle search"
+                  onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+                >
+                  <Search className="h-5 w-5" />
+                </Button>
+              </div>
+            )}
+          </div>
 
           {/* 
             =================================================================
@@ -449,7 +457,7 @@ const Header = React.memo(() => {
             authentication status, showing different sets of actions for
             logged-in users versus guests.
           */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
             {/* Authenticated User Actions */}
             {isLoggedIn ? (
               <UserNavigation
@@ -473,21 +481,30 @@ const Header = React.memo(() => {
             in a slide-out drawer interface.
             Always visible on mobile (< lg breakpoint)
           */}
-          <div className="lg:hidden">
-            <MobileMenu
-              isLoggedIn={isLoggedIn}
-              isAdmin={isAdmin}
-              isAuthPage={routeConfig.isAuthPage}
-              user={user}
-              currency={currency}
-              currencies={currencies}
-              setCurrency={setCurrency}
-              handleLogout={logout}
-            />
+            <div className="lg:hidden">
+              <MobileMenu
+                isLoggedIn={isLoggedIn}
+                isAdmin={isAdmin}
+                isAuthPage={routeConfig.isAuthPage}
+                user={user}
+                currency={currency}
+                currencies={currencies}
+                setCurrency={setCurrency}
+                handleLogout={logout}
+              />
+            </div>
           </div>
         </div>
+
+        {/* Mobile Search Bar - appears below header when toggled */}
+        {isMobileSearchOpen && !routeConfig.isAuthPage && !routeConfig.isBrowsePage && (
+          <div className="md:hidden border-t border-white/10 bg-brand-primary px-4 py-3">
+            <div className="relative">
+              <SearchBar autoExpand onClose={() => setIsMobileSearchOpen(false)} />
+            </div>
+          </div>
+        )}
       </div>
-    </div>
     </header>
   )
 })

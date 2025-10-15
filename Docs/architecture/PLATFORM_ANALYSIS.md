@@ -9,12 +9,14 @@ The ExpatFrontend is a sophisticated Next.js-based marketplace platform designed
 ### Technology Stack
 
 #### Core Framework & Runtime
+
 - **Next.js 15.2.4** - Latest App Router architecture with server-side rendering
 - **React 19** - Latest React with concurrent features and improved hydration
 - **TypeScript 5** - Full type safety across the entire application
 - **Node.js 20+** - Modern runtime with optimal performance
 
 #### UI Framework & Design System
+
 - **TailwindCSS 3.4.17** - Utility-first CSS with custom design tokens
 - **Radix UI Components** - Comprehensive accessible component library including:
   - Navigation, Dialog, Dropdown, Accordion, Avatar, Toast systems
@@ -24,11 +26,13 @@ The ExpatFrontend is a sophisticated Next.js-based marketplace platform designed
 - **Lucide React 0.454.0** - Modern icon system (2,000+ icons)
 
 #### State Management & Forms
+
 - **React Hook Form 7.54.1** - Performant form handling with validation
 - **Zod 3.24.1** - Schema validation and type inference
 - **Custom Context Providers** - AuthProvider & CartProvider for global state
 
 #### Development Tools
+
 - **ESLint 8.57.1** - Code quality and consistency
 - **Prettier 3** - Code formatting
 - **Vitest** - Modern testing framework
@@ -37,6 +41,7 @@ The ExpatFrontend is a sophisticated Next.js-based marketplace platform designed
 ### Color Palette Implementation
 
 #### Current Brand Colors (Tailwind Config)
+
 ```typescript
 colors: {
   brand: {
@@ -59,39 +64,43 @@ colors: {
 ```
 
 #### Recommended Updates for Global Expat Brand Identity
+
 Based on the provided brand guidelines, the following color updates should be implemented:
 
 **Primary Brand Colors**
+
 ```css
---deep-tanzanite-blue: #1E3A8A    /* Primary brand, luxury, trust */
---kilimanjaro-gold: #F59E0B       /* Premium accents, CTAs, success */
---serengeti-copper: #B45309       /* Secondary accents, warmth */
+--deep-tanzanite-blue: #1e3a8a /* Primary brand, luxury, trust */ --kilimanjaro-gold: #f59e0b
+  /* Premium accents, CTAs, success */ --serengeti-copper: #b45309 /* Secondary accents, warmth */;
 ```
 
 **Modern/Tech Colors**
+
 ```css
---futuristic-cyan: #06B6D4        /* Tech features, notifications */
---baobab-green: #059669           /* Verification, growth */
---zanzibar-coral: #EF4444         /* Alerts, urgency */
+--futuristic-cyan: #06b6d4 /* Tech features, notifications */ --baobab-green: #059669
+  /* Verification, growth */ --zanzibar-coral: #ef4444 /* Alerts, urgency */;
 ```
 
 **Neutral Luxury Palette**
+
 ```css
---obsidian-black: #0F172A         /* Premium text, luxury backgrounds */
---platinum-silver: #E2E8F0        /* Borders, dividers */
---pearl-white: #F8FAFC            /* Main backgrounds */
---graphite-gray: #475569          /* Secondary text */
+--obsidian-black: #0f172a /* Premium text, luxury backgrounds */ --platinum-silver: #e2e8f0
+  /* Borders, dividers */ --pearl-white: #f8fafc /* Main backgrounds */ --graphite-gray: #475569
+  /* Secondary text */;
 ```
 
 ### Typography System
 
 #### Current Implementation
+
 - **Primary Font**: Inter (sans-serif) - Clean, modern, excellent readability
 - **Display Font**: Lexend (sans-serif) - Enhanced readability for headings
 - **Font Loading**: Optimized with `display: swap` and variable fonts
 
 #### Recommended Updates
+
 To align with the global expat brand guidelines:
+
 ```typescript
 fontFamily: {
   sans: ['Proxima Nova', 'Avenir Next', 'SF Pro Display', 'Inter', 'sans-serif'],
@@ -103,9 +112,11 @@ fontFamily: {
 ### Component Architecture
 
 #### UI Component Library Structure
+
 The platform uses a comprehensive component system with 56+ UI components:
 
 **Core Components**
+
 - `Button` - Multi-variant system (default, destructive, outline, secondary, ghost, link)
 - `Card` - Modular card system (Header, Content, Footer, Title, Description)
 - `Form` - Full form ecosystem with validation
@@ -113,6 +124,7 @@ The platform uses a comprehensive component system with 56+ UI components:
 - `Navigation` - Header, breadcrumb, and sidebar navigation
 
 **Specialized Components**
+
 - `ProductCard` - Featured listing display
 - `CategoryGrid` - Category navigation
 - `SearchBar` - Global search functionality
@@ -120,6 +132,7 @@ The platform uses a comprehensive component system with 56+ UI components:
 - `VerificationBanner` - Trust and verification system
 
 #### Custom Marketplace Components
+
 - **FeaturedListings** - Tabbed interface (Featured, New, Top Picks)
 - **CategorySidebar** - Filterable category navigation
 - **HeroCarousel** - Rotating category showcase
@@ -128,9 +141,11 @@ The platform uses a comprehensive component system with 56+ UI components:
 ### Page Structure & Routing
 
 #### App Router Implementation (Next.js 15)
+
 The platform uses the modern App Router with 30 distinct pages:
 
 **Core Pages**
+
 - `/` - Homepage with featured listings
 - `/browse` - Product browsing with filters
 - `/search` - Global search results
@@ -138,22 +153,26 @@ The platform uses the modern App Router with 30 distinct pages:
 - `/product/[id]` - Individual product pages
 
 **User Management**
+
 - `/login`, `/register` - Authentication flows
 - `/account/*` - User dashboard (settings, orders, addresses, wishlist, verification)
 - `/messages` - Communication system
 - `/notifications` - Activity center
 
 **Commerce Features**
+
 - `/cart` - Shopping cart management
 - `/checkout/*` - Purchase flow with success page
 - `/sell` - Listing creation for sellers
 
 **Support & Legal**
+
 - `/help`, `/faq`, `/contact` - Support system
 - `/privacy`, `/terms` - Legal compliance
 - `/about` - Platform information
 
 #### Layout Architecture
+
 ```typescript
 // Root Layout Structure
 <AuthProvider>
@@ -173,11 +192,13 @@ The platform uses the modern App Router with 30 distinct pages:
 ### Homepage Implementation Analysis
 
 #### Current Layout Priority
+
 1. **Featured Listings** (Primary focus) - Product discovery and engagement
 2. **Hero Carousel** (Secondary) - Category inspiration and visual appeal
 3. **Category Sidebar** (Supporting) - Navigation and filtering
 
 #### Mobile-Responsive Design
+
 - **Desktop**: Persistent sidebar with main content area
 - **Mobile/Tablet**: Collapsible sidebar with toggle button
 - **Responsive Grid**: Dynamic product grid (1-4 columns based on screen size)
@@ -185,6 +206,7 @@ The platform uses the modern App Router with 30 distinct pages:
 ### Performance Optimizations
 
 #### Current Implementation
+
 - **Server-Side Rendering** - Fast initial page loads
 - **Image Optimization** - Next.js Image component with Sharp
 - **Code Splitting** - Component-level lazy loading
@@ -192,6 +214,7 @@ The platform uses the modern App Router with 30 distinct pages:
 - **CSS Optimizations** - Tailwind purging and utility classes
 
 #### Advanced Features
+
 ```css
 /* Hardware Acceleration */
 .gpu-accelerated {
@@ -201,13 +224,18 @@ The platform uses the modern App Router with 30 distinct pages:
 }
 
 /* Performance Utilities */
-.will-change-transform { will-change: transform; }
-.virtual-scroll { contain: layout style paint; }
+.will-change-transform {
+  will-change: transform;
+}
+.virtual-scroll {
+  contain: layout style paint;
+}
 ```
 
 ### Authentication & State Management
 
 #### Current Providers
+
 - **AuthProvider** - User session management and authentication state
 - **CartProvider** - Shopping cart persistence and synchronization
 - **Error Boundaries** - Graceful error handling at multiple levels
@@ -215,11 +243,13 @@ The platform uses the modern App Router with 30 distinct pages:
 ### Mobile & Accessibility Features
 
 #### Responsive Design
+
 - **Breakpoints**: Mobile-first approach with sm/md/lg/xl breakpoints
 - **Touch Optimization**: Proper touch targets and gesture support
 - **Performance**: Optimized for mobile networks
 
 #### Accessibility Implementation
+
 - **WCAG 2.1 Compliance**: Proper contrast ratios and semantic HTML
 - **Keyboard Navigation**: Full keyboard accessibility
 - **Screen Reader Support**: ARIA labels and semantic structure
@@ -249,13 +279,14 @@ The platform uses the modern App Router with 30 distinct pages:
 ### 1. Brand Alignment Updates
 
 #### Color System Migration
+
 Update `tailwind.config.ts` to implement the global expat color palette:
 
 ```typescript
 colors: {
   brand: {
     primary: '#1E3A8A',      // Deep Tanzanite Blue
-    secondary: '#F59E0B',    // Kilimanjaro Gold  
+    secondary: '#F59E0B',    // Kilimanjaro Gold
     accent: '#06B6D4',       // Futuristic Cyan
     copper: '#B45309',       // Serengeti Copper
   },
@@ -274,6 +305,7 @@ colors: {
 ```
 
 #### Typography Enhancement
+
 ```typescript
 fontFamily: {
   sans: ['Proxima Nova', 'Avenir Next', 'SF Pro Display', 'Inter', 'sans-serif'],
@@ -284,6 +316,7 @@ fontFamily: {
 ### 2. Enhanced Component Styling
 
 #### Premium Button Variants
+
 ```typescript
 // Add to button.tsx
 premium: 'bg-gradient-to-r from-brand-secondary to-brand-copper text-obsidian hover:shadow-lg',
@@ -291,18 +324,19 @@ luxury: 'bg-brand-primary text-pearl border-2 border-brand-copper hover:bg-gradi
 ```
 
 #### Card System Enhancements
+
 ```css
 /* Premium card styling */
 .premium-gradient {
-  background: linear-gradient(135deg, #F59E0B 0%, #B45309 100%);
+  background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%);
 }
 
 .luxury-gradient {
-  background: linear-gradient(135deg, #1E3A8A 0%, #06B6D4 100%);
+  background: linear-gradient(135deg, #1e3a8a 0%, #06b6d4 100%);
 }
 
 .shadow-premium {
-  box-shadow: 
+  box-shadow:
     0 20px 25px -5px rgba(30, 58, 138, 0.1),
     0 10px 10px -5px rgba(245, 158, 11, 0.04);
 }
@@ -311,11 +345,13 @@ luxury: 'bg-brand-primary text-pearl border-2 border-brand-copper hover:bg-gradi
 ### 3. Mobile Optimization Enhancements
 
 #### Responsive Navigation
+
 - Implement touch-friendly navigation with proper gesture support
 - Add swipe gestures for carousel and product browsing
 - Optimize touch targets for mobile devices (minimum 44px)
 
 #### Performance Improvements
+
 - Implement virtual scrolling for long product lists
 - Add progressive image loading with blur placeholders
 - Optimize bundle size with dynamic imports
@@ -323,6 +359,7 @@ luxury: 'bg-brand-primary text-pearl border-2 border-brand-copper hover:bg-gradi
 ### 4. Trust & Verification System
 
 #### Enhanced Trust Indicators
+
 - Implement verification badge system (UN/Embassy, Expert Seller, Premium)
 - Add seller rating and review system integration
 - Display trust signals prominently on product cards
@@ -330,13 +367,16 @@ luxury: 'bg-brand-primary text-pearl border-2 border-brand-copper hover:bg-gradi
 ### 5. International Features
 
 #### Multi-Currency Support
+
 Current implementation supports TZS, KES, UGX, USD - expand to include:
+
 - EUR (Euro)
 - GBP (British Pound)
 - AED (UAE Dirham)
 - CHF (Swiss Franc)
 
 #### Localization Framework
+
 - Implement i18n for supported languages (English, Arabic, Hindi, Urdu, French, German, Spanish, Chinese)
 - Add RTL support for Arabic/Urdu interfaces
 - Include cultural adaptation for different expat markets

@@ -17,7 +17,10 @@ export function setAuthToken(token: string) {
 
     // Set up auto logout timer
     setupAutoLogout()
-  } catch {}
+  } catch (error) {
+    // Silently handle localStorage errors (e.g., in private browsing mode)
+    console.debug('Failed to store auth token:', error)
+  }
   apiClient.setAuthToken(token)
 }
 
@@ -37,7 +40,9 @@ export function getAuthToken(): string | null {
     }
 
     return token
-  } catch {
+  } catch (error) {
+    // Silently handle localStorage errors
+    console.debug('Failed to retrieve auth token:', error)
     return null
   }
 }
@@ -46,7 +51,10 @@ export function clearAuthToken() {
   try {
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(TOKEN_EXPIRY_KEY)
-  } catch {}
+  } catch (error) {
+    // Silently handle localStorage errors
+    console.debug('Failed to clear auth token:', error)
+  }
 
   // Clear the cookie
   if (typeof document !== 'undefined') {
@@ -92,6 +100,7 @@ export async function registerUser(payload: {
 export async function loginUser(payload: { email?: string; password: string; username?: string }) {
   const res = await apiClient.login(payload.email || payload.username || '', payload.password)
   // Backend returns { data: { email, token, role } } or { email, token, role }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const responseData = (res as any)?.data || res
   const token = responseData?.token
 
@@ -153,7 +162,14 @@ export function redirectToGoogleLogin() {
 export async function exchangeAuthCode(authCode: string) {
   try {
     const response = await apiClient.exchangeOAuthCode(authCode)
-    const { token, firstName, lastName, email, profileImageUrl } = response.data
+    const data = response.data as {
+      token?: string
+      firstName?: string
+      lastName?: string
+      email?: string
+      profileImageUrl?: string
+    }
+    const { token, firstName, lastName, email, profileImageUrl } = data
 
     if (token) {
       setAuthToken(token)

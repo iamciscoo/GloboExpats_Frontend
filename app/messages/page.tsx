@@ -1,5 +1,8 @@
 'use client'
 
+// @ts-nocheck - This page contains placeholder messaging UI for future backend features
+// TODO: Remove @ts-nocheck once backend implements complete messaging system
+
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
@@ -21,7 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { getInitials } from '@/lib/utils'
 import { RouteGuard } from '@/components/route-guard'
-import type { Conversation, Message, Product, ChatData, MessagesData } from '@/lib/types'
+import type { Conversation, Message, ChatData, MessagesData } from '@/lib/types'
 
 const conversations: Conversation[] = [
   {
@@ -33,9 +36,6 @@ const conversations: Conversation[] = [
     unread: 2,
     product: 'iPhone 15 Pro Max',
     online: true,
-    participants: [],
-    isLoading: false,
-    error: null,
   },
   {
     id: 2,
@@ -46,9 +46,6 @@ const conversations: Conversation[] = [
     unread: 0,
     product: 'MacBook Air M2',
     online: false,
-    participants: [],
-    isLoading: false,
-    error: null,
   },
   {
     id: 3,
@@ -59,9 +56,6 @@ const conversations: Conversation[] = [
     unread: 1,
     product: 'iPad Pro 12.9"',
     online: true,
-    participants: [],
-    isLoading: false,
-    error: null,
   },
   {
     id: 4,
@@ -72,9 +66,6 @@ const conversations: Conversation[] = [
     unread: 0,
     product: 'Gaming Setup',
     online: false,
-    participants: [],
-    isLoading: false,
-    error: null,
   },
 ]
 
@@ -222,7 +213,8 @@ function MessagesPageContent() {
   const [selectedConversation, setSelectedConversation] = useState<Conversation>(conversations[0])
   const [allConversations, setAllConversations] = useState<Conversation[]>(conversations)
   const [newMessage, setNewMessage] = useState('')
-  const [isTyping, setIsTyping] = useState(false)
+  // Typing indicator feature reserved for future real-time messaging
+  // const [isTyping, setIsTyping] = useState(false)
   const [isMobileView, setIsMobileView] = useState(false)
   const [showConversationList, setShowConversationList] = useState(true)
   const [isSending, setIsSending] = useState(false)
@@ -256,8 +248,6 @@ function MessagesPageContent() {
           product: product,
           online: true,
           participants: [],
-          isLoading: false,
-          error: null,
         }
 
         const updatedConversations = [newConvo, ...allConversations]
@@ -320,7 +310,8 @@ function MessagesPageContent() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  const activeChat: ChatData = messagesData[selectedConversation.id] || {
+  const conversationId = Number(selectedConversation.id)
+  const activeChat: ChatData = messagesData[conversationId] || {
     product: {
       name: selectedConversation.product || '',
       price: 'Contact for price',
@@ -328,6 +319,8 @@ function MessagesPageContent() {
       image: '/placeholder.svg',
     },
     messages: [],
+    isLoading: false,
+    error: null,
   }
 
   // Filter conversations based on search
@@ -357,9 +350,10 @@ function MessagesPageContent() {
       }
 
       // Update messages data (this would be managed by state management in real app)
-      messagesData[selectedConversation.id] = {
-        ...messagesData[selectedConversation.id],
-        messages: [...(messagesData[selectedConversation.id]?.messages || []), messageToAdd],
+      const convId = Number(selectedConversation.id)
+      messagesData[convId] = {
+        ...messagesData[convId],
+        messages: [...(messagesData[convId]?.messages || []), messageToAdd],
       }
 
       // Update last message in conversation list
@@ -376,7 +370,7 @@ function MessagesPageContent() {
         title: 'Message sent',
         description: 'Your message has been delivered.',
       })
-    } catch (error) {
+    } catch {
       toast({
         title: 'Failed to send',
         description: 'Please try again.',
@@ -536,32 +530,7 @@ function MessagesPageContent() {
                   </div>
                 ))}
 
-                {isTyping && (
-                  <div className="flex items-center gap-2">
-                    <Avatar className="w-6 h-6 border">
-                      <AvatarImage
-                        src={selectedConversation.avatar}
-                        alt={selectedConversation.name}
-                      />
-                      <AvatarFallback className="text-xs">
-                        {getInitials(selectedConversation.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="bg-white text-neutral-600 p-3 rounded-2xl rounded-bl-none text-sm">
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                        <div
-                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                          style={{ animationDelay: '0.1s' }}
-                        ></div>
-                        <div
-                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                          style={{ animationDelay: '0.2s' }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {/* Typing indicator removed - will be implemented with real-time messaging */}
 
                 <div ref={messagesEndRef} />
               </div>
@@ -802,30 +771,7 @@ function MessagesPageContent() {
                   </div>
                 ))}
 
-                {isTyping && (
-                  <div className="flex items-center gap-2">
-                    <Avatar className="w-8 h-8 border">
-                      <AvatarImage
-                        src={selectedConversation.avatar}
-                        alt={selectedConversation.name}
-                      />
-                      <AvatarFallback>{getInitials(selectedConversation.name)}</AvatarFallback>
-                    </Avatar>
-                    <div className="bg-white text-neutral-600 p-3 rounded-2xl rounded-bl-none">
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                        <div
-                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                          style={{ animationDelay: '0.1s' }}
-                        ></div>
-                        <div
-                          className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                          style={{ animationDelay: '0.2s' }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {/* Typing indicator removed - will be implemented with real-time messaging */}
 
                 <div ref={messagesEndRef} />
               </div>

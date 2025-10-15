@@ -44,7 +44,8 @@ export function RouteGuard({
   const { checkVerification } = useVerification()
   const [accessGranted, setAccessGranted] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [checkTimeout, setCheckTimeout] = useState(false)
+  // Timeout tracking for debugging - can be used for timeout-related features
+  const [, setCheckTimeout] = useState(false)
 
   useEffect(() => {
     // Add timeout to prevent infinite loading
@@ -77,15 +78,16 @@ export function RouteGuard({
       // Check verification requirement
       if (requireVerification && isLoggedIn) {
         const canProceed = checkVerification(requireVerification)
-        
+
         if (!canProceed) {
           // Show verification error but don't block forever
-          console.warn(`[RouteGuard] Verification check failed for '${requireVerification}' - user may need to verify`)
-          
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`[RouteGuard] User verification pending for '${requireVerification}'`)
+          }
+
           // Set a timeout error message but still allow access
           setTimeout(() => {
             if (!accessGranted) {
-              console.info('[RouteGuard] Granting access despite verification failure - user can see error in UI')
               setAccessGranted(true)
             }
           }, 1500)

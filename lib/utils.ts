@@ -11,12 +11,12 @@ import { STATUS_COLORS } from './constants'
 
 // Memoization cache with size limits to prevent memory leaks
 const CACHE_MAX_SIZE = 1000
-const memoCache = new Map<string, any>()
+const memoCache = new Map<string, unknown>()
 
 /**
  * Adds item to cache with automatic cleanup when size limit is reached
  */
-const setCacheItem = (key: string, value: any): void => {
+const setCacheItem = (key: string, value: unknown): void => {
   if (memoCache.size >= CACHE_MAX_SIZE) {
     // Remove oldest entries (FIFO)
     const firstKey = memoCache.keys().next().value
@@ -72,7 +72,7 @@ export function getInitials(name: string): string {
 
   const cacheKey = `initials-${name}`
   if (memoCache.has(cacheKey)) {
-    return memoCache.get(cacheKey)
+    return memoCache.get(cacheKey) as string
   }
 
   const initials = name
@@ -146,7 +146,7 @@ export function generateSlug(text: string): string {
 
   const cacheKey = `slug-${text}`
   if (memoCache.has(cacheKey)) {
-    return memoCache.get(cacheKey)
+    return memoCache.get(cacheKey) as string
   }
 
   const result = text
@@ -204,7 +204,7 @@ export function validatePhone(phone: string): boolean {
   const cleanPhone = phone.replace(/\s/g, '')
 
   // Flexible regex supporting international formats (+, (), -, spaces)
-  const phoneRegex = /^[\+]?[(]?[\d\s\-\(\)]{7,}$/
+  const phoneRegex = /^[+]?[(]?[\d\s\-()]{7,}$/
 
   return phoneRegex.test(cleanPhone) && cleanPhone.length >= 7 && cleanPhone.length <= 20
 }
@@ -248,7 +248,7 @@ export function formatPrice(
 
   const cacheKey = `price-${numericPrice}-${currency}-${JSON.stringify(options)}`
   if (memoCache.has(cacheKey)) {
-    return memoCache.get(cacheKey)
+    return memoCache.get(cacheKey) as string
   }
 
   try {
@@ -289,7 +289,7 @@ export function formatDate(
 
   const cacheKey = `date-${dateString}-${JSON.stringify(options)}`
   if (memoCache.has(cacheKey)) {
-    return memoCache.get(cacheKey)
+    return memoCache.get(cacheKey) as string
   }
 
   try {
@@ -331,7 +331,7 @@ export function formatTimeAgo(dateString: string | Date): string {
 
   const cacheKey = `timeago-${dateString}`
   if (memoCache.has(cacheKey)) {
-    return memoCache.get(cacheKey)
+    return memoCache.get(cacheKey) as string
   }
 
   try {
@@ -434,7 +434,7 @@ export function calculateEngagementRate(views: number, interactions: number): nu
  * @param delay - Delay in milliseconds
  * @returns Debounced function
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: never[]) => unknown>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
@@ -456,7 +456,7 @@ export function debounce<T extends (...args: any[]) => any>(
  * @param delay - Minimum delay between calls in milliseconds
  * @returns Throttled function
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: never[]) => unknown>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
@@ -485,13 +485,13 @@ export function throttle<T extends (...args: any[]) => any>(
  * @param filters - Additional filter criteria
  * @returns Filtered products array
  */
-export function filterProducts<T extends Record<string, any>>(
+export function filterProducts<T extends Record<string, unknown>>(
   products: T[],
   searchQuery: string,
   filters?: {
     category?: string
     status?: string
-    [key: string]: any
+    [key: string]: unknown
   }
 ): T[] {
   if (!Array.isArray(products)) {
@@ -517,7 +517,7 @@ export function filterProducts<T extends Record<string, any>>(
       for (const [key, value] of Object.entries(filters)) {
         if (value && value !== 'all') {
           const productValue = product[key]
-          if (typeof productValue === 'string') {
+          if (typeof productValue === 'string' && typeof value === 'string') {
             if (productValue.toLowerCase() !== value.toLowerCase()) {
               return false
             }
@@ -539,7 +539,7 @@ export function filterProducts<T extends Record<string, any>>(
  * @param fallback - Fallback value if parsing fails
  * @returns Parsed object or fallback
  */
-export function safeJsonParse<T = any>(jsonString: string, fallback: T): T {
+export function safeJsonParse<T = unknown>(jsonString: string, fallback: T): T {
   try {
     return JSON.parse(jsonString)
   } catch {
@@ -570,7 +570,7 @@ export function deepClone<T>(obj: T): T {
   if (typeof obj === 'object') {
     const cloned = {} as T
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         cloned[key] = deepClone(obj[key])
       }
     }

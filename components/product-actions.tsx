@@ -74,7 +74,7 @@ export function ProductActions({
         title: 'Added to cart',
         description: `${productTitle} has been added to your cart`,
       })
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to add item to cart. Please try again.',
@@ -111,7 +111,7 @@ export function ProductActions({
         description: `${productTitle} has been added to your cart`,
       })
       router.push('/checkout')
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to add item to cart. Please try again.',
@@ -135,7 +135,7 @@ export function ProductActions({
       <Button
         onClick={handleAddToCart}
         disabled={isLoading}
-        className="w-full bg-brand-primary hover:bg-brand-primary/90 text-white"
+        className="w-full bg-brand-primary hover:bg-brand-primary/90 text-white rounded-full"
       >
         {isLoading ? 'Adding...' : 'Add to Cart'}
       </Button>
@@ -143,7 +143,7 @@ export function ProductActions({
         onClick={handleBuy}
         disabled={isLoading}
         variant="secondary"
-        className="w-full bg-amber-600 hover:bg-amber-700 text-black"
+        className="w-full bg-amber-600 hover:bg-amber-700 text-black rounded-full"
       >
         {isLoading ? 'Processing...' : 'Buy Now'}
       </Button>

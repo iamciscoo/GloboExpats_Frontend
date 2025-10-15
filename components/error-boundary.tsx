@@ -5,12 +5,7 @@ import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import {
-  createErrorBoundaryInfo,
-  logError,
-  getErrorMessage,
-  getErrorTitle,
-} from '@/lib/error-handling'
+import { createErrorBoundaryInfo, getErrorMessage, getErrorTitle } from '@/lib/error-handling'
 
 interface ErrorBoundaryState {
   hasError: boolean
@@ -35,8 +30,8 @@ interface ErrorFallbackProps {
   name?: string
 }
 
-// Default error fallback component
-const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
+// Default error fallback component - reserved for future error handling features
+const _DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
   error,
   errorInfo,
   resetError,
@@ -44,6 +39,7 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
   name,
 }) => {
   const errorMessage = error ? getErrorMessage(error) : 'An unexpected error occurred'
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const errorTitle = error ? getErrorTitle((error as any).type) : 'Something went wrong'
 
   const handleReportError = () => {

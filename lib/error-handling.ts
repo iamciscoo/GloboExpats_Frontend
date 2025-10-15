@@ -18,7 +18,7 @@ export interface AppError {
   type: ErrorType
   message: string
   code?: string | number
-  details?: any
+  details?: unknown
   timestamp: Date
   userMessage?: string
 }
@@ -26,7 +26,7 @@ export interface AppError {
 export class CustomError extends Error implements AppError {
   public type: ErrorType
   public code?: string | number
-  public details?: any
+  public details?: unknown
   public timestamp: Date
   public userMessage?: string
 
@@ -34,7 +34,7 @@ export class CustomError extends Error implements AppError {
     type: ErrorType,
     message: string,
     code?: string | number,
-    details?: any,
+    details?: unknown,
     userMessage?: string
   ) {
     super(message)
@@ -48,7 +48,7 @@ export class CustomError extends Error implements AppError {
 }
 
 // Error factory functions
-export const createAuthError = (message: string, details?: any): CustomError =>
+export const createAuthError = (message: string, details?: unknown): CustomError =>
   new CustomError(
     ErrorType.AUTHENTICATION,
     message,
@@ -57,7 +57,7 @@ export const createAuthError = (message: string, details?: any): CustomError =>
     'Authentication failed. Please try logging in again.'
   )
 
-export const createNetworkError = (message: string, details?: any): CustomError =>
+export const createNetworkError = (message: string, details?: unknown): CustomError =>
   new CustomError(
     ErrorType.NETWORK,
     message,
@@ -66,7 +66,7 @@ export const createNetworkError = (message: string, details?: any): CustomError 
     'Network error. Please check your connection and try again.'
   )
 
-export const createValidationError = (message: string, details?: any): CustomError =>
+export const createValidationError = (message: string, details?: unknown): CustomError =>
   new CustomError(
     ErrorType.VALIDATION,
     message,
@@ -75,7 +75,7 @@ export const createValidationError = (message: string, details?: any): CustomErr
     'Please check your input and try again.'
   )
 
-export const createPermissionError = (message: string, details?: any): CustomError =>
+export const createPermissionError = (message: string, details?: unknown): CustomError =>
   new CustomError(
     ErrorType.PERMISSION,
     message,
@@ -84,7 +84,7 @@ export const createPermissionError = (message: string, details?: any): CustomErr
     "You don't have permission to perform this action."
   )
 
-export const createNotFoundError = (message: string, details?: any): CustomError =>
+export const createNotFoundError = (message: string, details?: unknown): CustomError =>
   new CustomError(
     ErrorType.NOT_FOUND,
     message,
@@ -93,7 +93,7 @@ export const createNotFoundError = (message: string, details?: any): CustomError
     'The requested resource was not found.'
   )
 
-export const createServerError = (message: string, details?: any): CustomError =>
+export const createServerError = (message: string, details?: unknown): CustomError =>
   new CustomError(
     ErrorType.SERVER,
     message,
@@ -230,7 +230,10 @@ export const withRetry = async <T>(
 }
 
 // Error boundary helpers (for use with React error boundaries)
-export const createErrorBoundaryInfo = (error: Error, errorInfo: any) => ({
+export const createErrorBoundaryInfo = (
+  error: Error,
+  errorInfo: { componentStack?: string | null }
+) => ({
   error: processError(error),
   componentStack: errorInfo.componentStack,
   timestamp: new Date(),

@@ -1,4 +1,5 @@
 # Database Schema Documentation
+
 **GlobalExpat Marketplace Backend Database Design**
 
 ## Overview
@@ -8,6 +9,7 @@ This document outlines the complete database schema for the GlobalExpat Marketpl
 ## Core Database Tables
 
 ### 1. Users Table
+
 **Primary user account and authentication data**
 
 ```sql
@@ -23,7 +25,7 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP NULL,
-  
+
   INDEX idx_email (email),
   INDEX idx_organization_email (organization_email),
   INDEX idx_role (role),
@@ -32,6 +34,7 @@ CREATE TABLE users (
 ```
 
 ### 2. User Verification Table
+
 **Comprehensive verification tracking for user capabilities**
 
 ```sql
@@ -50,13 +53,14 @@ CREATE TABLE user_verification (
   verified_at TIMESTAMP NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   INDEX idx_verification_status (is_fully_verified, can_buy, can_sell)
 );
 ```
 
 ### 3. User Preferences Table
+
 **User personalization and settings**
 
 ```sql
@@ -70,12 +74,13 @@ CREATE TABLE user_preferences (
   sms_notifications BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 ```
 
 ### 4. Categories Table
+
 **Product categories and hierarchical organization**
 
 ```sql
@@ -88,13 +93,14 @@ CREATE TABLE categories (
   is_active BOOLEAN DEFAULT TRUE,
   sort_order INT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  
+
   INDEX idx_slug (slug),
   INDEX idx_active_sort (is_active, sort_order)
 );
 ```
 
 ### 5. Products/Listings Table
+
 **Main product listings in the marketplace**
 
 ```sql
@@ -118,7 +124,7 @@ CREATE TABLE products (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   expires_at TIMESTAMP NULL,
   sold_at TIMESTAMP NULL,
-  
+
   FOREIGN KEY (seller_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (category_id) REFERENCES categories(id),
   INDEX idx_seller (seller_id),
@@ -133,6 +139,7 @@ CREATE TABLE products (
 ```
 
 ### 6. Product Images Table
+
 **Image storage for product listings**
 
 ```sql
@@ -144,7 +151,7 @@ CREATE TABLE product_images (
   sort_order INT DEFAULT 0,
   alt_text VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  
+
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
   INDEX idx_product (product_id),
   INDEX idx_main_image (product_id, is_main_image),
@@ -153,6 +160,7 @@ CREATE TABLE product_images (
 ```
 
 ### 7. Seller Profiles Table
+
 **Enhanced seller information and reputation**
 
 ```sql
@@ -176,7 +184,7 @@ CREATE TABLE seller_profiles (
   last_active TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   INDEX idx_rating (rating),
   INDEX idx_location (location),
@@ -185,6 +193,7 @@ CREATE TABLE seller_profiles (
 ```
 
 ### 8. Conversations Table
+
 **Messaging system between users**
 
 ```sql
@@ -196,7 +205,7 @@ CREATE TABLE conversations (
   is_archived BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  
+
   FOREIGN KEY (participant1_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (participant2_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL,
@@ -208,6 +217,7 @@ CREATE TABLE conversations (
 ```
 
 ### 9. Messages Table
+
 **Individual messages within conversations**
 
 ```sql
@@ -219,7 +229,7 @@ CREATE TABLE messages (
   is_read BOOLEAN DEFAULT FALSE,
   read_at TIMESTAMP NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  
+
   FOREIGN KEY (conversation_id) REFERENCES conversations(id) ON DELETE CASCADE,
   FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
   INDEX idx_conversation (conversation_id),
@@ -230,6 +240,7 @@ CREATE TABLE messages (
 ```
 
 ### 10. Orders Table
+
 **Transaction and order management**
 
 ```sql
@@ -251,7 +262,7 @@ CREATE TABLE orders (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   completed_at TIMESTAMP NULL,
   cancelled_at TIMESTAMP NULL,
-  
+
   FOREIGN KEY (buyer_id) REFERENCES users(id),
   FOREIGN KEY (seller_id) REFERENCES users(id),
   FOREIGN KEY (product_id) REFERENCES products(id),
@@ -264,6 +275,7 @@ CREATE TABLE orders (
 ```
 
 ### 11. Reviews Table
+
 **User reviews and ratings system**
 
 ```sql
@@ -278,7 +290,7 @@ CREATE TABLE reviews (
   is_public BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  
+
   FOREIGN KEY (order_id) REFERENCES orders(id),
   FOREIGN KEY (reviewer_id) REFERENCES users(id),
   FOREIGN KEY (reviewed_id) REFERENCES users(id),
@@ -292,6 +304,7 @@ CREATE TABLE reviews (
 ```
 
 ### 12. Notifications Table
+
 **System notifications for users**
 
 ```sql
@@ -306,7 +319,7 @@ CREATE TABLE notifications (
   metadata JSON, -- Additional notification-specific data
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   read_at TIMESTAMP NULL,
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   INDEX idx_user_unread (user_id, is_read),
   INDEX idx_type (type),
@@ -315,6 +328,7 @@ CREATE TABLE notifications (
 ```
 
 ### 13. Wishlist Table
+
 **User wishlist/favorites functionality**
 
 ```sql
@@ -323,7 +337,7 @@ CREATE TABLE wishlist (
   user_id VARCHAR(36) NOT NULL,
   product_id VARCHAR(36) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
   UNIQUE KEY unique_wishlist_item (user_id, product_id),
@@ -333,6 +347,7 @@ CREATE TABLE wishlist (
 ```
 
 ### 14. Shopping Cart Table
+
 **Persistent shopping cart for users**
 
 ```sql
@@ -343,7 +358,7 @@ CREATE TABLE shopping_cart (
   quantity INT DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
   UNIQUE KEY unique_cart_item (user_id, product_id),
@@ -352,6 +367,7 @@ CREATE TABLE shopping_cart (
 ```
 
 ### 15. Search History Table
+
 **User search analytics and suggestions**
 
 ```sql
@@ -365,7 +381,7 @@ CREATE TABLE search_history (
   ip_address VARCHAR(45),
   user_agent TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  
+
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
   FOREIGN KEY (clicked_product_id) REFERENCES products(id) ON DELETE SET NULL,
   INDEX idx_user (user_id),
@@ -376,6 +392,7 @@ CREATE TABLE search_history (
 ```
 
 ### 16. System Settings Table
+
 **Application configuration and feature flags**
 
 ```sql
@@ -387,7 +404,7 @@ CREATE TABLE system_settings (
   is_public BOOLEAN DEFAULT FALSE, -- Whether setting can be read by frontend
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  
+
   INDEX idx_key (setting_key),
   INDEX idx_public (is_public)
 );
@@ -396,6 +413,7 @@ CREATE TABLE system_settings (
 ## API Endpoints Required
 
 ### Authentication & Users
+
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/login` - User login
 - `POST /api/auth/logout` - User logout
@@ -408,6 +426,7 @@ CREATE TABLE system_settings (
 - `GET /api/users/{id}` - Public user profile
 
 ### Products & Listings
+
 - `GET /api/products` - List products with filtering/search
 - `GET /api/products/featured` - Featured products for homepage
 - `GET /api/products/{id}` - Single product details
@@ -418,11 +437,13 @@ CREATE TABLE system_settings (
 - `DELETE /api/products/{id}/images/{imageId}` - Delete product image
 
 ### Categories & Search
+
 - `GET /api/categories` - List all categories
 - `GET /api/search` - Product search with filters
 - `GET /api/search/suggestions` - Search autocomplete
 
 ### Messaging
+
 - `GET /api/conversations` - User's conversations
 - `GET /api/conversations/{id}/messages` - Messages in conversation
 - `POST /api/conversations` - Start new conversation
@@ -430,6 +451,7 @@ CREATE TABLE system_settings (
 - `PATCH /api/messages/{id}/read` - Mark message as read
 
 ### Orders & Reviews
+
 - `GET /api/orders` - User's orders
 - `POST /api/orders` - Create new order
 - `PATCH /api/orders/{id}` - Update order status
@@ -438,6 +460,7 @@ CREATE TABLE system_settings (
 - `PATCH /api/reviews/{id}` - Update review
 
 ### Wishlist & Cart
+
 - `GET /api/wishlist` - User's wishlist
 - `POST /api/wishlist` - Add to wishlist
 - `DELETE /api/wishlist/{productId}` - Remove from wishlist
@@ -447,11 +470,13 @@ CREATE TABLE system_settings (
 - `DELETE /api/cart/{productId}` - Remove from cart
 
 ### Notifications
+
 - `GET /api/notifications` - User notifications
 - `PATCH /api/notifications/{id}/read` - Mark notification as read
 - `POST /api/notifications/mark-all-read` - Mark all as read
 
 ### Admin
+
 - `GET /api/admin/users` - Admin user management
 - `PATCH /api/admin/users/{id}/verification` - Update verification status
 - `GET /api/admin/products` - Admin product management
@@ -460,12 +485,14 @@ CREATE TABLE system_settings (
 ## Data Validation Rules
 
 ### User Registration
+
 - Email must be valid format and unique
 - Password minimum 8 characters with mixed case, numbers, symbols
 - Organization email must be from verified domain list
 - Name must be 2-100 characters
 
 ### Product Listings
+
 - Title: 5-255 characters, required
 - Description: 10-5000 characters, required
 - Price: Must be positive number, max 2 decimal places
@@ -474,6 +501,7 @@ CREATE TABLE system_settings (
 - Location: Must be from approved locations list
 
 ### Verification Requirements
+
 - Identity verification: Government ID upload
 - Organization email: Must match company domain
 - Full verification required for selling privileges
@@ -481,6 +509,7 @@ CREATE TABLE system_settings (
 ## Indexes and Performance
 
 ### Critical Indexes
+
 - Products: status, category, location, price range
 - Users: email, verification status
 - Messages: conversation + timestamp for pagination
@@ -488,6 +517,7 @@ CREATE TABLE system_settings (
 - Notifications: user + read status for quick unread counts
 
 ### Caching Strategy
+
 - Product listings: Cache for 5-15 minutes
 - User profiles: Cache for 1 hour
 - Categories: Cache for 24 hours
@@ -497,12 +527,14 @@ CREATE TABLE system_settings (
 ## File Storage
 
 ### Image Storage Requirements
+
 - Product images: WebP format, multiple sizes (thumbnail, medium, large)
 - User avatars: 200x200px max
 - Verification documents: Secure encrypted storage
 - CDN integration for global delivery
 
 ### File Naming Convention
+
 ```
 /products/{product-id}/{image-id}-{size}.webp
 /avatars/{user-id}.webp
@@ -512,21 +544,24 @@ CREATE TABLE system_settings (
 ## Security Considerations
 
 ### Data Protection
+
 - All passwords hashed with bcrypt (min 12 rounds)
 - Sensitive verification documents encrypted at rest
 - PII data anonymization for deleted accounts
 - GDPR compliance for data export/deletion
 
 ### Rate Limiting
+
 - API endpoints: 100 requests/minute per user
 - Search: 50 requests/minute per IP
 - File uploads: 10 uploads/minute per user
 - Message sending: 20 messages/minute per user
 
 ### Authentication
+
 - JWT tokens with 1-hour expiration
 - Refresh tokens with 30-day expiration
 - Session invalidation on logout
 - Multi-factor authentication for high-value transactions
 
-This schema provides a solid foundation for the GlobalExpat marketplace platform with room for future expansion and optimization. 
+This schema provides a solid foundation for the GlobalExpat marketplace platform with room for future expansion and optimization.

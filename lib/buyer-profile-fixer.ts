@@ -2,10 +2,10 @@
  * =============================================================================
  * Buyer Profile Auto-Fixer
  * =============================================================================
- * 
+ *
  * Handles the "Buyer profile not found" error by attempting to auto-create
  * the missing buyer profile when a verified user encounters this issue.
- * 
+ *
  * This is a workaround for a backend database inconsistency where users
  * are verified but their buyer_profile entry wasn't created during verification.
  */
@@ -32,7 +32,7 @@ export function isBuyerProfileError(error: Error | string): boolean {
 
 /**
  * Attempts to automatically fix the buyer profile issue
- * 
+ *
  * Strategy:
  * 1. Verify user is authenticated and verified
  * 2. Attempt to trigger buyer profile creation via cart initialization
@@ -45,7 +45,7 @@ export async function attemptBuyerProfileFix(): Promise<BuyerProfileFixResult> {
 
     // Step 1: Check if user is verified
     const userDetails = await apiClient.getUserDetails()
-    
+
     if (!userDetails.verificationStatus || userDetails.verificationStatus !== 'VERIFIED') {
       return {
         success: false,
@@ -59,11 +59,17 @@ export async function attemptBuyerProfileFix(): Promise<BuyerProfileFixResult> {
     // Step 2: Attempt to trigger buyer profile creation
     // Some backend implementations auto-create the profile on first cart access
     console.log('🔄 [BuyerProfileFixer] Attempting to trigger profile creation...')
-    
+
     try {
-      // Try to access cart - this might trigger auto-creation
-      await apiClient.getCart()
-      
+      // Try to access cart endpoint - this might trigger auto-creation
+      // Using fetch directly since ApiClient.request is private
+      const token = localStorage.getItem('auth_token')
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/cart/User`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
       // If we got here without error, the profile now exists!
       console.log('✅ [BuyerProfileFixer] Buyer profile created successfully!')
       return {
@@ -71,10 +77,11 @@ export async function attemptBuyerProfileFix(): Promise<BuyerProfileFixResult> {
         message: 'Buyer profile was automatically created. You can now use all features!',
         requiresManualFix: false,
       }
-    } catch (cartError: any) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch {
       // Still getting the error - auto-fix didn't work
       console.warn('⚠️ [BuyerProfileFixer] Auto-fix failed, manual intervention needed')
-      
+
       return {
         success: false,
         message: 'Automatic fix failed. Backend database intervention required.',
@@ -82,6 +89,7 @@ export async function attemptBuyerProfileFix(): Promise<BuyerProfileFixResult> {
         adminInstructions: generateAdminInstructions(userDetails.loggingEmail),
       }
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error('❌ [BuyerProfileFixer] Fix attempt failed:', error)
     return {
@@ -141,25 +149,28 @@ Check why buyer_profile wasn't auto-created during verification:
  * Browser console helper - can be called from dev tools
  */
 if (typeof window !== 'undefined') {
-  (window as any).fixBuyerProfile = async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(window as any).fixBuyerProfile = async () => {
     console.log('🔧 Running buyer profile auto-fix...')
     const result = await attemptBuyerProfileFix()
-    
+
     if (result.success) {
       console.log('✅ SUCCESS:', result.message)
       console.log('💡 Try your action again - it should work now!')
     } else {
       console.error('❌ FAILED:', result.message)
-      
+
       if (result.requiresManualFix) {
         console.log(result.adminInstructions)
         console.log('')
         console.log('📋 Copy the SQL above and send to your backend admin')
       }
     }
-    
+
     return result
   }
-  
-  console.log('💡 Buyer profile fixer loaded. Run fixBuyerProfile() if you encounter "Buyer profile not found" error.')
+
+  console.log(
+    '💡 Buyer profile fixer loaded. Run fixBuyerProfile() if you encounter "Buyer profile not found" error.'
+  )
 }

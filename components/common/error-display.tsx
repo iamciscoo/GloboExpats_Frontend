@@ -266,7 +266,6 @@ export function NetworkErrorDisplay({
  */
 export function PermissionErrorDisplay({
   message = "You don't have permission to access this resource.",
-  onGoHome,
   className,
 }: {
   message?: string
@@ -343,10 +342,7 @@ export function VerificationRequiredDisplay({
       <AlertDescription className="mt-2 text-amber-800">
         {message}
         <div className="mt-3">
-          <Button 
-            onClick={handleVerify}
-            className="bg-amber-600 hover:bg-amber-700 text-white"
-          >
+          <Button onClick={handleVerify} className="bg-amber-600 hover:bg-amber-700 text-white">
             Verify Now
           </Button>
         </div>

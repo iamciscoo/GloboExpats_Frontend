@@ -56,6 +56,7 @@ All forms include:
 ## Components with Enhanced Accessibility
 
 ### SearchBar Component (`components/search-bar.tsx`)
+
 - Form with role="search"
 - Proper label for screen readers
 - Search button with aria-label
@@ -63,12 +64,14 @@ All forms include:
 - Descriptive help text via aria-describedby
 
 ### CategoryGrid Component (`components/category-grid.tsx`)
+
 - Navigation role for category list
 - Each category card is a proper link
 - Descriptive aria-labels including item counts
 - Icons marked as decorative with aria-hidden
 
 ### ProductCard Component (`components/ui/product-card.tsx`)
+
 - Keyboard navigable cards
 - Complete product information in aria-labels
 - Proper heading hierarchy
@@ -76,6 +79,7 @@ All forms include:
 - Price information clearly labeled
 
 ### Header Components
+
 - **MobileMenu**: Full keyboard and screen reader support
 - **AuthButtons**: Clear labels and focus indicators
 - **NotificationBadge**: Accessible notification counts
@@ -84,6 +88,7 @@ All forms include:
 ## Accessibility Utilities
 
 ### CSS Utilities (`styles/accessibility.css`)
+
 - `.sr-only`: Screen reader only content
 - `.skip-link`: Skip navigation links
 - `.focus-ring`: Consistent focus indicators
@@ -92,6 +97,7 @@ All forms include:
 - Touch target helpers
 
 ### React Hooks (`hooks/use-accessibility.ts`)
+
 - `useAnnouncement`: Live region announcements
 - `useFocusTrap`: Modal and dropdown focus management
 - `useKeyboardNavigation`: Arrow key navigation
@@ -103,12 +109,14 @@ All forms include:
 The platform aims for WCAG 2.1 Level AA compliance:
 
 ### Perceivable
+
 - ✅ Text alternatives for non-text content
 - ✅ Time-based media alternatives
 - ✅ Adaptable content structure
 - ✅ Distinguishable color contrast
 
 ### Operable
+
 - ✅ Keyboard accessible
 - ✅ No keyboard traps
 - ✅ Skip navigation available
@@ -116,12 +124,14 @@ The platform aims for WCAG 2.1 Level AA compliance:
 - ✅ No seizure-inducing content
 
 ### Understandable
+
 - ✅ Readable text content
 - ✅ Predictable navigation
 - ✅ Input assistance
 - ✅ Error identification
 
 ### Robust
+
 - ✅ Valid HTML/ARIA
 - ✅ Compatible with assistive technologies
 - ✅ Progressive enhancement approach
@@ -129,12 +139,14 @@ The platform aims for WCAG 2.1 Level AA compliance:
 ## Testing Accessibility
 
 ### Manual Testing
+
 1. **Keyboard Navigation**: Tab through entire page
 2. **Screen Reader**: Test with NVDA (Windows) or VoiceOver (Mac)
 3. **Color Contrast**: Use browser DevTools or contrast analyzers
 4. **Zoom Testing**: Test up to 200% zoom
 
 ### Automated Testing
+
 ```bash
 # Install accessibility testing tools
 npm install --save-dev @axe-core/react
@@ -144,6 +156,7 @@ npm run test:a11y
 ```
 
 ### Browser Extensions
+
 - axe DevTools
 - WAVE (WebAIM)
 - Lighthouse (built into Chrome DevTools)
@@ -180,7 +193,8 @@ npm run test:a11y
 ## Support
 
 For accessibility issues or suggestions, please contact:
+
 - Email: accessibility@globalexpat.com
 - GitHub Issues: [Report an accessibility issue]
 
-Remember: Accessibility is not a feature, it's a fundamental aspect of good web development. Every user deserves equal access to our platform. 
+Remember: Accessibility is not a feature, it's a fundamental aspect of good web development. Every user deserves equal access to our platform.

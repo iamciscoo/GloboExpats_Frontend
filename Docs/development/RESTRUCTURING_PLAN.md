@@ -9,12 +9,14 @@ This document outlines the completed fixes and recommended next steps for proper
 ## ✅ Completed Fixes
 
 ### 1. **Fixed Duplicate `headers()` Function** ✅
+
 - **File**: `next.config.mjs`
 - **Issue**: Duplicate async headers() function causing build errors
 - **Action**: Merged both headers configurations into single function
 - **Result**: Build errors eliminated, all headers properly configured
 
 ### 2. **Fixed `.gitignore` Configuration** ✅
+
 - **File**: `.gitignore`
 - **Changes**:
   - Uncommented `.env*` to protect secrets
@@ -24,6 +26,7 @@ This document outlines the completed fixes and recommended next steps for proper
 - **Result**: Improved security, proper version control
 
 ### 3. **Created Environment Template** ✅
+
 - **File**: `.env.example`
 - **Content**: Comprehensive template with:
   - All required environment variables
@@ -35,12 +38,14 @@ This document outlines the completed fixes and recommended next steps for proper
 - **Result**: Clear configuration guide for all environments
 
 ### 4. **Fixed Cart Provider Infinite Loop** ✅
+
 - **File**: `providers/cart-provider.tsx`
 - **Issue**: Circular dependencies causing maximum update depth exceeded
 - **Action**: Removed circular dependencies, optimized useEffect hooks
 - **Result**: Stable cart functionality, no infinite re-renders
 
 ### 5. **Added Favicon Support** ✅
+
 - **Files**: `app/icon.tsx`, `app/apple-icon.tsx`
 - **Action**: Created dynamic favicon generators using Next.js ImageResponse
 - **Result**: No more 404 errors, proper branding in browser tabs
@@ -52,10 +57,12 @@ This document outlines the completed fixes and recommended next steps for proper
 ### Phase 1: Critical Cleanup (Immediate)
 
 #### 1.1 Consolidate Cart Implementations
+
 **Priority**: HIGH  
 **Effort**: 2-3 hours
 
 **Current State**:
+
 ```
 app/cart/
 ├── page.tsx              # Current implementation
@@ -64,6 +71,7 @@ app/cart/
 ```
 
 **Action Plan**:
+
 1. Review all three implementations
 2. Identify the best/most complete version
 3. Rename best version to `page.tsx`
@@ -71,6 +79,7 @@ app/cart/
 5. Update imports and references
 
 **Commands**:
+
 ```bash
 cd app/cart
 # Review files
@@ -86,6 +95,7 @@ mv page-broken.tsx _archive/
 ```
 
 #### 1.2 Update Production Environment
+
 **Priority**: HIGH  
 **Effort**: 30 minutes
 
@@ -100,6 +110,7 @@ nano .env.production
 ```
 
 **Required Variables**:
+
 ```env
 NODE_ENV=production
 NEXT_TELEMETRY_DISABLED=1
@@ -112,12 +123,14 @@ ALLOWED_ORIGINS=https://globoexpats.com,https://www.globoexpats.com
 ```
 
 #### 1.3 Enable Build Checks
+
 **Priority**: MEDIUM  
 **Effort**: 1-2 hours
 
 **Current Issue**: TypeScript and ESLint errors ignored during build
 
 **Action**: Fix in `next.config.mjs`
+
 ```javascript
 // Change from:
 eslint: {
@@ -137,6 +150,7 @@ typescript: {
 ```
 
 **Then fix all errors**:
+
 ```bash
 npm run type-check
 npm run lint:check
@@ -147,12 +161,14 @@ npm run lint:check
 ### Phase 2: Structure Optimization (Short-term)
 
 #### 2.1 Organize Documentation
+
 **Priority**: MEDIUM  
 **Effort**: 2-3 hours
 
 **Current**: Flat `Documentation/` folder with 21 files
 
 **Proposed Structure**:
+
 ```
 Documentation/
 ├── README.md                    # Documentation index
@@ -180,6 +196,7 @@ Documentation/
 ```
 
 **Commands**:
+
 ```bash
 cd Documentation
 mkdir -p architecture features api deployment development
@@ -187,12 +204,14 @@ mkdir -p architecture features api deployment development
 ```
 
 #### 2.2 Improve Testing Structure
+
 **Priority**: MEDIUM  
 **Effort**: 3-4 hours
 
 **Current**: `testsprite_tests/` with 9 files
 
 **Proposed Structure**:
+
 ```
 __tests__/
 ├── unit/
@@ -219,6 +238,7 @@ __tests__/
 ```
 
 **Commands**:
+
 ```bash
 mkdir -p __tests__/{unit,integration,e2e}
 mkdir -p __tests__/unit/{components,hooks,lib}
@@ -227,28 +247,33 @@ mv testsprite_tests/* __tests__/
 ```
 
 #### 2.3 Create Component Documentation
+
 **Priority**: LOW  
 **Effort**: 4-5 hours
 
 **Action**: Document all major components
 
 **Template** (`components/README.md`):
+
 ```markdown
 # Component Library
 
 ## UI Components (`/ui`)
+
 - Button - Accessible button with variants
 - Card - Container component
 - Dialog - Modal dialogs
 - [etc.]
 
 ## Feature Components
+
 - Header - Main navigation
 - ProductCard - Product display
 - CartItem - Shopping cart item
 - [etc.]
 
 ## Usage Examples
+
 [Add examples for each component]
 ```
 
@@ -257,18 +282,21 @@ mv testsprite_tests/* __tests__/
 ### Phase 3: Code Quality Improvements (Medium-term)
 
 #### 3.1 Expand Test Coverage
+
 **Priority**: HIGH  
 **Effort**: 1-2 weeks
 
 **Target Coverage**: 80%+
 
 **Focus Areas**:
+
 1. Critical paths (auth, cart, checkout)
 2. Custom hooks
 3. Utility functions
 4. API integration
 
 **Commands**:
+
 ```bash
 # Run tests with coverage
 npm run test -- --coverage
@@ -278,10 +306,12 @@ open coverage/index.html
 ```
 
 #### 3.2 Performance Audit
+
 **Priority**: MEDIUM  
 **Effort**: 3-4 days
 
 **Actions**:
+
 1. Run Lighthouse audit
 2. Analyze bundle size
 3. Optimize images
@@ -289,6 +319,7 @@ open coverage/index.html
 5. Check Core Web Vitals
 
 **Commands**:
+
 ```bash
 # Bundle analysis
 ANALYZE=true npm run build
@@ -301,10 +332,12 @@ npm run optimize-images
 ```
 
 #### 3.3 Accessibility Audit
+
 **Priority**: MEDIUM  
 **Effort**: 2-3 days
 
 **Actions**:
+
 1. Run axe DevTools
 2. Test keyboard navigation
 3. Verify ARIA labels
@@ -312,6 +345,7 @@ npm run optimize-images
 5. Check color contrast
 
 **Tools**:
+
 - axe DevTools browser extension
 - WAVE browser extension
 - NVDA/JAWS screen readers
@@ -321,16 +355,19 @@ npm run optimize-images
 ### Phase 4: Advanced Optimizations (Long-term)
 
 #### 4.1 Implement Monitoring
+
 **Priority**: HIGH  
 **Effort**: 1 week
 
 **Tools to Add**:
+
 - **Error Tracking**: Sentry
 - **Analytics**: Google Analytics / Mixpanel
 - **Performance**: New Relic / Datadog
 - **Uptime**: UptimeRobot
 
 **Implementation**:
+
 ```bash
 # Install Sentry
 npm install @sentry/nextjs
@@ -340,12 +377,14 @@ npx @sentry/wizard@latest -i nextjs
 ```
 
 #### 4.2 Add E2E Testing
+
 **Priority**: MEDIUM  
 **Effort**: 1-2 weeks
 
 **Tool**: Playwright or Cypress
 
 **Setup**:
+
 ```bash
 # Install Playwright
 npm install -D @playwright/test
@@ -355,6 +394,7 @@ npx playwright install
 ```
 
 **Test Scenarios**:
+
 - User registration flow
 - Product search and purchase
 - Seller listing creation
@@ -362,12 +402,14 @@ npx playwright install
 - Admin operations
 
 #### 4.3 Implement CI/CD Pipeline
+
 **Priority**: HIGH  
 **Effort**: 1 week
 
 **Platform**: GitHub Actions
 
 **Pipeline Stages**:
+
 1. Lint & Type Check
 2. Unit Tests
 3. Integration Tests
@@ -377,6 +419,7 @@ npx playwright install
 7. Deploy to Production
 
 **Example** (`.github/workflows/ci.yml`):
+
 ```yaml
 name: CI/CD Pipeline
 
@@ -415,6 +458,7 @@ jobs:
 ## 📊 Progress Tracking
 
 ### Completed ✅
+
 - [x] Fix duplicate headers() function
 - [x] Update .gitignore
 - [x] Create .env.example template
@@ -424,6 +468,7 @@ jobs:
 - [x] Create restructuring plan
 
 ### Phase 1 (Immediate) 🔄
+
 - [ ] Consolidate cart implementations
 - [ ] Create .env.production
 - [ ] Enable build checks
@@ -431,18 +476,21 @@ jobs:
 - [ ] Fix all ESLint errors
 
 ### Phase 2 (Short-term) ⏳
+
 - [ ] Organize documentation
 - [ ] Improve testing structure
 - [ ] Create component documentation
 - [ ] Add API documentation
 
 ### Phase 3 (Medium-term) 📅
+
 - [ ] Expand test coverage (80%+)
 - [ ] Performance audit
 - [ ] Accessibility audit
 - [ ] Security audit
 
 ### Phase 4 (Long-term) 🎯
+
 - [ ] Implement monitoring (Sentry, Analytics)
 - [ ] Add E2E testing (Playwright)
 - [ ] Implement CI/CD pipeline
@@ -452,20 +500,21 @@ jobs:
 
 ## 🎯 Success Metrics
 
-| Metric | Current | Target | Timeline |
-|--------|---------|--------|----------|
-| **Test Coverage** | ~30% | 80%+ | 2 weeks |
-| **Build Time** | ~2min | <1min | 1 week |
-| **Bundle Size** | ~500KB | <300KB | 2 weeks |
-| **Lighthouse Score** | ~75 | 90+ | 1 week |
-| **TypeScript Errors** | ~20 | 0 | 3 days |
-| **ESLint Warnings** | ~50 | 0 | 3 days |
+| Metric                | Current | Target | Timeline |
+| --------------------- | ------- | ------ | -------- |
+| **Test Coverage**     | ~30%    | 80%+   | 2 weeks  |
+| **Build Time**        | ~2min   | <1min  | 1 week   |
+| **Bundle Size**       | ~500KB  | <300KB | 2 weeks  |
+| **Lighthouse Score**  | ~75     | 90+    | 1 week   |
+| **TypeScript Errors** | ~20     | 0      | 3 days   |
+| **ESLint Warnings**   | ~50     | 0      | 3 days   |
 
 ---
 
 ## 🚀 Quick Start Commands
 
 ### Development
+
 ```bash
 # Install dependencies
 npm install
@@ -484,6 +533,7 @@ npm run lint:check
 ```
 
 ### Production Build
+
 ```bash
 # Build for production
 npm run build:production
@@ -499,6 +549,7 @@ docker run -p 3000:3000 expat-frontend
 ```
 
 ### Code Quality
+
 ```bash
 # Fix linting issues
 npm run lint
@@ -515,6 +566,7 @@ npm run precommit
 ## 📞 Support
 
 For questions or issues:
+
 1. Check `PLATFORM_ANALYSIS.md` for platform overview
 2. Review `DEPLOYMENT.md` for deployment issues
 3. Check `Documentation/` for feature-specific docs

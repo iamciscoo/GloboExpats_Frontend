@@ -1,10 +1,10 @@
 'use client'
 
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
-import { ShieldAlert, Mail, X } from 'lucide-react'
+import { Mail, X } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/use-auth'
-import { getUserCapabilities, getVerificationStatusMessage } from '@/lib/verification-utils'
+import { getUserCapabilities } from '@/lib/verification-utils'
 import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
@@ -41,7 +41,8 @@ export const VerificationBanner = () => {
 
   // Simplified verification message
   const title = 'Email verification required'
-  const description = 'Verify your email to unlock all platform features including buying, selling, and messaging.'
+  const description =
+    'Verify your email to unlock all platform features including buying, selling, and messaging.'
   const IconComponent = Mail
   const linkText = 'Verify Email'
   const linkHref = '/account/verification'
