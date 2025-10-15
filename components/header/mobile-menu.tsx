@@ -4,30 +4,33 @@ import React from 'react'
 import Link from 'next/link'
 import {
   Menu,
-  Search,
   Package,
   Shield,
   Bell,
   MessageCircle,
-  LogIn,
-  UserPlus,
   ChevronDown,
   ShoppingCart,
   User as UserIcon,
   Settings,
+  Search,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from '@/components/ui/sheet'
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetTitle,
+  SheetHeader,
+  SheetDescription,
+} from '@/components/ui/sheet'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import SearchBar from '@/components/search-bar'
 import type { User, Currency } from '@/lib/types'
 import { useCart } from '@/hooks/use-cart'
-import { usePathname } from 'next/navigation'
 
 interface MobileMenuProps {
   isLoggedIn: boolean
@@ -68,48 +71,15 @@ export const MobileMenu = React.memo<MobileMenuProps>(
   ({
     isLoggedIn,
     isAdmin,
-    isAuthPage,
+    isAuthPage: _isAuthPage,
     user: _user,
     currency,
     currencies,
     setCurrency,
     handleLogout,
   }) => {
-    const pathname = usePathname()
-    const isBrowsePage = pathname.startsWith('/browse')
-
     return (
       <div className="flex items-center gap-1">
-        {/* Mobile Search Toggle */}
-        {!isAuthPage && !isBrowsePage && (
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-neutral-200 hover:text-white h-8 w-8"
-                aria-label="Open search"
-              >
-                <Search className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent
-              side="top"
-              className="h-auto bg-brand-primary border-b-0 p-4 pb-6"
-              aria-describedby="search-description"
-            >
-              <SheetHeader className="sr-only">
-                <SheetTitle>Search Products</SheetTitle>
-              </SheetHeader>
-              <div className="flex items-center justify-center w-full pt-2">
-                <div className="w-full max-w-md">
-                  <SearchBar autoExpand />
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
-        )}
-
         {/* Mobile Menu */}
         <Sheet>
           <SheetTrigger asChild>
@@ -124,11 +94,13 @@ export const MobileMenu = React.memo<MobileMenuProps>(
           </SheetTrigger>
           <SheetContent
             side="right"
-            className="bg-brand-primary text-neutral-100 w-64 sm:w-72"
+            className="bg-brand-primary text-neutral-100 w-64 sm:w-72 top-[64px] h-[calc(100vh-64px)] md:top-0 md:h-screen"
             aria-describedby="menu-description"
+            hideOverlay={true}
           >
             <SheetHeader className="sr-only">
               <SheetTitle>Navigation Menu</SheetTitle>
+              <SheetDescription>Access navigation options and settings</SheetDescription>
             </SheetHeader>
             <div className="flex flex-col h-full p-4 space-y-6">
               <div className="border-b border-neutral-700 pb-4">
@@ -209,34 +181,42 @@ export const MobileMenu = React.memo<MobileMenuProps>(
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full justify-between border-2 border-white/60 text-white bg-transparent hover:bg-white hover:text-slate-900 hover:border-white"
+                        className="w-full justify-between rounded-full border-2 border-white/60 text-white bg-transparent hover:bg-white hover:text-slate-900 hover:border-white px-4 py-2 h-auto"
                         aria-label="Select currency"
                       >
                         <span className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-neutral-300 uppercase tracking-wide">
-                            Currency:
+                          <span className="text-xs font-medium uppercase tracking-wide">
+                            CURRENCY:
                           </span>
                           {currencies.find((c) => c.code === currency)?.flag} {currency}
                         </span>
                         <ChevronDown className="ml-1 h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56 bg-white border border-slate-200 shadow-lg">
+                    <DropdownMenuContent
+                      className="w-56 bg-white border border-slate-200 shadow-lg rounded-lg z-[100]"
+                      align="center"
+                      side="top"
+                      sideOffset={8}
+                    >
                       {currencies.map((curr) => (
                         <DropdownMenuItem
                           key={curr.code}
                           onClick={() => setCurrency(curr.code)}
-                          className="text-slate-900 hover:bg-slate-100 hover:text-slate-900 cursor-pointer focus:bg-slate-100 focus:text-slate-900"
+                          className="text-slate-900 hover:bg-slate-100 hover:text-slate-900 cursor-pointer focus:bg-slate-100 focus:text-slate-900 flex items-center gap-2 px-3 py-2"
                           aria-label={`Switch to ${curr.code} currency`}
                         >
-                          <span aria-hidden="true">{curr.flag}</span> {curr.code}
+                          <span aria-hidden="true" className="text-base">
+                            {curr.flag}
+                          </span>
+                          <span className="font-medium">{curr.code}</span>
                         </DropdownMenuItem>
                       ))}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
 
-                {isLoggedIn ? (
+                {isLoggedIn && (
                   <Button
                     onClick={handleLogout}
                     variant="outline"
@@ -244,26 +224,6 @@ export const MobileMenu = React.memo<MobileMenuProps>(
                   >
                     Logout
                   </Button>
-                ) : (
-                  !isAuthPage && (
-                    <>
-                      <Link href="/login" className="block">
-                        <Button className="w-full bg-brand-secondary hover:bg-amber-500 text-slate-900 font-semibold">
-                          <LogIn className="mr-2 h-4 w-4" />
-                          Login
-                        </Button>
-                      </Link>
-                      <Link href="/register" className="block">
-                        <Button
-                          variant="outline"
-                          className="w-full border-2 border-white/60 text-white bg-transparent hover:bg-white hover:text-slate-900 hover:border-white"
-                        >
-                          <UserPlus className="mr-2 h-4 w-4" />
-                          Join as Expat
-                        </Button>
-                      </Link>
-                    </>
-                  )
                 )}
               </div>
             </div>

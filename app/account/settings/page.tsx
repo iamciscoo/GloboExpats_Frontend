@@ -1,9 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import {
-  User,
+  User as UserIcon,
   Bell,
   Shield,
   Eye,
@@ -12,7 +11,6 @@ import {
   Camera,
   Edit,
   Upload,
-  ChevronRight,
   Building,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -21,7 +19,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
@@ -39,10 +37,19 @@ import { useToast } from '@/components/ui/use-toast'
 import { EXPAT_LOCATIONS } from '@/lib/constants'
 
 export default function AccountSettings() {
-  const { user, isVerifiedBuyer } = useAuth()
-  const { userProfile, isLoading: profileLoading, updateBasicInfo, updateSellerInfo, error: profileError } = useUserProfile()
+  useAuth() // Auth context available if needed
+  const {
+    userProfile: baseProfile,
+    isLoading: profileLoading,
+    updateProfile,
+    error: profileError,
+  } = useUserProfile()
   const { toast } = useToast()
-  
+
+  // Type cast to allow placeholder properties until backend implements them
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userProfile = baseProfile as any
+
   const [activeTab, setActiveTab] = useState('profile')
   const [showPassword, setShowPassword] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -69,10 +76,10 @@ export default function AccountSettings() {
         firstName: userProfile.firstName || '',
         lastName: userProfile.lastName || '',
         email: userProfile.email || '',
-        phone: userProfile.phone || '',
+        phone: userProfile.phoneNumber || '',
         location: userProfile.location || '',
-        bio: userProfile.bio || '',
-        website: userProfile.website || '',
+        bio: userProfile.aboutMe || '',
+        website: '', // Not in User type, keeping as empty for now
         organization: userProfile.organization || '',
         position: userProfile.position || '',
       })
@@ -110,19 +117,29 @@ export default function AccountSettings() {
 
   const saveChanges = async () => {
     if (!hasChanges) return
-    
+
     try {
       setIsSubmitting(true)
-      
-      // Update basic profile information
-      await updateBasicInfo(profileData)
-      
+
+      // Update profile information - map form data to User type
+      await updateProfile({
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
+        name: `${profileData.firstName} ${profileData.lastName}`,
+        email: profileData.email,
+        phoneNumber: profileData.phone,
+        location: profileData.location,
+        aboutMe: profileData.bio,
+        organization: profileData.organization,
+        position: profileData.position,
+      })
+
       // Show success message
       toast({
         title: 'Profile updated',
         description: 'Your profile information has been saved successfully.',
       })
-      
+
       setHasChanges(false)
       setIsEditing(false)
     } catch (error) {
@@ -203,7 +220,7 @@ export default function AccountSettings() {
         {hasChanges && (
           <Alert className="border-amber-200/80 bg-amber-50/80 text-amber-900 mb-8">
             <AlertDescription>
-              You have unsaved changes. Don't forget to save before navigating away.
+              You have unsaved changes. Don&apos;t forget to save before navigating away.
             </AlertDescription>
           </Alert>
         )}
@@ -226,7 +243,7 @@ export default function AccountSettings() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="hidden md:block">
           <TabsList className="grid w-full grid-cols-5 max-w-xl mb-8">
             <TabsTrigger value="profile">
-              <User className="w-4 h-4 mr-2" /> Profile
+              <UserIcon className="w-4 h-4 mr-2" /> Profile
             </TabsTrigger>
             <TabsTrigger value="verification">
               <Shield className="w-4 h-4 mr-2" /> Verification
@@ -261,7 +278,7 @@ export default function AccountSettings() {
                   <Avatar className="h-24 w-24 border-2 border-white shadow-lg">
                     <AvatarImage src={userProfile?.avatar || '/images/seller-avatar-2.jpg'} />
                     <AvatarFallback className="bg-brand-secondary text-brand-primary text-2xl font-bold">
-                      {userProfile?.fullName?.slice(0, 2).toUpperCase() || 'TE'}
+                      {userProfile?.name?.slice(0, 2).toUpperCase() || 'TE'}
                     </AvatarFallback>
                   </Avatar>
                   {isEditing && (
@@ -410,85 +427,88 @@ export default function AccountSettings() {
               </div>
 
               {/* Seller Information Section */}
-              {userProfile && (userProfile.totalListings > 0 || userProfile.specialties?.length) && (
-                <>
-                  <Separator />
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-neutral-800">Seller Information</h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label>Business Type</Label>
-                        <Select 
-                          value={userProfile.businessInfo?.type || 'individual'} 
-                          disabled={!isEditing}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select business type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="individual">Individual</SelectItem>
-                            <SelectItem value="company">Company</SelectItem>
-                            <SelectItem value="organization">Organization</SelectItem>
-                          </SelectContent>
-                        </Select>
+              {userProfile &&
+                (userProfile.totalListings > 0 || userProfile.specialties?.length) && (
+                  <>
+                    <Separator />
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-neutral-800">Seller Information</h3>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label>Business Type</Label>
+                          <Select
+                            value={userProfile.businessInfo?.type || 'individual'}
+                            disabled={!isEditing}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select business type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="individual">Individual</SelectItem>
+                              <SelectItem value="company">Company</SelectItem>
+                              <SelectItem value="organization">Organization</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Response Time</Label>
+                          <Input
+                            value={userProfile.responseTime || ''}
+                            disabled={!isEditing}
+                            placeholder="e.g., < 1 hour"
+                          />
+                        </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Response Time</Label>
-                        <Input
-                          value={userProfile.responseTime || ''}
-                          disabled={!isEditing}
-                          placeholder="e.g., < 1 hour"
-                        />
+                        <Label>Specialties</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {userProfile.specialties?.map((specialty: string) => (
+                            <Badge key={specialty} variant="outline">
+                              {specialty}
+                            </Badge>
+                          )) || (
+                            <span className="text-sm text-neutral-500">No specialties set</span>
+                          )}
+                        </div>
+                        {isEditing && (
+                          <p className="text-xs text-neutral-500">
+                            Contact support to update your specialties
+                          </p>
+                        )}
                       </div>
-                    </div>
 
-                    <div className="space-y-2">
-                      <Label>Specialties</Label>
-                      <div className="flex flex-wrap gap-2">
-                        {userProfile.specialties?.map((specialty) => (
-                          <Badge key={specialty} variant="outline">
-                            {specialty}
-                          </Badge>
-                        )) || <span className="text-sm text-neutral-500">No specialties set</span>}
-                      </div>
-                      {isEditing && (
-                        <p className="text-xs text-neutral-500">
-                          Contact support to update your specialties
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-neutral-50 rounded-lg">
-                      <div className="text-center">
-                        <div className="text-xl font-bold text-brand-primary">
-                          {userProfile.rating?.toFixed(1) || '0.0'}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-neutral-50 rounded-lg">
+                        <div className="text-center">
+                          <div className="text-xl font-bold text-brand-primary">
+                            {userProfile.rating?.toFixed(1) || '0.0'}
+                          </div>
+                          <div className="text-xs text-neutral-600">Rating</div>
                         </div>
-                        <div className="text-xs text-neutral-600">Rating</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-xl font-bold text-green-600">
-                          {userProfile.reviewCount || 0}
+                        <div className="text-center">
+                          <div className="text-xl font-bold text-green-600">
+                            {userProfile.reviewCount || 0}
+                          </div>
+                          <div className="text-xs text-neutral-600">Reviews</div>
                         </div>
-                        <div className="text-xs text-neutral-600">Reviews</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-xl font-bold text-blue-600">
-                          {userProfile.totalListings || 0}
+                        <div className="text-center">
+                          <div className="text-xl font-bold text-blue-600">
+                            {userProfile.totalListings || 0}
+                          </div>
+                          <div className="text-xs text-neutral-600">Listings</div>
                         </div>
-                        <div className="text-xs text-neutral-600">Listings</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-xl font-bold text-purple-600">
-                          {userProfile.completedSales || 0}
+                        <div className="text-center">
+                          <div className="text-xl font-bold text-purple-600">
+                            {userProfile.completedSales || 0}
+                          </div>
+                          <div className="text-xs text-neutral-600">Sales</div>
                         </div>
-                        <div className="text-xs text-neutral-600">Sales</div>
                       </div>
                     </div>
-                  </div>
-                </>
-              )}
+                  </>
+                )}
             </CardContent>
           </Card>
         </div>
@@ -544,7 +564,8 @@ export default function AccountSettings() {
                 </div>
                 <Alert className="bg-blue-50 text-blue-900 border-blue-200">
                   <AlertDescription>
-                    After document submission, we'll review your information and update your verification status.
+                    After document submission, we'll review your information and update your
+                    verification status.
                   </AlertDescription>
                 </Alert>
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
