@@ -42,6 +42,8 @@ import { useAuth } from '@/hooks/use-auth'
 import { apiClient } from '@/lib/api'
 import { getFullImageUrl, cleanLocationString } from '@/lib/image-utils'
 import { RouteGuard } from '@/components/route-guard'
+import PriceDisplay from '@/components/price-display'
+import type { CurrencyCode } from '@/lib/currency-types'
 
 interface UserListing {
   productId: number
@@ -429,9 +431,16 @@ function DashboardContent() {
                       <h3 className="font-semibold text-[#0F172A] mb-2 truncate">
                         {listing.productName}
                       </h3>
-                      <p className="text-lg font-bold text-[#1E3A8A] mb-2">
-                        {listing.productCurrency} {listing.productAskingPrice?.toLocaleString()}
-                      </p>
+                      <div className="mb-2">
+                        <PriceDisplay
+                          price={listing.productAskingPrice}
+                          originalCurrency={listing.productCurrency as CurrencyCode}
+                          size="lg"
+                          weight="bold"
+                          className="text-[#1E3A8A]"
+                          showOriginal
+                        />
+                      </div>
                       <div className="flex items-center text-sm text-[#64748B] mb-3">
                         <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
                         <span className="truncate">
