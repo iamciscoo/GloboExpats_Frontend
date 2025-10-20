@@ -22,10 +22,7 @@
 // ============================================================================
 
 /** Base API URL from environment or fallback (empty string - endpoints already include /api/v1/) */
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(
-  /\/$/,
-  ''
-)
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '')
 
 /**
  * Standard API response wrapper
