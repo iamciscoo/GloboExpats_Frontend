@@ -36,25 +36,24 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Accept build-time overridable environment arguments (provide defaults for local builds)
-# IMPORTANT: Use direct backend URL for production deployments
-ARG NEXT_PUBLIC_API_URL=http://10.123.22.21:8081
-ARG BACKEND_URL=http://10.123.22.21:8081
-ARG NEXT_PUBLIC_WS_URL=ws://10.123.22.21:8081/ws
+ARG NEXT_PUBLIC_API_URL=/api/backend/v1
+ARG BACKEND_URL=https://dev.globoexpats.com
+ARG NEXT_PUBLIC_WS_URL=ws://localhost:8000/ws
 ARG NEXT_PUBLIC_CDN_URL=
 ARG NEXT_PUBLIC_ENVIRONMENT=production
-ARG NEXT_PUBLIC_BACKEND_URL=http://10.123.22.21:8081
+ARG NEXT_PUBLIC_BACKEND_URL=https://dev.globoexpats.com
 
 # Expose them to the build (Next.js inlines NEXT_PUBLIC_*)
 # NOTE:
-# - For production deployments on the same server: Use the direct backend URL (e.g., http://10.123.22.21:8081)
-# - When running BOTH frontend and backend as containers on the SAME Docker network:
-#   Use the backend container name + port (e.g., http://backend:8081)
+# - When running BOTH frontend and backend as containers on the SAME Docker network,
+#   do NOT use 'localhost' here. Use the backend container name + its internal port.
 #   Example build override:
-#     docker build --build-arg BACKEND_URL=http://backend:8081 \
-#                  --build-arg NEXT_PUBLIC_API_URL=http://backend:8081 \
+#     docker build --build-arg BACKEND_URL=http://globalexpats:8080 \
+#                  --build-arg NEXT_PUBLIC_API_URL=/api/backend \
 #                  -t expat-frontend .
-# - Only use relative paths (like /api/v1) if you have a reverse proxy (nginx) in front handling routing
-# - For development with proxy: NEXT_PUBLIC_API_URL=/api/v1 and BACKEND_URL=http://10.123.22.21:8081
+# - 'localhost' only works when the backend is running directly on the host (not another container).
+# - Set NEXT_PUBLIC_API_URL to a relative path (like /api/backend) so browser clients hit the Next.js
+#   server, letting the rewrite proxy the request to BACKEND_URL internally.
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
   BACKEND_URL=${BACKEND_URL} \
   NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL} \
