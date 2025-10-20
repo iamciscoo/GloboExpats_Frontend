@@ -924,7 +924,7 @@ class ApiClient {
    */
   async exchangeOAuthCode(authCode: string): Promise<ApiResponse<unknown>> {
     return this.request(`/api/v1/oauth2/exchange?auth_code=${encodeURIComponent(authCode)}`, {
-      method: 'POST',
+      method: 'GET',
     })
   }
 
