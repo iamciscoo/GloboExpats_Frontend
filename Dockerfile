@@ -36,24 +36,26 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Accept build-time overridable environment arguments (provide defaults for local builds)
-ARG NEXT_PUBLIC_API_URL=/api/backend/v1
-ARG BACKEND_URL=https://dev.globoexpats.com
-ARG NEXT_PUBLIC_WS_URL=ws://localhost:8000/ws
+# IMPORTANT: NEXT_PUBLIC_API_URL should be the full backend URL (not a relative proxy path)
+# The API client code already appends /api/v1/ to endpoints
+ARG NEXT_PUBLIC_API_URL=http://10.123.22.21:8081
+ARG BACKEND_URL=http://10.123.22.21:8081
+ARG NEXT_PUBLIC_WS_URL=ws://10.123.22.21:8081/ws
 ARG NEXT_PUBLIC_CDN_URL=
 ARG NEXT_PUBLIC_ENVIRONMENT=production
-ARG NEXT_PUBLIC_BACKEND_URL=https://dev.globoexpats.com
+ARG NEXT_PUBLIC_BACKEND_URL=http://10.123.22.21:8081
 
 # Expose them to the build (Next.js inlines NEXT_PUBLIC_*)
 # NOTE:
+# - NEXT_PUBLIC_API_URL should be the full backend URL (e.g., http://10.123.22.21:8081)
 # - When running BOTH frontend and backend as containers on the SAME Docker network,
-#   do NOT use 'localhost' here. Use the backend container name + its internal port.
+#   use the backend container name + its internal port.
 #   Example build override:
-#     docker build --build-arg BACKEND_URL=http://globalexpats:8080 \
-#                  --build-arg NEXT_PUBLIC_API_URL=/api/backend \
+#     docker build --build-arg BACKEND_URL=http://backend-container:8081 \
+#                  --build-arg NEXT_PUBLIC_API_URL=http://backend-container:8081 \
 #                  -t expat-frontend .
-# - 'localhost' only works when the backend is running directly on the host (not another container).
-# - Set NEXT_PUBLIC_API_URL to a relative path (like /api/backend) so browser clients hit the Next.js
-#   server, letting the rewrite proxy the request to BACKEND_URL internally.
+# - For production, use the actual domain (e.g., https://api.globoexpats.com)
+# - The API client already handles /api/v1/ path construction
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
   BACKEND_URL=${BACKEND_URL} \
   NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL} \
