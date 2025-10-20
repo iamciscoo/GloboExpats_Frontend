@@ -229,13 +229,10 @@ function LoginContent() {
       // Determine nextPath: use returnUrl from query string if present, else '/'
       const nextPath = searchParams.get('returnUrl') || '/'
       // Use Next.js API proxy route (same-origin, no CORS, no caching issues)
-      const res = await fetch(
-        `/api/oauth/google?nextPath=${encodeURIComponent(nextPath)}`,
-        {
-          method: 'GET',
-          headers: { accept: '*/*' },
-        }
-      )
+      const res = await fetch(`/api/oauth/google?nextPath=${encodeURIComponent(nextPath)}`, {
+        method: 'GET',
+        headers: { accept: '*/*' },
+      })
       if (!res.ok) throw new Error('Failed to initiate Google login')
       const data = await res.json()
       if (data && data.authUrl) {

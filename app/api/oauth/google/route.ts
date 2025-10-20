@@ -7,7 +7,7 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://10.123.22.21:8081'
 /**
  * Proxy endpoint for Google OAuth initiation
  * This proxies requests to the backend OAuth endpoint to avoid CORS and caching issues
- * 
+ *
  * Flow:
  * 1. Frontend calls: GET /api/oauth/google?nextPath=/
  * 2. This proxies to: GET http://10.123.22.21:8081/api/v1/oauth2/login/google?nextPath=/
