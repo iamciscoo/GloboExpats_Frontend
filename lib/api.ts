@@ -919,12 +919,13 @@ class ApiClient {
 
   /**
    * Exchanges Google OAuth auth code for JWT token
+   * Backend expects POST method per BACKEND_API_REFERENCE.md line 303
    * @param authCode - Google OAuth authorization code
    * @returns Promise resolving to authentication data
    */
   async exchangeOAuthCode(authCode: string): Promise<ApiResponse<unknown>> {
     return this.request(`/api/v1/oauth2/exchange?auth_code=${encodeURIComponent(authCode)}`, {
-      method: 'GET',
+      method: 'POST',
     })
   }
 
