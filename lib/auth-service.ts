@@ -169,18 +169,28 @@ export function redirectToGoogleLogin() {
 export async function exchangeAuthCode(authCode: string) {
   try {
     const response = await apiClient.exchangeOAuthCode(authCode)
-    const data = response.data as {
+    
+    // Backend may return data directly or wrapped in response.data
+    // Handle both cases like loginUser does
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const responseData = (response as any)?.data || response
+    
+    console.log('[AUTH] OAuth exchange response:', responseData)
+    
+    const data = responseData as {
       token?: string
       firstName?: string
       lastName?: string
       email?: string
       profileImageUrl?: string
     }
+    
     const { token, firstName, lastName, email, profileImageUrl } = data
 
     if (token) {
       setAuthToken(token) // This now handles cookie setting internally
     } else {
+      console.error('[AUTH] No token in response:', data)
       throw new Error('No token received from server')
     }
 

@@ -32,7 +32,7 @@ Error: Request method 'POST' is not supported
 
 ## Fix Implementation
 
-### 1. Updated API Client (`lib/api.ts`)
+### 1. Updated API Client (`lib/api.ts`) - HTTP Method Fix
 
 **Before:**
 ```typescript
@@ -54,7 +54,39 @@ async exchangeOAuthCode(authCode: string): Promise<ApiResponse<unknown>> {
 }
 ```
 
-### 2. Updated Documentation
+### 2. Fixed Response Handling (`lib/auth-service.ts`) - Response Structure Fix
+
+**Problem**: After fixing the HTTP method, a new error occurred:
+```
+TypeError: Cannot destructure property 'token' of '(intermediate value).data' as it is undefined
+```
+
+**Cause**: The API client's `request()` method returns backend responses directly, not wrapped in a `response.data` structure. The code was trying to access `response.data.token` when it should access `response.token` directly.
+
+**Before:**
+```typescript
+const response = await apiClient.exchangeOAuthCode(authCode)
+const data = response.data as {  // ❌ response.data is undefined
+  token?: string
+  // ...
+}
+```
+
+**After:**
+```typescript
+const response = await apiClient.exchangeOAuthCode(authCode)
+// Backend may return data directly or wrapped in response.data
+// Handle both cases defensively
+const responseData = (response as any)?.data || response  // ✅ Works for both cases
+const data = responseData as {
+  token?: string
+  // ...
+}
+```
+
+This follows the same defensive pattern used in `loginUser()` function.
+
+### 3. Updated Documentation
 
 Fixed incorrect API documentation in:
 - `Docs/features/GOOGLE_OAUTH_IMPLEMENTATION.md`
@@ -110,10 +142,11 @@ Response: 200 OK
 
 ## Files Modified
 
-1. `/lib/api.ts` - Fixed `exchangeOAuthCode()` method
-2. `/Docs/features/GOOGLE_OAUTH_IMPLEMENTATION.md` - Updated endpoint documentation
-3. `/Docs/api/BACKEND_API_REFERENCE.md` - Updated API reference
-4. `/Docs/api/API_QUICK_REFERENCE.md` - Updated quick reference
+1. `/lib/api.ts` - Fixed `exchangeOAuthCode()` method (HTTP method and parameters)
+2. `/lib/auth-service.ts` - Fixed `exchangeAuthCode()` response handling
+3. `/Docs/features/GOOGLE_OAUTH_IMPLEMENTATION.md` - Updated endpoint documentation
+4. `/Docs/api/BACKEND_API_REFERENCE.md` - Updated API reference
+5. `/Docs/api/API_QUICK_REFERENCE.md` - Updated quick reference
 
 ## Prevention
 
