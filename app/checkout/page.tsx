@@ -386,30 +386,31 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl">
         {/* Modern Header */}
-        <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6 mb-8">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
             <Link href="/cart">
               <Button
                 variant="outline"
-                size="default"
-                className="border border-neutral-300 hover:border-brand-primary hover:bg-neutral-50 text-neutral-700"
+                size="sm"
+                className="border border-neutral-300 hover:border-brand-primary hover:bg-neutral-50 text-neutral-700 text-xs sm:text-sm"
               >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Cart
+                <ArrowLeft className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Back to Cart</span>
+                <span className="sm:hidden">Cart</span>
               </Button>
             </Link>
-            <h1 className="text-2xl font-semibold text-neutral-900">Checkout</h1>
-            <div className="w-24"></div> {/* Spacer for centering */}
+            <h1 className="text-lg sm:text-2xl font-semibold text-neutral-900">Checkout</h1>
+            <div className="w-16 sm:w-24"></div> {/* Spacer for centering */}
           </div>
 
           {/* Progress Steps */}
-          <div className="flex items-center justify-center space-x-4">
+          <div className="flex items-center justify-center space-x-2 sm:space-x-4">
             {[1, 2, 3].map((step) => (
               <div key={step} className="flex items-center">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center font-medium transition-all ${
+                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-medium transition-all text-sm sm:text-base ${
                     step <= currentStep
                       ? 'bg-brand-primary text-white'
                       : 'bg-neutral-200 text-neutral-500'
@@ -419,7 +420,7 @@ export default function CheckoutPage() {
                 </div>
                 {step < 3 && (
                   <div
-                    className={`w-16 h-0.5 mx-2 ${
+                    className={`w-8 sm:w-16 h-0.5 mx-1 sm:mx-2 ${
                       step < currentStep ? 'bg-brand-primary' : 'bg-neutral-200'
                     }`}
                   />
@@ -428,23 +429,24 @@ export default function CheckoutPage() {
             ))}
           </div>
 
-          <div className="flex justify-center mt-4 space-x-12 text-sm">
+          {/* Step Labels */}
+          <div className="flex justify-center gap-10 sm:gap-20 mt-3 sm:mt-4">
             <span
-              className={`font-medium transition-colors ${
+              className={`text-xs sm:text-sm font-medium transition-colors ${
                 currentStep >= 1 ? 'text-brand-primary' : 'text-neutral-500'
               }`}
             >
-              Delivery
+              Shipping
             </span>
             <span
-              className={`font-medium transition-colors ${
+              className={`text-xs sm:text-sm font-medium transition-colors ${
                 currentStep >= 2 ? 'text-brand-primary' : 'text-neutral-500'
               }`}
             >
               Payment
             </span>
             <span
-              className={`font-medium transition-colors ${
+              className={`text-xs sm:text-sm font-medium transition-colors ${
                 currentStep >= 3 ? 'text-brand-primary' : 'text-neutral-500'
               }`}
             >
@@ -671,41 +673,48 @@ export default function CheckoutPage() {
                     Choose your preferred payment option
                   </p>
                 </CardHeader>
-                <CardContent className="space-y-6 p-6">
+                <CardContent className="space-y-3 p-4 sm:p-6">
                   <RadioGroup value={selectedPayment} onValueChange={setSelectedPayment}>
                     {paymentMethods.map((method) => (
                       <div
                         key={method.id}
-                        className={`relative flex items-center space-x-4 p-6 border-2 rounded-2xl transition-all duration-300 cursor-pointer ${
+                        onClick={() => setSelectedPayment(method.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            setSelectedPayment(method.id)
+                          }
+                        }}
+                        role="button"
+                        tabIndex={0}
+                        className={`relative flex items-center gap-3 sm:gap-4 p-4 sm:p-5 border-2 rounded-xl transition-all duration-300 cursor-pointer ${
                           selectedPayment === method.id
-                            ? 'border-brand-primary bg-neutral-50 shadow-sm'
+                            ? 'border-brand-primary bg-blue-50/50 shadow-sm'
                             : 'border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50'
                         }`}
                       >
                         <RadioGroupItem
                           value={method.id}
                           id={method.id}
-                          className="w-5 h-5 border-2"
+                          className="w-5 h-5 border-2 flex-shrink-0"
                         />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-neutral-100 rounded-lg">
-                              <CreditCard className="w-5 h-5 text-brand-primary" />
-                            </div>
-                            <div className="min-w-0">
-                              <Label
-                                htmlFor={method.id}
-                                className="font-semibold text-neutral-900 cursor-pointer"
-                              >
-                                {method.name}
-                              </Label>
-                              <p className="text-sm text-neutral-600">{method.description}</p>
-                            </div>
+                        {method.type === 'card' && (
+                          <div className="p-2 bg-neutral-100 rounded-lg flex-shrink-0">
+                            <CreditCard className="w-5 h-5 text-brand-primary" />
                           </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <Label
+                            htmlFor={method.id}
+                            className="font-semibold text-neutral-900 cursor-pointer text-base"
+                          >
+                            {method.name}
+                          </Label>
+                          <p className="text-sm text-neutral-600 mt-0.5">{method.description}</p>
                         </div>
                         {selectedPayment === method.id && (
-                          <div className="absolute top-3 right-3">
-                            <CheckCircle2 className="w-6 h-6 text-green-600" />
+                          <div className="flex-shrink-0">
+                            <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                           </div>
                         )}
                       </div>
@@ -716,8 +725,8 @@ export default function CheckoutPage() {
                   {(selectedPayment === 'mpesa' ||
                     selectedPayment === 'airtel' ||
                     selectedPayment === 'mixx') && (
-                    <div className="p-6 bg-neutral-50 rounded-2xl border border-neutral-200 mt-6">
-                      <h3 className="text-lg font-semibold text-neutral-900 mb-4">
+                    <div className="p-4 sm:p-6 bg-neutral-50 rounded-xl border border-neutral-200 mt-3">
+                      <h3 className="text-base sm:text-lg font-semibold text-neutral-900 mb-3 sm:mb-4">
                         Mobile Money Details
                       </h3>
                       <div className="space-y-4">
@@ -746,11 +755,11 @@ export default function CheckoutPage() {
                             {paymentMethods.find((p) => p.id === selectedPayment)?.name}
                           </p>
                         </div>
-                        <div className="bg-white p-4 rounded-xl border-2 border-neutral-200">
-                          <h4 className="font-semibold text-neutral-900 mb-2">
+                        <div className="bg-white p-3 sm:p-4 rounded-xl border border-neutral-200">
+                          <h4 className="font-semibold text-neutral-900 mb-2 text-sm sm:text-base">
                             Payment Instructions
                           </h4>
-                          <ul className="space-y-1 text-sm text-neutral-700">
+                          <ul className="space-y-1 text-xs sm:text-sm text-neutral-700">
                             <li>• You'll receive a payment prompt on your phone</li>
                             <li>• Enter your mobile money PIN to complete payment</li>
                             <li>• Payment confirmation will be sent via SMS</li>
@@ -762,8 +771,10 @@ export default function CheckoutPage() {
 
                   {/* Credit/Debit Card Payment Details */}
                   {selectedPayment === 'card' && (
-                    <div className="p-6 bg-neutral-50 rounded-2xl border border-neutral-200 mt-6">
-                      <h3 className="text-lg font-semibold text-neutral-900 mb-4">Card Details</h3>
+                    <div className="p-4 sm:p-6 bg-neutral-50 rounded-xl border border-neutral-200 mt-3">
+                      <h3 className="text-base sm:text-lg font-semibold text-neutral-900 mb-3 sm:mb-4">
+                        Card Details
+                      </h3>
                       <div className="space-y-4">
                         <div>
                           <Label
@@ -851,7 +862,7 @@ export default function CheckoutPage() {
                   )}
 
                   {/* Terms and Conditions */}
-                  <div className="bg-neutral-50 p-6 rounded-2xl border border-neutral-200 mt-6">
+                  <div className="bg-neutral-50 p-4 sm:p-6 rounded-xl border border-neutral-200 mt-3">
                     <div className="flex items-start space-x-4">
                       <Checkbox
                         id="terms"
@@ -953,15 +964,14 @@ export default function CheckoutPage() {
             )}
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between items-center mt-12 p-6 bg-neutral-50 rounded-2xl border border-neutral-200">
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mt-8 sm:mt-12 p-4 sm:p-6 bg-neutral-50 rounded-xl border border-neutral-200">
               <Button
                 variant="outline"
                 onClick={handlePrevStep}
                 disabled={currentStep === 1}
-                size="lg"
-                className="px-8 py-4 text-lg font-semibold border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-100 disabled:opacity-50 rounded-xl"
+                className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-100 disabled:opacity-50 rounded-xl order-2 sm:order-1"
               >
-                <ArrowLeft className="w-5 h-5 mr-3" />
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
                 Previous Step
               </Button>
 
@@ -969,28 +979,26 @@ export default function CheckoutPage() {
                 <Button
                   onClick={handleNextStep}
                   disabled={!validateStep(currentStep)}
-                  size="lg"
-                  className="px-10 py-4 text-lg font-bold bg-brand-primary hover:bg-brand-primary/90 text-white rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto px-8 sm:px-10 py-3 sm:py-4 text-base sm:text-lg font-bold bg-brand-primary hover:bg-brand-primary/90 text-white rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
                 >
                   Continue to {currentStep === 1 ? 'Payment' : 'Review'}
-                  <ArrowLeft className="w-5 h-5 ml-3 rotate-180" />
+                  <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 ml-2 sm:ml-3 rotate-180" />
                 </Button>
               ) : (
                 <Button
                   onClick={handlePlaceOrder}
                   disabled={!agreeToTerms || isProcessing}
-                  size="lg"
-                  className="px-12 py-4 text-xl font-bold bg-brand-primary hover:bg-brand-primary/90 text-white rounded-xl shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto px-10 sm:px-12 py-3 sm:py-4 text-lg sm:text-xl font-bold bg-brand-primary hover:bg-brand-primary/90 text-white rounded-xl shadow-xl disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2"
                 >
                   {isProcessing ? (
                     <>
-                      <div className="w-5 h-5 mr-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       Processing...
                     </>
                   ) : (
                     <>
                       Complete Purchase
-                      <CheckCircle2 className="w-5 h-5 ml-2" />
+                      <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
                     </>
                   )}
                 </Button>

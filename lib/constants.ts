@@ -1,7 +1,7 @@
 /**
  * Application Constants & Configuration - SIMPLIFIED
  *
- * Centralized constants for the Globoexpat platform including UI configuration,
+ * Centralized constants for the Globoexpats platform including UI configuration,
  * category definitions, currency settings, and mock data for development.
  */
 

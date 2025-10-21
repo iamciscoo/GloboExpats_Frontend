@@ -280,7 +280,7 @@ function LoginContent() {
               <div className="mb-8">
                 <Link href="/" className="inline-block">
                   <div className="text-4xl font-bold font-display mb-4 hover:opacity-80 transition-opacity cursor-pointer">
-                    Globo<span className="text-brand-secondary">Expat</span>
+                    Globo<span className="text-brand-secondary">expats</span>
                   </div>
                 </Link>
                 <p className="text-xl text-blue-100 leading-relaxed mb-6">
@@ -353,7 +353,7 @@ function LoginContent() {
               <CardHeader className="text-center pb-4 pt-6">
                 <Link href="/" className="inline-block mx-auto mb-3 lg:hidden">
                   <div className="text-2xl lg:text-3xl font-bold font-display text-brand-primary">
-                    Globo<span className="text-brand-secondary">Expat</span>
+                    Globo<span className="text-brand-secondary">expats</span>
                   </div>
                 </Link>
                 <CardTitle className="text-xl lg:text-2xl font-bold text-neutral-800">

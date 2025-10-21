@@ -10,7 +10,7 @@ interface SectionHeaderProps {
 
 /**
  * Revamped section header with brand-inspired decorative underline
- * Features dual-color accent (blue + orange) matching Globoexpat branding
+ * Features dual-color accent (blue + orange) matching Globoexpats branding
  */
 export default function SectionHeader({ title, subtitle, className = '' }: SectionHeaderProps) {
   return (
@@ -20,7 +20,7 @@ export default function SectionHeader({ title, subtitle, className = '' }: Secti
         {title}
       </h2>
 
-      {/* Decorative underline with brand colors - inspired by Globoexpat palette */}
+      {/* Decorative underline with brand colors - inspired by Globoexpats palette */}
       <div className="flex items-center gap-2 sm:gap-2 mb-3 sm:mb-3">
         {/* Primary blue line */}
         <div className="h-1 sm:h-1 w-12 sm:w-16 bg-gradient-to-r from-brand-primary to-brand-primary/80 rounded-full" />

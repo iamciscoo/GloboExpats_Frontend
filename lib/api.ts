@@ -1,5 +1,5 @@
 /**
- * API Client for Globoexpat Platform
+ * API Client for Globoexpats Platform
  *
  * Centralized API client for communicating with the backend services.
  * Provides type-safe methods for all API endpoints with proper error handling,
@@ -16,6 +16,8 @@
  * const product = await api.products.get('product-id')
  * ```
  */
+
+import { logger } from './logger'
 
 // ============================================================================
 // CONFIGURATION & TYPES
@@ -120,8 +122,8 @@ class ApiClient {
     const isNextApiRoute = endpoint.startsWith('/api/') && !endpoint.startsWith('/api/v1/')
     const url = isNextApiRoute ? endpoint : `${this.baseURL}${endpoint}`
 
-    // Log the request for debugging
-    console.log(`[API] ${options.method || 'GET'} ${url}`)
+    // Log the request for debugging (dev only)
+    logger.debug(`[API] ${options.method || 'GET'} ${url}`)
 
     // For FormData, don't set Content-Type (let browser set it with boundary)
     const isFormData = options.body instanceof FormData
@@ -254,6 +256,21 @@ class ApiClient {
         // Plain text response (common for some backend endpoints like register)
         const text = await response.text()
 
+        // Check if response is HTML (likely an auth redirect or error page)
+        if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html')) {
+          // Don't log as error - this is an expected auth flow
+          logger.info('[API] HTML response detected - authentication required')
+          const htmlError = new Error(
+            'Authentication required. Please log in to continue.'
+          ) as Error & {
+            isAuthError: boolean
+            statusCode: number
+          }
+          htmlError.isAuthError = true
+          htmlError.statusCode = 401
+          throw htmlError
+        }
+
         // Wrap plain text in API response format
         return {
           success: true,
@@ -332,10 +349,6 @@ class ApiClient {
     // Add product data as JSON string
     // NOTE: Do NOT include sellerId - backend extracts it from JWT token
     formData.append('product', JSON.stringify(productData))
-
-    console.log('🔐 Creating product with JWT authentication')
-    console.log('📦 Product data:', productData)
-    console.log('🖼️ Images count:', images.length)
 
     // Add images
     images.forEach((image) => {
@@ -512,8 +525,6 @@ class ApiClient {
     if (!hasImages && !hasImageRemoval) {
       // Use Next.js API route proxy (server-to-server, no CORS)
       const proxyUrl = `/api/products/${id}`
-      console.log('[ApiClient] Calling proxy:', proxyUrl)
-      console.log('[ApiClient] Product data:', productData)
 
       const response = await fetch(proxyUrl, {
         method: 'PATCH',
@@ -523,8 +534,6 @@ class ApiClient {
         },
         body: JSON.stringify(productData),
       })
-
-      console.log('[ApiClient] Proxy response status:', response.status)
 
       if (!response.ok) {
         let errorData
@@ -542,7 +551,6 @@ class ApiClient {
       }
 
       const result = await response.json()
-      console.log('[ApiClient] Success:', result)
       return result
     }
 
@@ -565,9 +573,6 @@ class ApiClient {
       url += `?${params.toString()}`
     }
 
-    console.log('[ApiClient] Updating with images, calling proxy:', url)
-    console.log('[ApiClient] Has images:', hasImages, 'Has removal:', hasImageRemoval)
-
     // Use fetch directly for multipart (don't go through this.request which adds JSON headers)
     const response = await fetch(url, {
       method: 'PATCH',
@@ -576,8 +581,6 @@ class ApiClient {
       },
       body: formData,
     })
-
-    console.log('[ApiClient] Multipart response status:', response.status)
 
     if (!response.ok) {
       let errorData

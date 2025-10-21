@@ -440,7 +440,7 @@ const Header = React.memo(() => {
           */}
           {/* Responsive Logo to avoid pushing actions off-screen on small devices */}
           <div className="flex items-center gap-2">
-            <div className="md:hidden max-w-[120px] overflow-hidden">
+            <div className="md:hidden">
               <Logo size="sm" className="whitespace-nowrap" />
             </div>
             <div className="hidden md:block">

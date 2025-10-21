@@ -1,0 +1,40 @@
+# robots.txt for Globoexpats - Expat Marketplace in Tanzania
+# https://www.globoexpats.com
+
+# Allow all search engines
+User-agent: *
+Allow: /
+
+# Disallow admin and user account pages
+Disallow: /admin/
+Disallow: /account/
+Disallow: /expat/dashboard
+Disallow: /api/
+Disallow: /_next/
+Disallow: /messages/
+
+# Disallow authentication pages
+Disallow: /login
+Disallow: /register
+Disallow: /reset-password
+
+# Allow product pages and browse
+Allow: /browse
+Allow: /product/
+Allow: /category/
+
+# Sitemap location
+Sitemap: https://www.globoexpats.com/sitemap.xml
+
+# Crawl delay to be respectful
+Crawl-delay: 1
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /

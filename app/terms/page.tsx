@@ -19,8 +19,9 @@ export default function TermsOfServicePage() {
         <Card className="max-w-4xl mx-auto bg-white shadow-sm">
           <CardContent className="p-8 prose prose-neutral max-w-none">
             <p className="text-lg text-neutral-600 mb-8">
-              Welcome to Globoexpat. These terms of service ("Terms") govern your use of our website
-              and services. By accessing or using Globoexpat, you agree to be bound by these Terms.
+              Welcome to Globoexpats. These terms of service ("Terms") govern your use of our
+              website and services. By accessing or using Globoexpats, you agree to be bound by
+              these Terms.
             </p>
 
             <h2 className="text-2xl font-semibold text-neutral-800 mt-8 mb-4">
@@ -34,14 +35,14 @@ export default function TermsOfServicePage() {
 
             <h2 className="text-2xl font-semibold text-neutral-800 mt-8 mb-4">2. Use License</h2>
             <p>
-              Permission is granted to temporarily access Globoexpat for personal, non-commercial
+              Permission is granted to temporarily access Globoexpats for personal, non-commercial
               transitory viewing only. This is the grant of a license, not a transfer of title, and
               under this license you may not:
             </p>
             <ul className="list-disc pl-6 mt-4 space-y-2">
               <li>Modify or copy the materials</li>
               <li>Use the materials for any commercial purpose or for any public display</li>
-              <li>Attempt to reverse engineer any software contained on Globoexpat</li>
+              <li>Attempt to reverse engineer any software contained on Globoexpats</li>
               <li>Remove any copyright or other proprietary notations from the materials</li>
             </ul>
 
@@ -68,7 +69,7 @@ export default function TermsOfServicePage() {
               <li>Sellers must provide accurate product descriptions and images</li>
               <li>All products must be legal in both origin and destination countries</li>
               <li>Sellers are responsible for shipping and customs compliance</li>
-              <li>Globoexpat charges a commission on successful sales</li>
+              <li>Globoexpats charges a commission on successful sales</li>
             </ul>
 
             <h2 className="text-2xl font-semibold text-neutral-800 mt-8 mb-4">
@@ -94,7 +95,7 @@ export default function TermsOfServicePage() {
 
             <h2 className="text-2xl font-semibold text-neutral-800 mt-8 mb-4">6. Payment Terms</h2>
             <p>
-              All payments are processed through secure third-party payment processors. Globoexpat
+              All payments are processed through secure third-party payment processors. Globoexpats
               does not store credit card details. Payment methods accepted include major credit
               cards and digital payment platforms.
             </p>
@@ -104,7 +105,7 @@ export default function TermsOfServicePage() {
             </h2>
             <p>
               Shipping times and costs vary by seller and destination. Sellers are responsible for
-              providing accurate shipping information. Globoexpat is not responsible for delays
+              providing accurate shipping information. Globoexpats is not responsible for delays
               caused by customs or shipping carriers.
             </p>
 
@@ -113,7 +114,7 @@ export default function TermsOfServicePage() {
             </h2>
             <p>
               Each seller sets their own return policy. Buyers should review the seller's return
-              policy before making a purchase. Globoexpat provides dispute resolution services for
+              policy before making a purchase. Globoexpats provides dispute resolution services for
               unresolved issues.
             </p>
 
@@ -122,13 +123,13 @@ export default function TermsOfServicePage() {
             </h2>
             <p>
               The service and its original content, features, and functionality are and will remain
-              the exclusive property of Globoexpat and its licensors. The service is protected by
+              the exclusive property of Globoexpats and its licensors. The service is protected by
               copyright, trademark, and other laws.
             </p>
 
             <h2 className="text-2xl font-semibold text-neutral-800 mt-8 mb-4">10. Privacy</h2>
             <p>
-              Your use of Globoexpat is also governed by our Privacy Policy. Please review our
+              Your use of Globoexpats is also governed by our Privacy Policy. Please review our
               <Link href="/privacy" className="text-brand-primary hover:underline mx-1">
                 Privacy Policy
               </Link>
@@ -137,8 +138,8 @@ export default function TermsOfServicePage() {
 
             <h2 className="text-2xl font-semibold text-neutral-800 mt-8 mb-4">11. Disclaimer</h2>
             <p>
-              The information on Globoexpat is provided on an "as is" basis. To the fullest extent
-              permitted by law, Globoexpat:
+              The information on Globoexpats is provided on an "as is" basis. To the fullest extent
+              permitted by law, Globoexpats:
             </p>
             <ul className="list-disc pl-6 mt-4 space-y-2">
               <li>
@@ -155,7 +156,7 @@ export default function TermsOfServicePage() {
               12. Limitation of Liability
             </h2>
             <p>
-              In no event shall Globoexpat, nor its directors, employees, partners, agents,
+              In no event shall Globoexpats, nor its directors, employees, partners, agents,
               suppliers, or affiliates, be liable for any indirect, incidental, special,
               consequential, or punitive damages, including without limitation, loss of profits,
               data, use, goodwill, or other intangible losses.
@@ -165,7 +166,7 @@ export default function TermsOfServicePage() {
               13. Indemnification
             </h2>
             <p>
-              You agree to defend, indemnify, and hold harmless Globoexpat and its licensee and
+              You agree to defend, indemnify, and hold harmless Globoexpats and its licensee and
               licensors, and their employees, contractors, agents, officers and directors, from and
               against any and all claims, damages, obligations, losses, liabilities, costs or debt,
               and expenses (including but not limited to attorney's fees).
@@ -200,7 +201,7 @@ export default function TermsOfServicePage() {
             </h2>
             <p>If you have any questions about these Terms, please contact us at:</p>
             <div className="bg-neutral-50 p-4 rounded-lg mt-4">
-              <p className="font-medium">Globoexpat Legal Department</p>
+              <p className="font-medium">Globoexpats Legal Department</p>
               <p>Email: legal@globoexpat.com</p>
               <p>Phone: +971 4 123 4567</p>
               <p>Address: Dubai Internet City, Building 3, Office 301, Dubai, UAE</p>
@@ -222,6 +223,8 @@ export default function TermsOfServicePage() {
 }
 
 export const metadata: Metadata = {
-  title: 'Terms of Service - Globoexpat',
-  description: 'Read the terms and conditions for using the Globoexpat marketplace.',
+  title: 'Terms of Service - Globoexpats',
+  description:
+    'Read the terms and conditions for using Globoexpats marketplace in Tanzania. Understand your rights and responsibilities when buying or selling on our platform.',
+  keywords: ['globoexpats terms', 'marketplace terms tanzania', 'user agreement'],
 }

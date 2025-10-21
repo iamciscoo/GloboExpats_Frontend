@@ -8,15 +8,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Frequently Asked Questions | Globoexpat',
-  description: 'Find answers to common questions about buying and selling on Globoexpat.',
+  title: 'FAQ - Frequently Asked Questions',
+  description:
+    'Find answers to common questions about buying and selling on Globoexpats marketplace in Tanzania. Learn about payments, shipping, seller verification, and more.',
+  keywords: [
+    'globoexpats faq',
+    'marketplace questions tanzania',
+    'expat marketplace help',
+    'how to sell on globoexpats',
+    'buying guide tanzania',
+  ],
 }
 
 const FAQS = [
   {
-    question: 'What is Globoexpat?',
+    question: 'What is Globoexpats?',
     answer:
-      'Globoexpat is a marketplace designed for expatriates to buy and sell quality items within the community with added trust signals and verification.',
+      'Globoexpats is a marketplace designed for expatriates to buy and sell quality items within the community with added trust signals and verification.',
   },
   {
     question: 'How do I create an account?',

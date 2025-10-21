@@ -48,16 +48,25 @@ const nextConfig = {
       '@radix-ui/react-alert-dialog',
       '@radix-ui/react-avatar',
       '@radix-ui/react-checkbox',
+      '@radix-ui/react-collapsible',
       '@radix-ui/react-dialog',
       '@radix-ui/react-dropdown-menu',
       '@radix-ui/react-label',
       '@radix-ui/react-popover',
+      '@radix-ui/react-progress',
+      '@radix-ui/react-radio-group',
+      '@radix-ui/react-scroll-area',
       '@radix-ui/react-select',
+      '@radix-ui/react-separator',
+      '@radix-ui/react-slider',
+      '@radix-ui/react-slot',
+      '@radix-ui/react-switch',
       '@radix-ui/react-tabs',
       '@radix-ui/react-toast',
+      '@radix-ui/react-tooltip',
     ],
     // Optimize CSS imports
-    optimizeCss: false,
+    optimizeCss: true,
     // Enable Turbo for faster builds in development
     turbo: {
       rules: {
@@ -98,8 +107,13 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     // Cache optimized images for 60 days
     minimumCacheTTL: 5184000,
-    // Disable optimization only in dev for faster reloads (enable for production)
-    unoptimized: process.env.NODE_ENV === 'development',
+    // Always optimize images for better performance
+    // Note: Increases build time slightly but dramatically improves page performance
+    unoptimized: false,
+    // Enable blur placeholder for better UX
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
   /**

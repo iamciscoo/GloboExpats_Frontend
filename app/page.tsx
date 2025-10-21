@@ -3,7 +3,7 @@
  * HOMEPAGE - MAIN LANDING PAGE
  * =============================================================================
  *
- * The main landing page for the Globoexpat Marketplace. This page serves as the
+ * The main landing page for the Globoexpats Marketplace. This page serves as the
  * primary entry point for users and showcases the platform's key features and
  * offerings in a visually appealing and user-friendly layout.
  *
@@ -46,13 +46,50 @@
  * - Multiple engagement points encourage exploration
  * - Trust-building elements reduce conversion friction
  */
-
-import HeroCarousel from '@/components/hero-carousel'
-import NewListingsSlider from '@/components/sections/new-listings-slider'
-import TopPicksSlider from '@/components/sections/top-picks-slider'
-import FeaturedGrid from '@/components/sections/featured-grid'
+import dynamic from 'next/dynamic'
 import CategorySidebar from '@/components/category-sidebar'
 import MobileSidebarToggle from '@/components/mobile-sidebar-toggle'
+
+// Lazy load heavy components for better initial page load
+// Note: In App Router, all components SSR by default. Dynamic imports still provide code splitting benefits.
+const HeroCarousel = dynamic(() => import('@/components/hero-carousel'), {
+  loading: () => (
+    <div className="w-full h-[400px] bg-gradient-to-r from-blue-100 to-cyan-100 animate-pulse rounded-xl" />
+  ),
+})
+
+const NewListingsSlider = dynamic(() => import('@/components/sections/new-listings-slider'), {
+  loading: () => <div className="w-full h-64 bg-gray-100 animate-pulse rounded-xl" />,
+})
+
+const TopPicksSlider = dynamic(() => import('@/components/sections/top-picks-slider'), {
+  loading: () => <div className="w-full h-64 bg-gray-100 animate-pulse rounded-xl" />,
+})
+
+const FeaturedGrid = dynamic(() => import('@/components/sections/featured-grid'), {
+  loading: () => <div className="w-full h-96 bg-gray-100 animate-pulse rounded-xl" />,
+})
+
+import type { Metadata } from 'next'
+import { generatePageMetadata } from '@/lib/seo-config'
+
+// Homepage SEO metadata
+export const metadata: Metadata = generatePageMetadata({
+  title: 'Globoexpats - Expat Marketplace in Tanzania | Buy & Sell in Dar es Salaam',
+  description:
+    'Globoexpats is the trusted marketplace for expats in Tanzania. Buy and sell quality items in Dar es Salaam, Arusha, and across East Africa. Connect with verified sellers and join the expat community.',
+  keywords: [
+    'expat marketplace tanzania',
+    'buy sell dar es salaam',
+    'expat community tanzania',
+    'second hand items tanzania',
+    'verified sellers dar es salaam',
+    'expat shopping arusha',
+    'tanzania online marketplace',
+  ],
+  path: '/',
+  type: 'website',
+})
 
 /**
  * =============================================================================

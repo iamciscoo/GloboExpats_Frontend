@@ -1,5 +1,5 @@
 /**
- * Error handling utilities for the Globoexpat application
+ * Error handling utilities for the Globoexpats application
  */
 
 // Error types for different contexts

@@ -21,15 +21,7 @@ export const ExpatDashboard = dynamic(() => import('@/app/expat/dashboard/page')
   ssr: false,
 })
 
-// Chart component (heavy library)
-// TODO: Fix chart export - currently chart.tsx doesn't export a Chart component
-// export const Chart = dynamic(
-//   () => import('@/components/ui/chart').then((mod) => ({ default: mod.Chart })),
-//   {
-//     loading: () => <div className="h-64 w-full bg-gray-100 rounded animate-pulse" />,
-//     ssr: false,
-//   }
-// )
+// Chart components can be lazy loaded when needed in the future
 
 // Messages interface (WebSocket heavy)
 export const MessagesInterface = dynamic(() => import('@/app/messages/page'), {
@@ -43,36 +35,20 @@ export const NotificationCenter = dynamic(() => import('@/app/notifications/page
   ssr: false,
 })
 
-// Complex forms (form libraries)
-// TODO: Create these components
-// export const AdvancedProductForm = dynamic(
-//   () => import('@/components/forms/advanced-product-form'),
-//   {
-//     loading: () => <PageSkeleton />,
-//     ssr: false,
-//   }
-// )
-
-// export const VerificationForm = dynamic(() => import('@/components/forms/verification-form'), {
-//   loading: () => <PageSkeleton />,
-//   ssr: false,
-// })
-
-// Analytics components (chart libraries)
-// TODO: Create analytics dashboard component
-// export const AnalyticsDashboard = dynamic(() => import('@/components/analytics/dashboard'), {
-//   loading: () => <DashboardStatsSkeleton />,
-//   ssr: false,
-// })
-
 // Export all lazy components for easy imports
 export const LazyComponents = {
   AdminDashboard,
   ExpatDashboard,
-  // Chart, // TODO: Uncomment when chart component is ready
   MessagesInterface,
   NotificationCenter,
-  // AdvancedProductForm, // TODO: Uncomment when form component is ready
-  // VerificationForm, // TODO: Uncomment when form component is ready
-  // AnalyticsDashboard, // TODO: Uncomment when analytics dashboard is ready
 }
+
+/**
+ * Future lazy loading opportunities:
+ * - Advanced product forms
+ * - Verification forms
+ * - Analytics dashboards
+ * - Chart components
+ *
+ * Add these as dynamic imports when the components are created
+ */

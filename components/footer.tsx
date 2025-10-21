@@ -12,7 +12,7 @@ export default function Footer() {
           {/* About */}
           <div className="col-span-2 md:col-span-1">
             <h3 className="text-xl sm:text-2xl font-bold font-display text-white mb-3">
-              Globo<span className="text-[#FF9800]">expat</span>
+              Globo<span className="text-[#FF9800]">expats</span>
             </h3>
             <p className="text-sm leading-relaxed text-neutral-300">
               The marketplace for the expat community. Buy and sell quality goods with verified
@@ -80,7 +80,7 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-2 sm:gap-3">
                 <Mail className="h-4 w-4 sm:h-5 sm:w-5 mt-0.5 text-[#FF9800] flex-shrink-0" />
-                <span className="text-neutral-300 break-all">info@globoexpat.com</span>
+                <span className="text-neutral-300 break-all">info@globoexpats.com</span>
               </li>
             </ul>
           </div>
@@ -131,7 +131,7 @@ export default function Footer() {
             </div>
             {/* Copyright */}
             <p className="text-neutral-400 text-center text-xs sm:text-sm">
-              &copy; {new Date().getFullYear()} Globoexpat Tanzania. All rights reserved.
+              &copy; {new Date().getFullYear()} Globoexpats Tanzania. All rights reserved.
             </p>
           </div>
         </div>

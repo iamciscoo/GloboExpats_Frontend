@@ -16,7 +16,7 @@ export const Logo = React.memo<LogoProps>(({ className, size = 'md' }) => {
   return (
     <Link href="/" className={`flex items-center space-x-2 ${className || ''}`}>
       <div className={`${sizeClasses[size]} font-bold font-display text-white`}>
-        Globo<span className="text-brand-secondary">expat</span>
+        Globo<span className="text-brand-secondary">expats</span>
       </div>
     </Link>
   )

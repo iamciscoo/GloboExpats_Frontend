@@ -18,7 +18,7 @@ export default function PrivacyPolicyPage() {
         <Card className="max-w-4xl mx-auto bg-white shadow-sm">
           <CardContent className="p-8 prose prose-neutral max-w-none">
             <p className="text-lg text-neutral-600 mb-8">
-              At Globoexpat, we take your privacy seriously. This Privacy Policy explains how we
+              At Globoexpats, we take your privacy seriously. This Privacy Policy explains how we
               collect, use, disclose, and safeguard your information when you use our marketplace.
             </p>
 
@@ -41,7 +41,7 @@ export default function PrivacyPolicyPage() {
             <h3 className="text-xl font-semibold text-neutral-800 mt-6 mb-3">
               1.2 Automatically Collected Information
             </h3>
-            <p>When you use Globoexpat, we automatically collect:</p>
+            <p>When you use Globoexpats, we automatically collect:</p>
             <ul className="list-disc pl-6 mt-4 space-y-2">
               <li>Device information (IP address, browser type, operating system)</li>
               <li>Usage data (pages visited, features used, time spent)</li>
@@ -154,7 +154,7 @@ export default function PrivacyPolicyPage() {
               7. Children's Privacy
             </h2>
             <p>
-              Globoexpat is not intended for users under 18 years of age. We do not knowingly
+              Globoexpats is not intended for users under 18 years of age. We do not knowingly
               collect personal information from children under 18. If we learn we have collected
               such information, we will delete it promptly.
             </p>
@@ -189,8 +189,8 @@ export default function PrivacyPolicyPage() {
               please contact us:
             </p>
             <div className="bg-neutral-50 p-4 rounded-lg mt-4">
-              <p className="font-medium">Globoexpat Privacy Team</p>
-              <p>Email: privacy@globoexpat.com</p>
+              <p className="font-medium">Globoexpats Privacy Team</p>
+              <p>Email: privacy@globoexpats.com</p>
               <p>Phone: +971 4 123 4567</p>
               <p>Address: Dubai Internet City, Building 3, Office 301, Dubai, UAE</p>
             </div>
@@ -220,7 +220,8 @@ export default function PrivacyPolicyPage() {
 }
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy - Globoexpat',
+  title: 'Privacy Policy - Globoexpats',
   description:
-    'Learn how Globoexpat collects, uses and safeguards your personal information when you use our marketplace.',
+    'Learn how Globoexpats protects your privacy. Read our privacy policy to understand how we collect, use, and safeguard your personal information on our Tanzania expat marketplace.',
+  keywords: ['globoexpats privacy', 'data protection tanzania', 'marketplace privacy policy'],
 }

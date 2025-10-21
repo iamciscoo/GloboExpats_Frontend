@@ -300,17 +300,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadCart = () => {
       try {
-        console.log('📥 Client-Side Cart: Loading from localStorage', { authLoading, isLoggedIn })
-
         // Wait for auth to finish loading before deciding what to do with cart
         if (authLoading) {
-          console.log('⏳ Waiting for auth to finish loading...')
           return
         }
 
         if (!isLoggedIn) {
           // Clear cart for non-authenticated users (only after auth has loaded)
-          console.log('🚫 User not logged in, clearing cart')
           setCart({
             items: [],
             isLoading: false,
@@ -357,8 +353,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
           isInitialized: true,
           selectedItems: cartData.selectedItems || [],
         })
-
-        console.log('✅ Cart loaded from localStorage:', cartData.items?.length || 0, 'items')
       } catch (error) {
         console.error('❌ Failed to load cart from localStorage:', error)
         removeStorageItem(CART_STORAGE_KEY)
@@ -384,7 +378,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     // 2. Cart is initialized
     // 3. Auth has finished loading (to avoid clearing on initial mount)
     if (!isLoggedIn && cart.isInitialized && !authLoading) {
-      console.log('🚪 User logged out, clearing cart')
       // Flush any pending writes before clearing
       flushPendingWrites()
 
@@ -482,12 +475,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       try {
         setCart((prev) => ({ ...prev, isLoading: true, error: null }))
 
-        console.log('🛒 Client-Side Cart: Adding item', {
-          itemId: item.id,
-          title: item.title,
-          quantity,
-        })
-
         // CLIENT-SIDE ONLY: Add or update item in local cart
         setCart((prev) => {
           const existingItemIndex = prev.items.findIndex((i) => i.id === item.id)
@@ -555,8 +542,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
       try {
         setCart((prev) => ({ ...prev, isLoading: true, error: null }))
 
-        console.log('🗑️ Client-Side Cart: Removing item', { itemId: id })
-
         // CLIENT-SIDE ONLY: Remove item from local cart
         setCart((prev) => {
           const updatedItems = prev.items.filter((item) => item.id !== id)
@@ -623,8 +608,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
         setCart((prev) => ({ ...prev, isLoading: true, error: null }))
 
-        console.log('🔄 Client-Side Cart: Updating quantity', { itemId, quantity })
-
         // CLIENT-SIDE ONLY: Update item quantity in local cart
         setCart((prev) => {
           const updatedItems = prev.items.map((item) =>
@@ -677,8 +660,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       setCart((prev) => ({ ...prev, isLoading: true, error: null }))
 
-      console.log('🧹 Client-Side Cart: Clearing all items')
-
       // CLIENT-SIDE ONLY: Clear cart from local storage
       setCart((prev) => ({
         ...prev,
@@ -709,7 +690,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
    * Cart is stored locally and sent to backend only during checkout
    */
   const syncCart = useCallback(async () => {
-    console.log('ℹ️ Client-Side Cart: Sync not needed (cart is local only)')
     // No-op: Cart is fully client-side now
   }, [])
 

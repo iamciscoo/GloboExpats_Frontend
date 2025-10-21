@@ -255,7 +255,7 @@ export default function RegisterPage() {
               <div className="mb-8">
                 <Link href="/" className="inline-block">
                   <div className="text-4xl font-bold font-display mb-4 hover:opacity-80 transition-opacity cursor-pointer">
-                    Globo<span className="text-brand-secondary">Expat</span>
+                    Globo<span className="text-brand-secondary">expats</span>
                   </div>
                 </Link>
                 <p className="text-xl text-blue-100 leading-relaxed mb-6">
@@ -317,7 +317,7 @@ export default function RegisterPage() {
               <CardHeader className="text-center pb-3 pt-4">
                 <Link href="/" className="inline-block mx-auto mb-3 lg:mb-4">
                   <div className="text-2xl lg:text-3xl font-bold font-display text-brand-primary hover:opacity-80 transition-opacity cursor-pointer">
-                    Globo<span className="text-brand-secondary">Expat</span>
+                    Globo<span className="text-brand-secondary">expats</span>
                   </div>
                 </Link>
                 <CardTitle className="text-2xl font-bold text-neutral-800 mb-1">

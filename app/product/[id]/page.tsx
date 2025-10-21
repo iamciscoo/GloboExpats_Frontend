@@ -30,6 +30,7 @@ import { transformBackendProduct } from '@/lib/image-utils'
 import type { FeaturedItem } from '@/lib/types'
 import PriceDisplay from '@/components/price-display'
 import { parseNumericPrice } from '@/lib/utils'
+import { handleAuthError } from '@/lib/auth-redirect'
 
 export default function ProductPage() {
   const params = useParams()
@@ -44,6 +45,7 @@ export default function ProductPage() {
   const [error, setError] = useState<string | null>(null)
   const [currentImage, setCurrentImage] = useState(0)
   const [isSaved, setIsSaved] = useState(false)
+  const [redirecting, setRedirecting] = useState(false)
 
   // Transform backend data to FeaturedItem format
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -66,6 +68,13 @@ export default function ProductPage() {
         const response = await apiClient.getProductDetails(Number(id))
         console.log('📦 PRODUCT PAGE: Product details response:', response)
 
+        // Check if response contains HTML (auth redirect page)
+        const responseStr = JSON.stringify(response)
+        if (responseStr.includes('<!DOCTYPE html>') || responseStr.includes('<html')) {
+          console.log('🔐 PRODUCT PAGE: HTML response - authentication required')
+          throw new Error('Authentication required')
+        }
+
         // Extract product data from response
         const respData = response as {
           data?: Record<string, unknown>
@@ -76,6 +85,12 @@ export default function ProductPage() {
 
         // If response is wrapped in 'data' property, unwrap it
         if (respData.data && typeof respData.data === 'object') {
+          // Check if data.message contains HTML
+          const dataObj = respData.data as Record<string, unknown>
+          if (typeof dataObj.message === 'string' && dataObj.message.includes('<!DOCTYPE')) {
+            console.log('🔐 PRODUCT PAGE: HTML in data - authentication required')
+            throw new Error('Authentication required')
+          }
           productData = respData.data as Record<string, unknown>
         }
 
@@ -134,20 +149,59 @@ export default function ProductPage() {
           throw new Error('Product not found')
         }
       } catch (err) {
+        // Check if error message indicates authentication is required
+        const errorMessage = err instanceof Error ? err.message : String(err)
+        if (
+          errorMessage.includes('Authentication required') ||
+          errorMessage.includes('authentication')
+        ) {
+          // Don't log as error - this is expected flow for unauthenticated users
+          console.log('🔐 Auth required, redirecting to login...')
+          // Set redirecting state to show loading UI instead of error
+          setRedirecting(true)
+          setError(null) // Don't show error
+          router.push(`/login?returnUrl=${encodeURIComponent(`/product/${id}`)}`)
+          return
+        }
+
+        // Log non-auth errors
         console.error('Error fetching product:', err)
+
+        // Handle other authentication errors with redirect
+        if (handleAuthError(err, router, `/product/${id}`)) {
+          setRedirecting(true)
+          setError(null) // Don't show error
+          return // User being redirected to login
+        }
+
         setError(err instanceof Error ? err.message : 'Failed to fetch product')
       } finally {
+        // Always set loading to false after fetch completes
         setLoading(false)
       }
     }
 
     fetchProductData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   // Multiple product images for gallery
   const productImages = product
     ? [product.image, ...(product.images || [])]
     : ['/assets/images/products/placeholder.jpg']
+
+  // Redirecting to login state - show smooth transition
+  if (redirecting) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-brand-primary via-blue-800 to-cyan-600 flex items-center justify-center">
+        <div className="text-center text-white">
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Authentication Required</h2>
+          <p className="text-blue-100">Redirecting you to login...</p>
+        </div>
+      </div>
+    )
+  }
 
   // Loading state
   if (loading) {

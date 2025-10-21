@@ -11,8 +11,8 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   const category = CATEGORIES.find((c) => c.slug === slug)
   if (!category) return {}
   return {
-    title: `${category.name} | Globoexpat`,
-    description: `Browse ${category.name} listings on Globoexpat.`,
+    title: `${category.name} | Globoexpats`,
+    description: `Browse ${category.name} listings on Globoexpats.`,
   }
 }
 

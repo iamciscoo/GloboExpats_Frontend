@@ -17,7 +17,6 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { RouteGuard } from '@/components/route-guard'
-import { useAuth } from '@/hooks/use-auth'
 import { apiClient } from '@/lib/api'
 import { ITEM_CONDITIONS, SELLING_TIPS, EXPAT_LOCATIONS, CURRENCIES } from '@/lib/constants'
 import { CURRENCIES as CURRENCY_CONFIG } from '@/lib/currency-converter'
@@ -67,7 +66,6 @@ export default function SellPage() {
 }
 
 function SellPageContent() {
-  const { user, isLoggedIn } = useAuth()
   const { toast } = useToast()
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA)
   const [currentStep, setCurrentStep] = useState(1)
@@ -76,21 +74,11 @@ function SellPageContent() {
     Array<{ categoryId: number; categoryName: string }>
   >([])
 
-  // Debug logging
-  console.log('🖼️ SELL PAGE - FormData:', {
-    imageUrls: formData.imageUrls,
-    mainImage: formData.mainImage,
-    imagesCount: formData.images.length,
-  })
-  console.log('🔐 AUTH STATE:', { user: user?.email, isLoggedIn })
-
   // Fetch categories from backend on component mount
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        console.log('📋 Fetching categories from backend...')
         const categories = await apiClient.getCategories()
-        console.log('📋 Categories fetched:', categories)
         setBackendCategories(categories)
       } catch (error) {
         console.error('❌ Failed to fetch categories:', error)
@@ -102,47 +90,33 @@ function SellPageContent() {
   }, [])
 
   const updateFormData = (updates: Partial<FormData>) => {
-    console.log('📝 UPDATE FORM DATA:', updates)
     setFormData((prev) => ({ ...prev, ...updates }))
   }
 
   // Handle real file upload
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('📸 HANDLE IMAGE UPLOAD TRIGGERED')
     const files = event.target.files
     if (!files) {
-      console.log('❌ No files selected')
       return
     }
-
-    console.log('📁 Files selected:', files.length)
     const newFiles = Array.from(files)
     const newImageUrls: string[] = []
 
-    newFiles.forEach((file, index) => {
-      console.log(`📷 Processing file ${index + 1}:`, {
-        name: file.name,
-        type: file.type,
-        size: file.size,
-      })
-
+    newFiles.forEach((file) => {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        console.log('❌ Invalid file type:', file.type)
         setErrors(['Please upload only image files'])
         return
       }
 
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        console.log('❌ File too large:', file.size)
         setErrors(['Image file size must be less than 5MB'])
         return
       }
 
       // Create preview URL
       const imageUrl = URL.createObjectURL(file)
-      console.log('✅ Created preview URL:', imageUrl)
       newImageUrls.push(imageUrl)
     })
 
@@ -150,12 +124,6 @@ function SellPageContent() {
     const updatedImages = [...formData.images, ...newFiles]
     const updatedImageUrls = [...formData.imageUrls, ...newImageUrls]
     const newMainImage = formData.mainImage || newImageUrls[0] || ''
-
-    console.log('💾 Updating form data:', {
-      totalImages: updatedImages.length,
-      totalUrls: updatedImageUrls.length,
-      newMainImage,
-    })
 
     updateFormData({
       images: updatedImages,
@@ -165,7 +133,6 @@ function SellPageContent() {
 
     // Clear the input
     event.target.value = ''
-    console.log('🔄 Input cleared')
   }
 
   const removeImage = (index: number) => {
@@ -236,10 +203,6 @@ function SellPageContent() {
 
     try {
       setErrors([])
-      console.log('🚀 Starting product creation...')
-
-      // Debug authentication
-      console.log('🔐 API Client headers:', apiClient)
 
       // Validate we have images
       if (formData.images.length === 0) {
@@ -264,18 +227,11 @@ function SellPageContent() {
       // Find the main image index
       const mainImageIndex = formData.mainImage ? formData.imageUrls.indexOf(formData.mainImage) : 0
 
-      console.log('🖼️ Main image info:', {
-        mainImageUrl: formData.mainImage,
-        mainImageIndex: mainImageIndex,
-        totalImages: formData.images.length,
-      })
-
       // Reorder images array to put main image first
       const reorderedImages = [...formData.images]
       if (mainImageIndex > 0 && mainImageIndex < reorderedImages.length) {
         const [mainImage] = reorderedImages.splice(mainImageIndex, 1)
         reorderedImages.unshift(mainImage)
-        console.log('✅ Reordered images - main image now at index 0')
       }
 
       // Convert prices from selected currency to TZS (base currency)
@@ -288,15 +244,6 @@ function SellPageContent() {
       const originalPriceInTZS = formData.originalPrice
         ? parseFloat(formData.originalPrice) / conversionRate
         : 0
-
-      console.log('💱 Currency Conversion:', {
-        enteredCurrency,
-        conversionRate,
-        enteredAskingPrice: formData.price,
-        convertedAskingPrice: askingPriceInTZS,
-        enteredOriginalPrice: formData.originalPrice,
-        convertedOriginalPrice: originalPriceInTZS,
-      })
 
       // Transform form data to match backend expectations
       // Always store in TZS (base currency)
@@ -312,39 +259,8 @@ function SellPageContent() {
         productWarranty: '1 year manufacturer warranty', // Default warranty
       }
 
-      console.log('📦 Product data prepared:', productData)
-      console.log('🖼️ Images to upload:', formData.images.length, 'files')
-
-      // Log individual image details
-      reorderedImages.forEach((file, index) => {
-        console.log(`📸 Image ${index + 1}:`, {
-          name: file.name,
-          size: `${(file.size / 1024 / 1024).toFixed(2)} MB`,
-          type: file.type,
-          isMain: index === 0 ? '⭐ MAIN IMAGE' : '',
-        })
-      })
-
-      console.log('🚀 FINAL PAYLOAD TO BACKEND:')
-      console.log('- Endpoint: POST /api/backend/v1/products/post-product')
-      console.log('- Product Data:', JSON.stringify(productData, null, 2))
-      console.log(
-        '- Image Files:',
-        reorderedImages.map((f, idx) => `${idx === 0 ? '⭐' : ''} ${f.name}`)
-      )
-      console.log('- Form Data Structure:', {
-        product: JSON.stringify(productData),
-        images: reorderedImages.length + ' files (first is main)',
-      })
-
       // Call the backend API with reordered images (main image first)
-      console.log('📤 Sending product creation request...')
       const result = await apiClient.createProduct(productData, reorderedImages)
-
-      console.log('✅ Product created successfully!')
-      console.log('📋 FULL Product creation response:', JSON.stringify(result, null, 2))
-      console.log('📋 Product ID:', result.productId)
-      console.log('📋 Image IDs:', result.imageIds)
 
       // CRITICAL CHECK: Verify product ID was returned
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -357,8 +273,6 @@ function SellPageContent() {
 
       // Store the product ID for verification
       if (result.productId) {
-        console.log('🎉 Product successfully created with ID:', result.productId)
-
         // Show success toast
         toast({
           title: '✅ Listing Published!',
@@ -382,7 +296,6 @@ function SellPageContent() {
       }
 
       // Redirect to dashboard with My Listings tab
-      console.log('🔄 Redirecting to dashboard...')
       window.location.href = '/expat/dashboard?tab=listings'
 
       // Reset form

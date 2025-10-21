@@ -390,10 +390,7 @@ export default function BrowsePage() {
 
   // Transform backend ListingItem to FeaturedItem format
   const transformToFeaturedItem = (item: Record<string, unknown>): FeaturedItem => {
-    console.log('🔄 BROWSE: Transforming item:', item)
-    const transformed = transformBackendProduct(item)
-    console.log('✅ BROWSE: Transformed to:', transformed)
-    return transformed
+    return transformBackendProduct(item)
   }
 
   // Fetch products from backend (client-side filtering only)
@@ -405,19 +402,22 @@ export default function BrowsePage() {
 
         // Always fetch ALL products and filter client-side
         // Backend filter API is unreliable, so we'll handle filtering in the browser
-        console.log('🔥 BROWSE PAGE: Fetching ALL products from backend')
         const response = await apiClient.getAllProducts(0)
         const productsData = extractContentFromResponse(response)
-        console.log('📦 BROWSE PAGE: Products count:', productsData.length)
         const transformedProducts = productsData.map((item) =>
           transformToFeaturedItem(item as Record<string, unknown>)
         )
         setProducts(transformedProducts)
         setCategoryCounts(getCategoryCounts(transformedProducts))
-        console.log('✅ BROWSE PAGE: Successfully loaded products')
       } catch (err) {
-        console.error('🚨 BROWSE PAGE: Error fetching products:', err)
-        setError(err instanceof Error ? err.message : 'Failed to fetch products')
+        // Check if this is an authentication error
+        const error = err as Error & { isAuthError?: boolean; statusCode?: number }
+        if (error.isAuthError || error.statusCode === 401) {
+          // For public browse page, just show a message - don't force login
+          setError('Some features require authentication. Please log in to see all products.')
+        } else {
+          setError(err instanceof Error ? err.message : 'Failed to fetch products')
+        }
       } finally {
         setLoading(false)
       }
@@ -482,16 +482,6 @@ export default function BrowsePage() {
     router.replace(qs ? `/browse?${qs}` : '/browse')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery, filters.selectedCategory, currentPage])
-
-  // Debug: Log filter state changes
-  useEffect(() => {
-    if (filters.selectedCategory) {
-      console.log('🔍 BROWSE: Category filter active:', filters.selectedCategory)
-      console.log('🔍 BROWSE: Total products:', products.length)
-      const categoriesInProducts = [...new Set(products.map((p) => p.category).filter(Boolean))]
-      console.log('🔍 BROWSE: Available categories in products:', categoriesInProducts)
-    }
-  }, [filters.selectedCategory, products])
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase())

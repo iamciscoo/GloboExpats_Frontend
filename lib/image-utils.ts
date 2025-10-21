@@ -1,7 +1,7 @@
 /**
  * Image Utilities for Backend Integration
  *
- * Centralized image URL handling for the Globoexpat platform.
+ * Centralized image URL handling for the Globoexpats platform.
  * Handles conversion of relative backend image paths to full URLs.
  */
 

@@ -95,7 +95,7 @@ export default function AboutPage() {
               Bridging Distances, Connecting Lives
             </h1>
             <p className="text-xl mb-8 text-blue-100">
-              Globoexpat is the trusted marketplace for expats worldwide, making it easy to buy and
+              Globoexpats is the trusted marketplace for expats worldwide, making it easy to buy and
               sell authentic products from home, wherever you are in the world.
             </p>
             <div className="flex gap-4 justify-center">
@@ -122,7 +122,7 @@ export default function AboutPage() {
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-neutral-800 mb-4">Why Join Globoexpat?</h2>
+            <h2 className="text-3xl font-bold text-neutral-800 mb-4">Why Join Globoexpats?</h2>
             <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
               We&apos;re just getting started—here&apos;s what makes our community special from day
               one.
@@ -213,7 +213,7 @@ export default function AboutPage() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-neutral-800 mb-4">Our Values</h2>
             <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-              These core values guide everything we do at Globoexpat
+              These core values guide everything we do at Globoexpats
             </p>
           </div>
 
@@ -269,7 +269,7 @@ export default function AboutPage() {
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-br from-brand-primary to-blue-700 text-white">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to Join Globoexpat?</h2>
+          <h2 className="text-3xl font-bold mb-4">Ready to Join Globoexpats?</h2>
           <p className="text-xl mb-8 text-blue-100 max-w-2xl mx-auto">
             Whether you&apos;re looking to buy products from home or start selling to the expat
             community, we&apos;re here to help you succeed.
@@ -297,7 +297,20 @@ export default function AboutPage() {
 }
 
 export const metadata: Metadata = {
-  title: 'About Us - Globoexpat',
+  title: 'About Us - Globoexpats',
   description:
-    'Learn about the mission, values and team behind Globoexpat, the trusted marketplace for expats worldwide.',
+    'Learn about Globoexpats, the trusted expat marketplace in Tanzania. Our mission is connecting expats in Dar es Salaam, Arusha, and across East Africa with quality goods and verified sellers.',
+  keywords: [
+    'about globoexpats',
+    'expat marketplace tanzania',
+    'globoexpat mission',
+    'expat community dar es salaam',
+    'trusted marketplace tanzania',
+  ],
+  openGraph: {
+    title: 'About Globoexpats - Expat Marketplace Tanzania',
+    description:
+      'Discover how Globoexpats is building the most trusted expat marketplace in Tanzania and East Africa.',
+    type: 'website',
+  },
 }
