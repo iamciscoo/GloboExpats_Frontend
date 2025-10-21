@@ -26,7 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ProductActions } from '@/components/product-actions'
 import { useParams, useRouter } from 'next/navigation'
 import { apiClient } from '@/lib/api'
-import { transformBackendProduct, getFullImageUrl } from '@/lib/image-utils'
+import { transformBackendProduct } from '@/lib/image-utils'
 import type { FeaturedItem } from '@/lib/types'
 import PriceDisplay from '@/components/price-display'
 import { parseNumericPrice } from '@/lib/utils'
@@ -44,7 +44,6 @@ export default function ProductPage() {
   const [error, setError] = useState<string | null>(null)
   const [currentImage, setCurrentImage] = useState(0)
   const [isSaved, setIsSaved] = useState(false)
-  const [sellerProfileImage, setSellerProfileImage] = useState<string | null>(null)
 
   // Transform backend data to FeaturedItem format
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -72,7 +71,15 @@ export default function ProductPage() {
           data?: Record<string, unknown>
         } & Record<string, unknown>
 
-        const productData = (respData.data as Record<string, unknown>) || respData
+        // Handle different response structures (direct vs wrapped in data)
+        let productData = respData as Record<string, unknown>
+
+        // If response is wrapped in 'data' property, unwrap it
+        if (respData.data && typeof respData.data === 'object') {
+          productData = respData.data as Record<string, unknown>
+        }
+
+        console.log('📦 PRODUCT PAGE: Processed product data:', productData)
 
         if (productData && (productData.productId || productData.id)) {
           console.log('📦 PRODUCT PAGE: Found product with views:', productData.views || 0)
@@ -80,22 +87,17 @@ export default function ProductPage() {
           const transformedProduct = transformToFeaturedItem(productData)
           setProduct(transformedProduct)
 
-          // Fetch seller profile image if sellerId is available
-          if (productData.sellerId) {
-            try {
-              const sellerResponse = await apiClient.getUser(String(productData.sellerId))
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const sellerData = (sellerResponse as any)?.data || sellerResponse
-              if (sellerData?.profileImageUrl) {
-                // Use getFullImageUrl to properly normalize the image URL
-                const fullImageUrl = getFullImageUrl(sellerData.profileImageUrl)
-                setSellerProfileImage(fullImageUrl)
-                console.log('👤 Seller profile image loaded:', fullImageUrl)
-              }
-            } catch (err) {
-              console.warn('Could not fetch seller profile image:', err)
-            }
-          }
+          // Note: Backend doesn't have /api/v1/users/{id} endpoint
+          // The /api/v1/userManagement/user-details only returns current user
+          // TODO: Backend needs to either:
+          // 1. Add sellerProfileImageUrl to product details response, or
+          // 2. Add GET /api/v1/users/{id} endpoint
+          // For now, we'll use initials as fallback
+          console.log('👤 Seller info:', {
+            sellerId: productData.sellerId,
+            sellerName: productData.sellerName,
+            note: 'Profile image not available - backend endpoint missing',
+          })
 
           // Fetch similar products from all products list
           try {
@@ -481,11 +483,7 @@ export default function ProductPage() {
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
                   <Avatar className="w-12 h-12 sm:w-16 sm:h-16 border-2 border-blue-100 shadow-lg flex-shrink-0">
-                    <AvatarImage
-                      src={sellerProfileImage || '/placeholder.svg'}
-                      alt={product.listedBy}
-                      onError={() => setSellerProfileImage(null)}
-                    />
+                    <AvatarImage src="/placeholder.svg" alt={product.listedBy} />
                     <AvatarFallback className="bg-gradient-to-br from-blue-400 to-cyan-500 text-white font-semibold">
                       {product.listedBy?.slice(0, 2).toUpperCase() || 'UN'}
                     </AvatarFallback>
