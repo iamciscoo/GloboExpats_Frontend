@@ -81,7 +81,7 @@ export function ProductCard({
     <Card
       className={cn(
         'group cursor-pointer transition-all duration-300 hover:shadow-card-modern hover:-translate-y-1 focus-within:ring-2 focus-within:ring-brand-primary focus-within:ring-offset-2',
-        'bg-surface-primary border border-neutral-200 rounded-xl overflow-hidden h-full flex flex-col m-0.5',
+        'bg-surface-primary border border-neutral-200 rounded-xl overflow-hidden h-full flex flex-col m-1',
         compact && 'border-neutral-300',
         className
       )}

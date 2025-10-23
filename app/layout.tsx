@@ -14,6 +14,8 @@ const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
   display: 'swap',
+  preload: true,
+  fallback: ['system-ui', 'arial'],
 })
 
 const lexend = Lexend({
@@ -21,6 +23,8 @@ const lexend = Lexend({
   variable: '--font-lexend',
   weight: ['400', '500', '600', '700'],
   display: 'swap',
+  preload: true,
+  fallback: ['system-ui', 'arial'],
 })
 
 export const metadata: Metadata = {
@@ -43,10 +47,8 @@ export const metadata: Metadata = {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
       { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
     ],
-    apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
+    apple: [{ url: '/apple-icon.svg', sizes: '180x180', type: 'image/svg+xml' }],
   },
   manifest: '/manifest.json',
   openGraph: {
