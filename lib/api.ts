@@ -135,7 +135,22 @@ class ApiClient {
       const response = await fetch(url, {
         headers,
         ...options,
+        redirect: 'follow', // Explicitly follow redirects to detect login pages
       })
+
+      // Check if we were redirected to a login page (common for 302 auth redirects)
+      if (response.url && response.url !== url && response.url.includes('/login')) {
+        logger.info('[API] Detected redirect to login page - authentication required')
+        const authError = new Error(
+          'Authentication required. Please log in to continue.'
+        ) as Error & {
+          isAuthError: boolean
+          statusCode: number
+        }
+        authError.isAuthError = true
+        authError.statusCode = 401
+        throw authError
+      }
 
       if (!response.ok) {
         // If unauthorized, attempt a one-time silent token rehydration + retry

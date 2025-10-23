@@ -24,6 +24,8 @@ export default function TopPicksSlider() {
         const content = extractContentFromResponse(res)
 
         // Fetch click counts for all products and sort by views
+        // NOTE: In production, product-clickCount endpoint requires authentication
+        // We'll try to fetch, but fallback gracefully if unauthenticated
         const productsWithViews = await Promise.all(
           content.map(async (it) => {
             const product = it as Record<string, unknown>
@@ -36,7 +38,11 @@ export default function TopPicksSlider() {
                 views: clickData.clicks || 0,
               }
             } catch {
-              // If click count fetch fails, use 0
+              // If click count fetch fails (e.g., 302 redirect, auth required), use 0
+              // This allows logged-out users to see Trending Now section
+              console.log(
+                `⚠️ Could not fetch click count for product ${productId} (auth may be required), using 0`
+              )
               return {
                 ...product,
                 views: 0,
