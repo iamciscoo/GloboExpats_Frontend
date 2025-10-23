@@ -8,12 +8,14 @@ import { extractContentFromResponse, transformBackendProduct } from '@/lib/image
 import type { FeaturedItem } from '@/lib/types'
 import { ProductCard } from '@/components/ui/product-card'
 import { trackProductClick } from '@/lib/analytics'
+import { useAuth } from '@/hooks/use-auth'
 
 export default function TopPicksSlider() {
   const [items, setItems] = useState<FeaturedItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const scrollerRef = useRef<HTMLDivElement | null>(null)
+  const { isLoggedIn } = useAuth()
 
   useEffect(() => {
     const load = async () => {
@@ -23,41 +25,47 @@ export default function TopPicksSlider() {
         const res = await apiClient.getTopPicks(0, 30) // Fetch more to have better selection
         const content = extractContentFromResponse(res)
 
-        // Fetch click counts for all products and sort by views
-        // NOTE: In production, product-clickCount endpoint requires authentication
-        // We'll try to fetch, but fallback gracefully if unauthenticated
-        const productsWithViews = await Promise.all(
-          content.map(async (it) => {
-            const product = it as Record<string, unknown>
-            const productId = product.productId as number
+        // Only fetch click counts and sort by views if user is logged in
+        // For logged-out users, show products in default order (no view counts needed)
+        if (isLoggedIn) {
+          console.log('✅ User logged in - fetching view counts for Trending Now')
+          const productsWithViews = await Promise.all(
+            content.map(async (it) => {
+              const product = it as Record<string, unknown>
+              const productId = product.productId as number
 
-            try {
-              const clickData = await apiClient.getProductClickCount(productId)
-              return {
-                ...product,
-                views: clickData.clicks || 0,
+              try {
+                const clickData = await apiClient.getProductClickCount(productId)
+                return {
+                  ...product,
+                  views: clickData.clicks || 0,
+                }
+              } catch {
+                // If click count fetch fails, use 0
+                console.log(`⚠️ Could not fetch click count for product ${productId}, using 0`)
+                return {
+                  ...product,
+                  views: 0,
+                }
               }
-            } catch {
-              // If click count fetch fails (e.g., 302 redirect, auth required), use 0
-              // This allows logged-out users to see Trending Now section
-              console.log(
-                `⚠️ Could not fetch click count for product ${productId} (auth may be required), using 0`
-              )
-              return {
-                ...product,
-                views: 0,
-              }
-            }
-          })
-        )
+            })
+          )
 
-        // Sort by views (highest to lowest) and limit to 8 items
-        const sortedProducts = productsWithViews
-          .sort((a, b) => (b.views || 0) - (a.views || 0))
-          .slice(0, 8)
-          .map((it) => transformBackendProduct(it as Record<string, unknown>))
+          // Sort by views (highest to lowest) and limit to 8 items
+          const sortedProducts = productsWithViews
+            .sort((a, b) => (b.views || 0) - (a.views || 0))
+            .slice(0, 8)
+            .map((it) => transformBackendProduct(it as Record<string, unknown>))
 
-        setItems(sortedProducts)
+          setItems(sortedProducts)
+        } else {
+          // For logged-out users: just show first 8 products without fetching view counts
+          console.log('ℹ️ User logged out - showing products without view counts')
+          const products = content
+            .slice(0, 8)
+            .map((it) => transformBackendProduct(it as Record<string, unknown>))
+          setItems(products)
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load top picks')
       } finally {
@@ -65,7 +73,7 @@ export default function TopPicksSlider() {
       }
     }
     load()
-  }, [])
+  }, [isLoggedIn]) // Refetch when user logs in/out
 
   const scrollByAmount = (dir: 'left' | 'right') => {
     const el = scrollerRef.current

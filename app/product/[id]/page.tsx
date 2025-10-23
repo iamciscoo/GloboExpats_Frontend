@@ -69,10 +69,27 @@ export default function ProductPage() {
         const response = await apiClient.getProductDetails(Number(id))
         console.log('📦 PRODUCT PAGE: Product details response:', response)
 
+        // Check for null or undefined response
+        if (!response) {
+          console.error('❌ PRODUCT PAGE: Received null/undefined response')
+          throw new Error('Authentication required')
+        }
+
         // Check if response contains HTML (auth redirect page)
         const responseStr = JSON.stringify(response)
-        if (responseStr.includes('<!DOCTYPE html>') || responseStr.includes('<html')) {
-          console.log('🔐 PRODUCT PAGE: HTML response - authentication required')
+        if (
+          responseStr.includes('<!DOCTYPE html>') ||
+          responseStr.includes('<html') ||
+          responseStr.includes('<!doctype') ||
+          responseStr.includes('<HTML')
+        ) {
+          console.log('🔐 PRODUCT PAGE: HTML response detected - authentication required')
+          throw new Error('Authentication required')
+        }
+
+        // Check if response indicates authentication is needed
+        if (typeof response === 'string' && response.toLowerCase().includes('login')) {
+          console.log('🔐 PRODUCT PAGE: Login text detected in response - authentication required')
           throw new Error('Authentication required')
         }
 
@@ -152,11 +169,18 @@ export default function ProductPage() {
           throw new Error('Product not found')
         }
       } catch (err) {
-        // Check if error message indicates authentication is required
+        // Check if this is an authentication error from API client
+        const apiError = err as Error & { isAuthError?: boolean; statusCode?: number }
         const errorMessage = err instanceof Error ? err.message : String(err)
+
+        // Handle authentication errors - redirect to login
         if (
+          apiError.isAuthError ||
+          apiError.statusCode === 401 ||
+          apiError.statusCode === 403 ||
           errorMessage.includes('Authentication required') ||
-          errorMessage.includes('authentication')
+          errorMessage.includes('authentication') ||
+          errorMessage.toLowerCase().includes('login')
         ) {
           // Don't log as error - this is expected flow for unauthenticated users
           console.log('🔐 Auth required, redirecting to login...')
@@ -168,9 +192,9 @@ export default function ProductPage() {
         }
 
         // Log non-auth errors
-        console.error('Error fetching product:', err)
+        console.error('❌ Error fetching product:', err)
 
-        // Handle other authentication errors with redirect
+        // Handle other authentication errors with redirect helper
         if (handleAuthError(err, router, `/product/${id}`)) {
           setRedirecting(true)
           setError(null) // Don't show error
