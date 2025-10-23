@@ -81,7 +81,7 @@ export function ProductActions({
         currency: currency,
       })
 
-      await addToCart(cartItem, 1)
+      await addToCart(cartItem)
 
       toast({
         title: 'Added to cart',
@@ -130,7 +130,7 @@ export function ProductActions({
         currency: currency,
       })
 
-      await addToCart(cartItem, 1)
+      await addToCart(cartItem)
 
       toast({
         title: 'Proceeding to checkout',

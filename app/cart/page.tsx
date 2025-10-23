@@ -4,8 +4,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {
   ShoppingCart,
-  Plus,
-  Minus,
   Trash2,
   MessageCircle,
   Shield,
@@ -28,7 +26,6 @@ export default function CartPage() {
     items,
     itemCount,
     isEmpty,
-    updateQuantity,
     removeFromCart,
     clearCart,
     selectedItems,
@@ -221,31 +218,8 @@ export default function CartPage() {
                           </Button>
                         </div>
 
-                        {/* Third Row: Quantity & Remove */}
-                        <div className="mt-1.5 flex items-center justify-between pl-[30px]">
-                          <div className="flex items-center gap-0.5 bg-neutral-100 rounded-md p-0.5">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                updateQuantity(item.id, Math.max(1, item.quantity - 1))
-                              }
-                              className="w-6 h-6 p-0 hover:bg-neutral-200"
-                            >
-                              <Minus className="w-2.5 h-2.5" />
-                            </Button>
-                            <span className="w-6 text-center text-xs font-medium">
-                              {item.quantity}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              className="w-6 h-6 p-0 hover:bg-neutral-200"
-                            >
-                              <Plus className="w-2.5 h-2.5" />
-                            </Button>
-                          </div>
+                        {/* Third Row: Remove Button */}
+                        <div className="mt-1.5 flex items-center justify-end pl-[30px]">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -322,30 +296,6 @@ export default function CartPage() {
                                   weight="bold"
                                   showOriginal
                                 />
-                              </div>
-
-                              <div className="flex items-center gap-2 bg-neutral-100 rounded-lg p-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    updateQuantity(item.id, Math.max(1, item.quantity - 1))
-                                  }
-                                  className="w-8 h-8 p-0 hover:bg-neutral-200"
-                                >
-                                  <Minus className="w-3 h-3" />
-                                </Button>
-                                <span className="w-8 text-center text-sm font-medium">
-                                  {item.quantity}
-                                </span>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                  className="w-8 h-8 p-0 hover:bg-neutral-200"
-                                >
-                                  <Plus className="w-3 h-3" />
-                                </Button>
                               </div>
 
                               <Button

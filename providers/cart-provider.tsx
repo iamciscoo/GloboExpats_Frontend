@@ -166,8 +166,8 @@ interface CartContextType extends CartState {
   selectedSavings: number
 
   // Cart Operations
-  /** Add a product to the cart with optional quantity */
-  addToCart: (product: Omit<CartItem, 'quantity'>, quantity?: number) => Promise<void>
+  /** Add a product to the cart (single item only) */
+  addToCart: (product: Omit<CartItem, 'quantity'>) => Promise<void>
   /** Remove an item completely from the cart */
   removeFromCart: (itemId: string) => Promise<void>
   /** Update quantity of an existing cart item */
@@ -462,7 +462,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   )
 
   const addItem = useCallback(
-    async (item: Omit<CartItem, 'quantity'>, quantity = 1) => {
+    async (item: Omit<CartItem, 'quantity'>) => {
       if (!isLoggedIn) {
         toast({
           title: 'Join the Expat Community!',
@@ -476,27 +476,30 @@ export function CartProvider({ children }: { children: ReactNode }) {
       try {
         setCart((prev) => ({ ...prev, isLoading: true, error: null }))
 
-        // CLIENT-SIDE ONLY: Add or update item in local cart
-        setCart((prev) => {
-          const existingItemIndex = prev.items.findIndex((i) => i.id === item.id)
+        // Check if item already exists in cart
+        const existingItem = cart.items.find((i) => i.id === item.id)
 
-          let updatedItems: CartItem[]
+        if (existingItem) {
+          // Item already in cart - show message instead of adding
+          setCart((prev) => ({ ...prev, isLoading: false }))
+          toast({
+            title: 'Already in cart',
+            description: `${item.title} is already in your cart. You can remove it if you no longer want it.`,
+            variant: 'default',
+          })
+          return
+        }
+
+        // CLIENT-SIDE ONLY: Add new item to cart
+        setCart((prev) => {
           const updatedSelectedItems = [...prev.selectedItems]
 
-          if (existingItemIndex >= 0) {
-            // Item already exists - update quantity
-            updatedItems = [...prev.items]
-            updatedItems[existingItemIndex] = {
-              ...updatedItems[existingItemIndex],
-              quantity: updatedItems[existingItemIndex].quantity + quantity,
-            }
-          } else {
-            // New item - add to cart
-            updatedItems = [...prev.items, { ...item, quantity }]
-            // Auto-select new item for checkout
-            if (!updatedSelectedItems.includes(item.id)) {
-              updatedSelectedItems.push(item.id)
-            }
+          // New item - add to cart with quantity 1
+          const updatedItems = [...prev.items, { ...item, quantity: 1 }]
+
+          // Auto-select new item for checkout
+          if (!updatedSelectedItems.includes(item.id)) {
+            updatedSelectedItems.push(item.id)
           }
 
           // Persist to localStorage
@@ -525,7 +528,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setCart((prev) => ({ ...prev, isLoading: false }))
       }
     },
-    [isLoggedIn, persistCart]
+    [isLoggedIn, persistCart, cart.items]
   )
 
   const removeItem = useCallback(

@@ -37,7 +37,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet'
-import { ShoppingCart, Trash2, Plus, Minus, X, ArrowRight } from 'lucide-react'
+import { ShoppingCart, Trash2, X, ArrowRight } from 'lucide-react'
 import { useCart } from '@/hooks/use-cart'
 import { cn } from '@/lib/utils'
 import PriceDisplay from '@/components/price-display'
@@ -61,21 +61,8 @@ interface CartItem {
  */
 const CartItemRow: React.FC<{
   item: CartItem
-  onUpdateQuantity: (id: string, quantity: number) => void
   onRemove: (id: string) => void
-}> = ({ item, onUpdateQuantity, onRemove }) => {
-  const [isUpdating, setIsUpdating] = useState(false)
-
-  const handleQuantityChange = async (newQuantity: number) => {
-    if (newQuantity < 1) return
-    setIsUpdating(true)
-    try {
-      await onUpdateQuantity(item.id, newQuantity)
-    } finally {
-      setIsUpdating(false)
-    }
-  }
-
+}> = ({ item, onRemove }) => {
   return (
     <li className="flex gap-4 p-4 bg-white border border-neutral-200 rounded-xl">
       {/* Product Image */}
@@ -99,33 +86,15 @@ const CartItemRow: React.FC<{
           </p>
         </div>
 
-        {/* Quantity Controls */}
+        {/* Remove Button */}
         <div className="flex items-center gap-2 mt-2">
-          <div className="flex items-center border border-neutral-300 rounded-lg">
-            <button
-              onClick={() => handleQuantityChange(item.quantity - 1)}
-              disabled={isUpdating || item.quantity <= 1}
-              className="p-1.5 hover:bg-neutral-100 disabled:opacity-50"
-              aria-label="Decrease quantity"
-            >
-              <Minus className="h-3 w-3" />
-            </button>
-            <span className="px-3 text-sm font-medium">{item.quantity}</span>
-            <button
-              onClick={() => handleQuantityChange(item.quantity + 1)}
-              disabled={isUpdating}
-              className="p-1.5 hover:bg-neutral-100"
-              aria-label="Increase quantity"
-            >
-              <Plus className="h-3 w-3" />
-            </button>
-          </div>
           <button
             onClick={() => onRemove(item.id)}
-            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium"
             aria-label="Remove item"
           >
             <X className="h-4 w-4" />
+            Remove
           </button>
         </div>
       </div>
@@ -159,16 +128,7 @@ EmptyCartState.displayName = 'EmptyCartState'
  * Main Cart Side Panel Component
  */
 export const CartSidePanel: React.FC<CartSidePanelProps> = ({ open, onOpenChange }) => {
-  const {
-    items,
-    itemCount,
-    subtotal,
-    isEmpty,
-    updateQuantity,
-    removeFromCart,
-    clearCart,
-    isLoading,
-  } = useCart()
+  const { items, itemCount, subtotal, isEmpty, removeFromCart, clearCart, isLoading } = useCart()
 
   const [isClearingCart, setIsClearingCart] = useState(false)
   const [headerOffset, setHeaderOffset] = useState(0)
@@ -267,12 +227,7 @@ export const CartSidePanel: React.FC<CartSidePanelProps> = ({ open, onOpenChange
             <ScrollArea className="flex-1 min-h-0 px-3 sm:px-4 overflow-y-auto">
               <div role="list" aria-label="Cart items" className="space-y-3 py-4">
                 {items.map((item) => (
-                  <CartItemRow
-                    key={item.id}
-                    item={item}
-                    onUpdateQuantity={updateQuantity}
-                    onRemove={removeFromCart}
-                  />
+                  <CartItemRow key={item.id} item={item} onRemove={removeFromCart} />
                 ))}
               </div>
 

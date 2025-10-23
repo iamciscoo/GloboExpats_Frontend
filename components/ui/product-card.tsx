@@ -58,23 +58,20 @@ export function ProductCard({
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation()
-    addToCart(
-      {
-        id: product.id.toString(),
-        productId: product.id,
-        title: product.title,
-        price: parseNumericPrice(product.price),
-        originalPrice: product.originalPrice ? parseNumericPrice(product.originalPrice) : undefined,
-        image: product.image || '/assets/images/products/placeholder.svg',
-        condition: 'used',
-        expatId: product.listedBy || 'unknown',
-        expatName: product.listedBy || 'Unknown Seller',
-        category: product.category || 'Uncategorized',
-        location: product.location || 'Unknown',
-        verified: false,
-      },
-      1
-    )
+    addToCart({
+      id: product.id.toString(),
+      productId: product.id,
+      title: product.title,
+      price: parseNumericPrice(product.price),
+      originalPrice: product.originalPrice ? parseNumericPrice(product.originalPrice) : undefined,
+      image: product.image || '/assets/images/products/placeholder.svg',
+      condition: 'used',
+      expatId: product.listedBy || 'unknown',
+      expatName: product.listedBy || 'Unknown Seller',
+      category: product.category || 'Uncategorized',
+      location: product.location || 'Unknown',
+      verified: false,
+    })
   }
 
   return (
