@@ -132,15 +132,34 @@ class ApiClient {
       : this.headers
 
     try {
+      // Create an abort controller for timeout
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
       const response = await fetch(url, {
         headers,
         ...options,
-        redirect: 'follow', // Explicitly follow redirects to detect login pages
+        signal: controller.signal,
+        redirect: 'manual', // Don't follow redirects automatically - we'll detect them
       })
 
-      // Check if we were redirected to a login page (common for 302 auth redirects)
-      if (response.url && response.url !== url && response.url.includes('/login')) {
-        logger.info('[API] Detected redirect to login page - authentication required')
+      clearTimeout(timeoutId)
+
+      // Log response details for debugging
+      logger.debug(
+        `[API] Response: status=${response.status}, type=${response.type}, url=${response.url}`
+      )
+
+      // Check if we got a redirect response (302, 301, 303, 307, 308)
+      if (
+        response.type === 'opaqueredirect' ||
+        response.status === 302 ||
+        response.status === 301 ||
+        response.status === 303 ||
+        response.status === 307 ||
+        response.status === 308
+      ) {
+        logger.info(`[API] Detected ${response.status} redirect - likely authentication required`)
         const authError = new Error(
           'Authentication required. Please log in to continue.'
         ) as Error & {
@@ -294,6 +313,20 @@ class ApiClient {
         } as ApiResponse<T>
       }
     } catch (error: unknown) {
+      // Handle fetch abort (timeout)
+      if (error instanceof Error && error.name === 'AbortError') {
+        logger.error('[API] Request timeout after 30 seconds')
+        const timeoutError = new Error(
+          'Request timeout. The server took too long to respond.'
+        ) as Error & {
+          isAuthError: boolean
+          statusCode: number
+        }
+        timeoutError.isAuthError = true // Treat timeout as potential auth issue
+        timeoutError.statusCode = 408
+        throw timeoutError
+      }
+
       // Don't log verification errors as errors - they're expected for unverified users
       const err = error as { isVerificationError?: boolean }
       if (err.isVerificationError) {

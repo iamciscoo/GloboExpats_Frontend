@@ -66,8 +66,18 @@ export default function ProductPage() {
         console.log('🔥 PRODUCT PAGE: Fetching product for ID:', id)
 
         // Use the dedicated product details endpoint - this increments view count on backend
-        const response = await apiClient.getProductDetails(Number(id))
+        // Add a race condition with timeout to prevent infinite loading
+        const fetchPromise = apiClient.getProductDetails(Number(id))
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error('Request timeout - authentication may be required')),
+            15000
+          )
+        )
+
+        const response = await Promise.race([fetchPromise, timeoutPromise])
         console.log('📦 PRODUCT PAGE: Product details response:', response)
+        console.log('📦 PRODUCT PAGE: Response type:', typeof response)
 
         // Check for null or undefined response
         if (!response) {
@@ -173,13 +183,21 @@ export default function ProductPage() {
         const apiError = err as Error & { isAuthError?: boolean; statusCode?: number }
         const errorMessage = err instanceof Error ? err.message : String(err)
 
+        console.log('❌ PRODUCT PAGE: Error caught:', errorMessage)
+        console.log('❌ PRODUCT PAGE: Error details:', {
+          isAuthError: apiError.isAuthError,
+          statusCode: apiError.statusCode,
+        })
+
         // Handle authentication errors - redirect to login
         if (
           apiError.isAuthError ||
           apiError.statusCode === 401 ||
           apiError.statusCode === 403 ||
+          apiError.statusCode === 408 || // Timeout
           errorMessage.includes('Authentication required') ||
           errorMessage.includes('authentication') ||
+          errorMessage.includes('timeout') ||
           errorMessage.toLowerCase().includes('login')
         ) {
           // Don't log as error - this is expected flow for unauthenticated users
