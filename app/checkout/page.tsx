@@ -14,10 +14,18 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useToast } from '@/components/ui/use-toast'
 import { useCart } from '@/hooks/use-cart'
 import { useAuth } from '@/hooks/use-auth'
 import { useVerification } from '@/hooks/use-verification'
-import { apiClient } from '@/lib/api'
+import {
+  processCheckout,
+  mapPaymentMethod,
+  mapDeliveryMethod,
+  formatPhoneNumber,
+  getCurrencyFromCountry,
+  type CheckoutPayload,
+} from '@/lib/checkout-service'
 import PriceDisplay from '@/components/price-display'
 
 interface ShippingAddress {
@@ -113,6 +121,7 @@ export default function CheckoutPage() {
   const { items, subtotal, clearCart, selectedItems, selectedItemsData, selectedSubtotal } =
     useCart()
   const { checkVerification } = useVerification()
+  const { toast } = useToast()
 
   const [currentStep, setCurrentStep] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -327,58 +336,118 @@ export default function CheckoutPage() {
     setOrderError(null)
 
     try {
-      // Prepare order data for backend API
-      const orderPayload = {
-        items: checkoutItems.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-        shippingAddress: {
-          firstName: shippingAddress.firstName,
-          lastName: shippingAddress.lastName,
-          email: shippingAddress.email,
-          phone: shippingAddress.phone,
-          address: shippingAddress.address,
-          city: shippingAddress.city,
-          country: shippingAddress.country,
-          instructions: shippingAddress.instructions,
-        },
-        paymentMethod: selectedPayment,
-        shippingMethod: shippingMethod,
+      // Show processing toast
+      toast({
+        title: 'Processing Payment',
+        description: 'Please wait while we process your payment...',
+        variant: 'default',
+      })
+
+      // Prepare checkout data for ZenoPay backend
+      const checkoutPayload: CheckoutPayload = {
+        firstName: shippingAddress.firstName,
+        lastName: shippingAddress.lastName,
+        emailAddress: shippingAddress.email,
+        phoneNumber: formatPhoneNumber(shippingAddress.phone),
+        address: shippingAddress.address,
+        city: shippingAddress.city,
+        state: shippingAddress.city, // Using city as state for East African context
+        country: shippingAddress.country,
+        zipCode: '0000', // Default zip code for East African countries
+        deliveryInstructions: shippingAddress.instructions || '',
+        deliveryMethod: mapDeliveryMethod(shippingMethod),
+        paymentMethod: mapPaymentMethod(selectedPayment),
+        agreeToTerms: agreeToTerms,
         totalAmount: totalAmount,
-        currency: selectedCountryData?.currency || 'TZS',
+        currency: selectedCountryData?.currency || getCurrencyFromCountry(selectedCountry),
       }
 
-      // Call backend API to create order
-      const response = await apiClient.createOrder(orderPayload)
+      // Process checkout with ZenoPay
+      const checkoutResponse = await processCheckout(checkoutPayload)
 
-      // Extract order ID from response (backend can return various formats)
-      const responseData = response as {
-        data?: { orderId?: string; id?: string }
-        orderId?: string
-        id?: string
-      }
-      const orderId =
-        responseData?.data?.orderId ||
-        responseData?.orderId ||
-        responseData?.data?.id ||
-        responseData?.id
-
-      if (!orderId) {
-        throw new Error('Order created but no ID returned from server')
+      if (!checkoutResponse.success) {
+        throw new Error(checkoutResponse.error || 'Payment processing failed')
       }
 
-      // Clear cart after successful order
+      // Success toast
+      toast({
+        title: 'Payment Processing',
+        description: checkoutResponse.message || 'Your payment is being processed.',
+        variant: 'default',
+      })
+
+      // If payment URL is provided, redirect to payment gateway
+      if (checkoutResponse.paymentUrl) {
+        // Store order details in localStorage for return handling
+        localStorage.setItem(
+          'pendingOrder',
+          JSON.stringify({
+            orderId: checkoutResponse.orderId,
+            transactionId: checkoutResponse.transactionId,
+            totalAmount: totalAmount,
+            currency: checkoutPayload.currency,
+            items: checkoutItems.map((item) => ({
+              productId: item.productId,
+              name: item.title,
+              quantity: item.quantity,
+              price: item.price,
+            })),
+          })
+        )
+
+        // Clear cart before redirecting to payment
+        clearCart()
+
+        // Show redirect toast
+        toast({
+          title: 'Redirecting to Payment',
+          description: 'You will be redirected to complete your payment...',
+          variant: 'default',
+        })
+
+        // Small delay for user to see the toast
+        setTimeout(() => {
+          window.location.href = checkoutResponse.paymentUrl!
+        }, 1500)
+        return
+      }
+
+      // If no payment URL, payment was processed directly
+      // Clear cart after successful checkout
       clearCart()
 
-      // Redirect to success page with backend order ID
-      router.push(`/checkout/success?orderId=${orderId}`)
+      // Success toast for direct payment
+      toast({
+        title: 'Payment Successful!',
+        description: 'Your order has been placed successfully.',
+        variant: 'default',
+      })
+
+      // Redirect to success page with transaction details
+      const successUrl = new URL('/checkout/success', window.location.origin)
+      if (checkoutResponse.orderId) {
+        successUrl.searchParams.set('orderId', checkoutResponse.orderId)
+      }
+      if (checkoutResponse.transactionId) {
+        successUrl.searchParams.set('transactionId', checkoutResponse.transactionId)
+      }
+
+      router.push(successUrl.toString())
     } catch (error) {
-      console.error('Order failed:', error)
+      console.error('Checkout failed:', error)
       const errorMessage =
-        error instanceof Error ? error.message : 'Failed to process order. Please try again.'
+        error instanceof Error
+          ? error.message
+          : 'Payment processing failed. Please try again or contact support.'
+
       setOrderError(errorMessage)
+
+      // Error toast
+      toast({
+        title: 'Payment Failed',
+        description: errorMessage,
+        variant: 'destructive',
+      })
     } finally {
       setIsProcessing(false)
     }

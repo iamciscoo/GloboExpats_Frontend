@@ -49,9 +49,10 @@ interface OrderData {
   }
   tracking?: {
     enabled: boolean
-    number?: string
+    number: string
     url?: string
   }
+  transactionId?: string // Add transaction ID field
 }
 
 function CheckoutSuccessContent() {
@@ -65,6 +66,7 @@ function CheckoutSuccessContent() {
   useEffect(() => {
     // Try to get order data from URL params or localStorage
     const orderId = searchParams.get('orderId')
+    const transactionId = searchParams.get('transactionId')
     const orderDataParam = searchParams.get('orderData')
 
     if (orderDataParam) {
@@ -77,36 +79,72 @@ function CheckoutSuccessContent() {
         setError('Failed to load order details')
         setIsLoading(false)
       }
-    } else if (orderId) {
-      // Try to get from localStorage as fallback
+    } else if (orderId || transactionId) {
+      // Check for pending order from ZenoPay checkout
       try {
-        const storedOrder = localStorage.getItem(`order_${orderId}`)
-        if (storedOrder) {
-          setOrderData(JSON.parse(storedOrder))
-        } else {
-          // Generate fallback order data with current timestamp
-          const fallbackOrder: OrderData = {
-            id: orderId,
-            status: 'confirmed',
+        const pendingOrderData = localStorage.getItem('pendingOrder')
+        let orderData: OrderData | null = null
+
+        if (pendingOrderData) {
+          const pendingOrder = JSON.parse(pendingOrderData)
+
+          // Create order data from pending order
+          orderData = {
+            id: orderId || pendingOrder.orderId || transactionId || `ORDER_${Date.now()}`,
+            status: transactionId ? 'payment_processing' : 'confirmed',
             date: new Date().toISOString(),
             estimatedDelivery: '2-5 business days',
-            total: 0, // Will be updated if we have cart data
-            currency: 'KES',
-            paymentMethod: 'M-Pesa',
-            items: [],
+            total: pendingOrder.totalAmount || 0,
+            currency: pendingOrder.currency || 'TZS',
+            paymentMethod: 'ZenoPay',
+            items: pendingOrder.items || [],
             shippingAddress: {
               name: user?.name || 'Customer',
               address: 'Address not available',
-              city: 'Nairobi',
-              country: 'Kenya',
+              city: 'Address not available',
+              country: 'Tanzania',
             },
             tracking: {
               enabled: true,
-              number: `TRK${Date.now()}`,
+              number: transactionId || `TRK${Date.now()}`,
             },
+            transactionId: transactionId || undefined, // Add transaction ID to order data
           }
-          setOrderData(fallbackOrder)
+
+          // Clean up pending order from localStorage
+          localStorage.removeItem('pendingOrder')
+        } else {
+          // Try to get from localStorage as fallback
+          const storedOrder = localStorage.getItem(`order_${orderId}`)
+          if (storedOrder) {
+            orderData = JSON.parse(storedOrder)
+          } else {
+            // Generate fallback order data with current timestamp
+            orderData = {
+              id: orderId || transactionId || `ORDER_${Date.now()}`,
+              status: transactionId ? 'payment_processing' : 'confirmed',
+              date: new Date().toISOString(),
+              estimatedDelivery: '2-5 business days',
+              total: 0,
+              currency: 'TZS',
+              paymentMethod: transactionId ? 'ZenoPay' : 'M-Pesa',
+              items: [],
+              shippingAddress: {
+                name: user?.name || 'Customer',
+                address: 'Address not available',
+                city: 'Address not available',
+                country: 'Tanzania',
+              },
+              tracking: {
+                enabled: true,
+                number: transactionId || `TRK${Date.now()}`,
+              },
+              transactionId: transactionId || undefined,
+            }
+          }
         }
+
+        setOrderData(orderData)
         setIsLoading(false)
       } catch (err) {
         console.error('Failed to load order from storage:', err)

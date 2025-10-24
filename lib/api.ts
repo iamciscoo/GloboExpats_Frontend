@@ -1128,10 +1128,115 @@ class ApiClient {
   }
 
   // ============================================================================
-  // CART ENDPOINTS - DEPRECATED (Client-Side Cart Only)
+  // CHECKOUT ENDPOINTS
   // ============================================================================
-  // All cart operations are now handled client-side via localStorage
-  // Cart data is sent to backend only during checkout via POST /api/v1/orders
+
+  /**
+   * Processes checkout with ZenoPay payment gateway
+   * @param checkoutData - Checkout information including customer details and payment info
+   * @returns Promise resolving to checkout response with payment details
+   */
+  async zenoPayCheckout(checkoutData: {
+    firstName: string
+    lastName: string
+    emailAddress: string
+    phoneNumber: string
+    address: string
+    city: string
+    state: string
+    country: string
+    zipCode: string
+    deliveryInstructions: string
+    deliveryMethod: string
+    paymentMethod: string
+    agreeToTerms: boolean
+    totalAmount: number
+    currency: string
+  }): Promise<ApiResponse<unknown>> {
+    return this.request('/api/v1/checkout/zenoPayCheckOut', {
+      method: 'POST',
+      body: JSON.stringify(checkoutData),
+    })
+  }
+
+  // ============================================================================
+  // CART ENDPOINTS - Backend Integration
+  // ============================================================================
+
+  /**
+   * Adds an item to the user's cart
+   * @param productId - Product identifier
+   * @param quantity - Number of items to add
+   * @returns Promise resolving to cart update confirmation
+   */
+  async addToCart(productId: number, quantity: number): Promise<ApiResponse<unknown>> {
+    return this.request('/api/v1/cart/add', {
+      method: 'POST',
+      body: JSON.stringify({ productId, quantity }),
+    })
+  }
+
+  /**
+   * Fetches the user's current cart
+   * @returns Promise resolving to cart data with items, totals, and currency
+   */
+  async getUserCart(): Promise<
+    ApiResponse<{
+      items: Array<{
+        cartId: number
+        productId: number
+        quantity: number
+        productName: string
+        price: number
+        currency: string
+        subtotal: number
+      }>
+      totalItems: number
+      totalPrice: number
+      currency: string
+    }>
+  > {
+    return this.request('/api/v1/cart/User')
+  }
+
+  /**
+   * Updates the quantity of a cart item
+   * @param cartItemId - Cart item identifier
+   * @param productId - Product identifier
+   * @param quantity - New quantity
+   * @returns Promise resolving to cart update confirmation
+   */
+  async updateCartItem(
+    cartItemId: number,
+    productId: number,
+    quantity: number
+  ): Promise<ApiResponse<unknown>> {
+    return this.request(`/api/v1/cart/item/${cartItemId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ productId, quantity }),
+    })
+  }
+
+  /**
+   * Removes an item from the cart
+   * @param cartItemId - Cart item identifier
+   * @returns Promise resolving to removal confirmation
+   */
+  async removeFromCart(cartItemId: number): Promise<ApiResponse<unknown>> {
+    return this.request(`/api/v1/cart/item/${cartItemId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  /**
+   * Clears all items from the user's cart
+   * @returns Promise resolving to clear confirmation
+   */
+  async clearCart(): Promise<ApiResponse<unknown>> {
+    return this.request('/api/v1/cart/clear', {
+      method: 'DELETE',
+    })
+  }
 }
 
 // ============================================================================
