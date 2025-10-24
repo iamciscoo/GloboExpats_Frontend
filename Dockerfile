@@ -32,7 +32,7 @@ WORKDIR /app
 # Accept build-time overridable environment arguments (provide defaults for local builds)
 # IMPORTANT: NEXT_PUBLIC_API_URL should be empty - API client endpoints already include /api/v1/ path
 # Next.js proxy will rewrite /api/v1/* requests to BACKEND_URL/api/v1/* server-side
-ARG NEXT_PUBLIC_API_URL=
+ARG NEXT_PUBLIC_API_URL=http://10.123.22.21:3000
 ARG BACKEND_URL=http://10.123.22.21:8081
 ARG NEXT_PUBLIC_WS_URL=ws://10.123.22.21:8081/ws
 ARG NEXT_PUBLIC_CDN_URL=

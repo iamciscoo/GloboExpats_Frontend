@@ -1176,7 +1176,8 @@ class ApiClient {
     )
     console.log('🔑 [API] Request headers:', this.headers)
 
-    return this.request('/api/v1/cart/add', {
+    // Use Next.js API proxy to avoid CORS issues
+    return this.request('/api/cart', {
       method: 'POST',
       body: JSON.stringify({ productId, quantity }),
     })
@@ -1202,7 +1203,8 @@ class ApiClient {
       currency: string
     }>
   > {
-    return this.request('/api/v1/cart/User')
+    // Use Next.js API proxy to avoid CORS issues
+    return this.request('/api/cart')
   }
 
   /**
@@ -1217,7 +1219,8 @@ class ApiClient {
     productId: number,
     quantity: number
   ): Promise<ApiResponse<unknown>> {
-    return this.request(`/api/v1/cart/item/${cartItemId}`, {
+    // Use Next.js API proxy to avoid CORS issues
+    return this.request(`/api/cart/${cartItemId}`, {
       method: 'PUT',
       body: JSON.stringify({ productId, quantity }),
     })
@@ -1229,7 +1232,8 @@ class ApiClient {
    * @returns Promise resolving to removal confirmation
    */
   async removeFromCart(cartItemId: number): Promise<ApiResponse<unknown>> {
-    return this.request(`/api/v1/cart/item/${cartItemId}`, {
+    // Use Next.js API proxy to avoid CORS issues
+    return this.request(`/api/cart/${cartItemId}`, {
       method: 'DELETE',
     })
   }
@@ -1239,7 +1243,8 @@ class ApiClient {
    * @returns Promise resolving to clear confirmation
    */
   async clearCart(): Promise<ApiResponse<unknown>> {
-    return this.request('/api/v1/cart/clear', {
+    // Use Next.js API proxy to avoid CORS issues
+    return this.request('/api/cart', {
       method: 'DELETE',
     })
   }

@@ -130,10 +130,11 @@ const nextConfig = {
 
   // Environment variables accessible to the frontend
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://dev.globoexpats.com',
+    BACKEND_URL=process.env.BACKEND_URL || 'https://dev.globoexpats.com',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://globoexpats.com',
     NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || 'ws://10.123.22.21:8081/ws',
     NEXT_PUBLIC_CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || 'https://dev.globoexpats.com',
-    NEXT_PUBLIC_ENVIRONMENT: process.env.NODE_ENV || 'development',
+    NEXT_PUBLIC_ENVIRONMENT: process.env.NODE_ENV || 'production',
   },
 
   // Proxy API requests to backend server
@@ -141,11 +142,11 @@ const nextConfig = {
     return [
       {
         source: '/api/v1/:path*',
-        destination: `${process.env.BACKEND_URL || 'https://globoexpats.com'}/api/v1/:path*`,
+        destination: `${process.env.BACKEND_URL || 'https://dev.globoexpats.com'}/api/v1/:path*`,
       },
       {
         source: '/uploads/:path*',
-        destination: `${process.env.BACKEND_URL || 'https://globoexpats.com'}/uploads/:path*`,
+        destination: `${process.env.BACKEND_URL || 'https://dev.globoexpats.com'}/uploads/:path*`,
       },
     ]
   },
