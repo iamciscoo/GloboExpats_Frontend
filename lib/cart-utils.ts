@@ -26,8 +26,11 @@ export function productToCartItem(product: {
   verified?: boolean
   condition?: string
 }): Omit<CartItem, 'quantity'> {
+  const productId = typeof product.id === 'number' ? product.id : parseInt(product.id.toString())
+
   return {
     id: product.id.toString(),
+    productId: isNaN(productId) ? undefined : productId, // Include productId for backend
     title: product.title,
     price: product.price,
     originalPrice: product.price,

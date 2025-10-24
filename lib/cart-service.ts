@@ -81,15 +81,25 @@ class CartService {
   async addToCart(productId: number, quantity: number): Promise<boolean> {
     try {
       logger.debug('[CART] Adding item to cart', { productId, quantity })
+      console.log('📦 [CART-SERVICE] Adding to cart:', { productId, quantity })
 
       const response = await apiClient.addToCart(productId, quantity)
+
+      console.log('📦 [CART-SERVICE] Add to cart response:', response)
+
       const success = response?.success !== false // Assume success unless explicitly false
 
       logger.debug('[CART] Add to cart response', { success, response })
+
+      if (!success) {
+        console.error('❌ [CART-SERVICE] Backend returned failure:', response)
+      }
+
       return success
     } catch (error) {
+      console.error('❌ [CART-SERVICE] Exception adding to cart:', error)
       logger.error('[CART] Failed to add item to cart', error)
-      throw new Error('Failed to add item to cart. Please try again.')
+      throw error // Re-throw to let caller handle
     }
   }
 
@@ -100,8 +110,11 @@ class CartService {
   async getCart(): Promise<BackendCartData> {
     try {
       logger.debug('[CART] Fetching user cart')
+      console.log('📦 [CART-SERVICE] Fetching cart from backend...')
 
       const response = await apiClient.getUserCart()
+
+      console.log('📦 [CART-SERVICE] Get cart response:', response)
 
       // ApiResponse wraps the data in a 'data' property
       const cartData: BackendCartData = response.data
@@ -109,6 +122,11 @@ class CartService {
       logger.debug('[CART] Cart data received', {
         itemCount: cartData?.items?.length || 0,
         totalPrice: cartData?.totalPrice || 0,
+      })
+
+      console.log('📦 [CART-SERVICE] Processed cart data:', {
+        itemCount: cartData?.items?.length || 0,
+        items: cartData?.items,
       })
 
       // Ensure we return proper structure even if backend response is incomplete
@@ -119,6 +137,7 @@ class CartService {
         currency: cartData?.currency || 'TZS',
       }
     } catch (error) {
+      console.error('❌ [CART-SERVICE] Exception fetching cart:', error)
       logger.error('[CART] Failed to fetch cart', error)
 
       // Return empty cart on error rather than throwing

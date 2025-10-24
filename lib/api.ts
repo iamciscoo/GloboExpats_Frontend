@@ -1170,6 +1170,12 @@ class ApiClient {
    * @returns Promise resolving to cart update confirmation
    */
   async addToCart(productId: number, quantity: number): Promise<ApiResponse<unknown>> {
+    console.log(
+      '🔑 [API] Adding to cart - Auth token present:',
+      !!(this.headers as Record<string, string>).Authorization
+    )
+    console.log('🔑 [API] Request headers:', this.headers)
+
     return this.request('/api/v1/cart/add', {
       method: 'POST',
       body: JSON.stringify({ productId, quantity }),

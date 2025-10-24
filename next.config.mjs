@@ -85,6 +85,7 @@ const nextConfig = {
     'http://localhost:3001',
     'http://10.13.13.7:3000',
     'http://localhost:3000',
+    'https://dev.globoexpats.com',
   ],
 
   /**
@@ -97,7 +98,7 @@ const nextConfig = {
     remotePatterns: [
       { protocol: 'http', hostname: 'localhost' },
       { protocol: 'http', hostname: '0.0.0.0' },
-      { protocol: 'http', hostname: 'your-backend-domain.com' }, // Replace with actual backend domain
+      { protocol: 'http', hostname: 'https://dev.globoexpats.com' }, // Replace with actual backend domain
       { protocol: 'http', hostname: '10.123.22.21', port: '8081' }, // Backend API with port
       { protocol: 'http', hostname: '10.123.22.21' }, // Backend API without port
     ],
@@ -129,9 +130,9 @@ const nextConfig = {
 
   // Environment variables accessible to the frontend
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || '',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://dev.globoexpats.com',
     NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || 'ws://10.123.22.21:8081/ws',
-    NEXT_PUBLIC_CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || '',
+    NEXT_PUBLIC_CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || 'https://dev.globoexpats.com',
     NEXT_PUBLIC_ENVIRONMENT: process.env.NODE_ENV || 'development',
   },
 
