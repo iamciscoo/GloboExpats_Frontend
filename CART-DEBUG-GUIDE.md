@@ -1,13 +1,16 @@
 # 🛒 Cart Debugging Guide - Step by Step
 
 ## The Problem
-- ✅ Toast shows "Added to cart" 
+
+- ✅ Toast shows "Added to cart"
 - ❌ Cart icon count doesn't increment
 - ❌ Cart sidebar shows empty
 - ❌ Cart page shows empty
 
 ## Root Cause Analysis
+
 This happens when:
+
 1. **Backend API call fails** (but error is caught silently)
 2. **User not authenticated** (token missing)
 3. **Account not verified** (backend rejects cart operations)
@@ -16,11 +19,13 @@ This happens when:
 ## Step-by-Step Debugging
 
 ### Step 1: Open Browser DevTools
+
 1. Press `F12` or `Ctrl+Shift+I`
 2. Go to **Console** tab
 3. Clear console (`Ctrl+L`)
 
 ### Step 2: Try Adding Item to Cart
+
 Click "Add to Cart" on any product
 
 ### Step 3: Check Console Logs
@@ -28,6 +33,7 @@ Click "Add to Cart" on any product
 You should see these logs in order:
 
 #### ✅ Expected Success Flow:
+
 ```
 🛒 Adding to cart - ProductId: 123
 🛒 Cart Provider - Adding item: { itemId: "123", productId: 123, ... }
@@ -51,6 +57,7 @@ You should see these logs in order:
 #### ❌ Common Error Patterns:
 
 **Pattern 1: Not Authenticated**
+
 ```
 🛒 Adding to cart - ProductId: 123
 🔑 [API] Adding to cart - Auth token present: false
@@ -60,6 +67,7 @@ You should see these logs in order:
 ```
 
 **Pattern 2: Account Not Verified**
+
 ```
 🔑 [API] Adding to cart - Auth token present: true
 [API] Response: status=404
@@ -69,6 +77,7 @@ You should see these logs in order:
 ```
 
 **Pattern 3: Backend Error**
+
 ```
 🔑 [API] Adding to cart - Auth token present: true
 [API] Response: status=500
@@ -76,6 +85,7 @@ You should see these logs in order:
 ```
 
 **Pattern 4: Silent Success (Fake Success)**
+
 ```
 ✅ Calling cartService.addToCart with productId: 123
 📊 Add to cart result: { success: true }
@@ -91,6 +101,7 @@ You should see these logs in order:
 3. Look for these requests:
 
 #### Request 1: Add to Cart
+
 ```
 POST http://localhost:8080/api/v1/cart/add
 Status: 200 (should be successful)
@@ -109,6 +120,7 @@ Response:
 ```
 
 #### Request 2: Get Cart
+
 ```
 GET http://localhost:8080/api/v1/cart/User
 Status: 200
@@ -137,19 +149,20 @@ Response:
 
 ### Step 5: Identify the Issue
 
-| What You See | Problem | Solution |
-|--------------|---------|----------|
-| `Auth token present: false` | Not logged in | Log in first |
-| Status 401 | Not authenticated | Check login status, re-login |
-| Status 404 + "Buyer profile" | Account not verified | Go to Account → Verification |
-| Status 404 + "No endpoint" | Backend API not implemented | Backend needs cart endpoints |
-| Status 500 | Backend error | Check backend logs |
-| Success but cart still empty | Response format issue | Check response data structure |
-| No network request at all | Frontend error | Check console for JS errors |
+| What You See                 | Problem                     | Solution                      |
+| ---------------------------- | --------------------------- | ----------------------------- |
+| `Auth token present: false`  | Not logged in               | Log in first                  |
+| Status 401                   | Not authenticated           | Check login status, re-login  |
+| Status 404 + "Buyer profile" | Account not verified        | Go to Account → Verification  |
+| Status 404 + "No endpoint"   | Backend API not implemented | Backend needs cart endpoints  |
+| Status 500                   | Backend error               | Check backend logs            |
+| Success but cart still empty | Response format issue       | Check response data structure |
+| No network request at all    | Frontend error              | Check console for JS errors   |
 
 ## Common Solutions
 
 ### Solution 1: User Not Logged In
+
 ```
 1. Go to /login
 2. Log in with your credentials
@@ -157,6 +170,7 @@ Response:
 ```
 
 ### Solution 2: Account Not Verified
+
 ```
 1. Go to /account/verification
 2. Verify your email address
@@ -165,6 +179,7 @@ Response:
 ```
 
 ### Solution 3: Backend Not Running
+
 ```
 1. Check if backend is running on http://localhost:8080
 2. Check .env.local file: NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
@@ -173,16 +188,19 @@ Response:
 ```
 
 ### Solution 4: CORS Issue
+
 ```
 Look for errors like:
-"Access to fetch at 'http://localhost:8080/api/v1/cart/add' 
+"Access to fetch at 'http://localhost:8080/api/v1/cart/add'
 from origin 'http://localhost:3000' has been blocked by CORS policy"
 
 Solution: Backend needs to allow CORS from http://localhost:3000
 ```
 
 ### Solution 5: Wrong Response Format
+
 Check if backend returns:
+
 ```json
 {
   "success": true,
@@ -196,6 +214,7 @@ Check if backend returns:
 ```
 
 NOT:
+
 ```json
 {
   "items": [...],  ← Missing "data" wrapper

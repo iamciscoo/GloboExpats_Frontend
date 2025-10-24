@@ -517,7 +517,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
         // BACKEND INTEGRATION: Add item to backend cart
         const productId = item.productId || parseInt(item.id)
-        
+
         console.log('🛒 Cart Provider - Adding item:', {
           itemId: item.id,
           itemProductId: item.productId,
@@ -587,7 +587,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
           console.log('✅ Cart updated successfully:', {
             totalItems: updatedItems.length,
-            items: updatedItems.map(i => ({ id: i.id, title: i.title, quantity: i.quantity })),
+            items: updatedItems.map((i) => ({ id: i.id, title: i.title, quantity: i.quantity })),
           })
 
           return {
@@ -605,23 +605,25 @@ export function CartProvider({ children }: { children: ReactNode }) {
         })
       } catch (error) {
         console.error('❌ Error adding to cart:', error)
-        
+
         // Extract error message for user
         let errorMessage = 'Failed to add item to cart. Please try again.'
-        
+
         if (error instanceof Error) {
           // Check for specific error messages from backend
           if (error.message.includes('verification') || error.message.includes('verify')) {
-            errorMessage = 'Please verify your account to add items to cart. Go to Account → Verification.'
+            errorMessage =
+              'Please verify your account to add items to cart. Go to Account → Verification.'
           } else if (error.message.includes('Buyer profile not found')) {
-            errorMessage = 'Account setup required. Please complete your profile to add items to cart.'
+            errorMessage =
+              'Account setup required. Please complete your profile to add items to cart.'
           } else if (error.message.includes('not found') || error.message.includes('404')) {
             errorMessage = 'This feature requires account verification. Please verify your email.'
           } else if (error.message) {
             errorMessage = error.message
           }
         }
-        
+
         toast({
           title: 'Error',
           description: errorMessage,
