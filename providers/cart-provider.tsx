@@ -488,7 +488,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = useCallback(
     async (item: Omit<CartItem, 'quantity'>) => {
+      console.log('🎯 [CART-PROVIDER] addItem called with:', {
+        itemId: item.id,
+        productId: item.productId,
+        title: item.title,
+        isLoggedIn,
+      })
+
       if (!isLoggedIn) {
+        console.log('❌ [CART-PROVIDER] User not logged in')
         toast({
           title: 'Join the Expat Community!',
           description:

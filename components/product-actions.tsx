@@ -81,13 +81,19 @@ export function ProductActions({
         currency: currency,
       })
 
+      console.log('🛒 [PRODUCT-ACTIONS] Created cart item:', cartItem)
+      console.log('🛒 [PRODUCT-ACTIONS] Calling addToCart function...')
+
       await addToCart(cartItem)
+
+      console.log('✅ [PRODUCT-ACTIONS] addToCart completed successfully')
 
       toast({
         title: 'Added to cart',
         description: `${productTitle} has been added to your cart`,
       })
-    } catch {
+    } catch (error) {
+      console.error('❌ [PRODUCT-ACTIONS] Error in handleAddToCart:', error)
       toast({
         title: 'Error',
         description: 'Failed to add item to cart. Please try again.',
