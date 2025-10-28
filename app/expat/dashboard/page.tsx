@@ -44,6 +44,7 @@ import { getFullImageUrl, cleanLocationString } from '@/lib/image-utils'
 import { RouteGuard } from '@/components/route-guard'
 import PriceDisplay from '@/components/price-display'
 import type { CurrencyCode } from '@/lib/currency-types'
+import { getAuthToken } from '@/lib/auth-service'
 
 interface UserListing {
   productId: number
@@ -106,6 +107,17 @@ function DashboardContent() {
     const fetchDashboardData = async () => {
       try {
         setLoading(true)
+
+        // CRITICAL: Ensure API client has auth token before making requests
+        const token = getAuthToken()
+        if (token) {
+          apiClient.setAuthToken(token)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[Dashboard] Auth token set for API requests')
+          }
+        } else {
+          console.error('[Dashboard] No auth token available - API calls will fail')
+        }
 
         // BACKEND NOTE: The /userManagement/user-details endpoint doesn't return numeric userId
         // So we'll match by loggingEmail instead (products should have sellerEmail field)
@@ -212,26 +224,30 @@ function DashboardContent() {
           console.log(`   Total products in database: ${allProducts.length}`)
         }
 
-        // Fetch click counts for each product
+        // IMPORTANT: DisplayItemsDTO.clickCount returns 1.0 (default) for all products
+        // Real click data is in separate table - fetch it via product-clickCount endpoint
         const listingsWithViews = await Promise.all(
           userListings.map(async (item) => {
             const product = item as Record<string, unknown>
             const productId = product.productId as number
 
             try {
+              // Fetch actual click count from dedicated endpoint
               const clickData = await apiClient.getProductClickCount(productId)
               return {
                 ...product,
                 views: clickData.clicks || 0,
               }
-            } catch (error) {
-              // If click count fetch fails, use 0
+            } catch {
+              // If fetch fails, use clickCount from DisplayItemsDTO (may be inaccurate)
               if (process.env.NODE_ENV === 'development') {
-                console.warn(`Failed to fetch click count for product ${productId}:`, error)
+                console.warn(
+                  `[Dashboard] Could not fetch click count for product ${productId}, using DisplayItemsDTO value`
+                )
               }
               return {
                 ...product,
-                views: 0,
+                views: (product.clickCount as number) || 0,
               }
             }
           })

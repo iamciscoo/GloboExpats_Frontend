@@ -208,6 +208,7 @@ export interface FeaturedItem {
   isVerified: boolean
   category?: string
   condition?: string
+  views?: number // View count (from backend clickCount field)
 }
 
 /**

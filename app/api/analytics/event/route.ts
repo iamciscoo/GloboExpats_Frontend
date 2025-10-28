@@ -1,7 +1,8 @@
 export const runtime = 'nodejs'
 
-// Backend API base URL
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://10.123.22.21:8081'
+// Server-side backend URL (NOT the public one - this runs server-side in Next.js)
+// Use process.env.BACKEND_URL for server-side calls to avoid CORS
+const BACKEND_URL = process.env.BACKEND_URL || 'http://10.123.22.21:8081'
 
 export async function POST(req: Request) {
   try {
@@ -13,8 +14,8 @@ export async function POST(req: Request) {
     // Track product views in backend if it's a product_click event
     if (payload?.type === 'product_click' && payload?.productId) {
       try {
-        // NOTE: Backend endpoint needs to be created: POST /api/v1/products/{productId}/view
-        // This should increment the view_count field in the database
+        // POST to backend to track view count
+        // This increments the view_count field in the database
         const backendResponse = await fetch(
           `${BACKEND_URL}/api/v1/products/${payload.productId}/view`,
           {

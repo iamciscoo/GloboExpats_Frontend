@@ -670,13 +670,37 @@ class ApiClient {
   }
 
   /**
-   * Gets click count for a product
+   * Gets click count for a product from dedicated tracking endpoint
    * @param productId - Product identifier
    * @returns Promise resolving to click count and userId
+   *
+   * NOTE: This endpoint returns actual click tracking data from product_clicks table
+   * (unlike DisplayItemsDTO.clickCount which shows default value 1.0)
    */
   async getProductClickCount(productId: number): Promise<{ clicks: number; userId: number }> {
-    const response = await this.request(`/api/v1/products/product-clickCount/${productId}`)
-    return response as unknown as { clicks: number; userId: number }
+    try {
+      const response = await this.request(`/api/v1/products/product-clickCount/${productId}`)
+      const clickData = response as unknown as { clicks: number; userId: number }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[API] Click count for product ${productId}:`, clickData.clicks)
+      }
+
+      return clickData
+    } catch (error) {
+      // If authentication fails or endpoint is unavailable, return 0 clicks
+      // This allows the UI to work gracefully for unauthenticated users
+      if (error && typeof error === 'object' && 'isAuthError' in error) {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(
+            `[API] Auth error fetching click count for product ${productId}, returning 0`
+          )
+        }
+        return { clicks: 0, userId: 0 }
+      }
+      // Re-throw other errors
+      throw error
+    }
   }
 
   // ============================================================================

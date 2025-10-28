@@ -11,15 +11,34 @@ const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''
 /**
  * Converts backend image paths to full URLs
  * @param imageUrl - Relative or absolute image URL
- * @returns Full image URL or placeholder
+ * @returns Full image URL or placeholder (properly URL encoded)
  */
 export const getFullImageUrl = (imageUrl: string): string => {
   if (!imageUrl) return '/assets/images/products/placeholder.svg'
-  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl // Already full URL
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    // Already full URL - encode the path part only
+    try {
+      const url = new URL(imageUrl)
+      // Encode the pathname to handle special characters like brackets
+      url.pathname = url.pathname
+        .split('/')
+        .map((segment) => encodeURIComponent(decodeURIComponent(segment)))
+        .join('/')
+      return url.toString()
+    } catch {
+      return imageUrl
+    }
+  }
 
   // Ensure no double slashes
   const cleanUrl = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`
-  return `${BACKEND_BASE_URL}${cleanUrl}`
+  // Encode the path to handle special characters (brackets, spaces, etc.)
+  const encodedPath = cleanUrl
+    .split('/')
+    .map((segment) => (segment ? encodeURIComponent(segment) : segment))
+    .join('/')
+
+  return `${BACKEND_BASE_URL}${encodedPath}`
 }
 
 /**
@@ -128,6 +147,8 @@ export const transformBackendProduct = (item: Record<string, unknown>) => {
     ),
     category: String(category?.categoryName || item.categoryName || ''),
     condition: String(item.productCondition || item.condition || 'used'),
+    // Preserve view count (clickCount from backend) if available
+    views: (item.views as number) || (item.clickCount as number) || 0,
   }
 
   return transformed

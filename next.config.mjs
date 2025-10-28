@@ -85,6 +85,9 @@ const nextConfig = {
     'http://localhost:3001',
     'http://10.13.13.7:3000',
     'http://localhost:3000',
+    'https://globoexpats.com',
+    'https://www.globoexpats.com',
+    'https://dev.globoexpats.com',
   ],
 
   /**
@@ -97,8 +100,11 @@ const nextConfig = {
     remotePatterns: [
       { protocol: 'http', hostname: 'localhost' },
       { protocol: 'http', hostname: '0.0.0.0' },
-      { protocol: 'http', hostname: 'your-backend-domain.com' }, // Replace with actual backend domain
-      { protocol: 'http', hostname: '10.123.22.21', port: '8081' }, // Backend API with port
+      { protocol: 'https', hostname: 'globoexpats.com' }, // Production domain
+      { protocol: 'https', hostname: 'www.globoexpats.com' }, // Production domain with www
+      { protocol: 'https', hostname: 'dev.globoexpats.com' }, // Development domain
+      { protocol: 'http', hostname: '10.123.22.21', port: '8081' }, // Backend API with port 8081
+      { protocol: 'http', hostname: '10.123.22.21', port: '3000' }, // Backend image server port 3000
       { protocol: 'http', hostname: '10.123.22.21' }, // Backend API without port
     ],
     // Optimize image formats - WebP for best compression, AVIF for even better quality
@@ -208,15 +214,19 @@ const nextConfig = {
         headers: [
           {
             key: 'Access-Control-Allow-Origin',
-            value: process.env.ALLOWED_ORIGINS || '*',
+            value: process.env.ALLOWED_ORIGINS || 'https://globoexpats.com,https://www.globoexpats.com,https://dev.globoexpats.com',
           },
           {
             key: 'Access-Control-Allow-Methods',
-            value: 'GET, POST, PUT, DELETE, OPTIONS',
+            value: 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
           },
           {
             key: 'Access-Control-Allow-Headers',
             value: 'Content-Type, Authorization, X-Requested-With',
+          },
+          {
+            key: 'Access-Control-Allow-Credentials',
+            value: 'true',
           },
         ],
       },
