@@ -10,6 +10,8 @@ import { cn, parseNumericPrice } from '@/lib/utils'
 import type { FeaturedItem } from '@/lib/types'
 import PriceDisplay from '@/components/price-display'
 import { useCart } from '@/hooks/use-cart'
+import { useAuth } from '@/hooks/use-auth'
+import { toast } from '@/components/ui/use-toast'
 
 interface ProductCardProps {
   product: FeaturedItem
@@ -28,6 +30,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const router = useRouter()
   const { addToCart } = useCart()
+  const { isLoggedIn } = useAuth()
 
   // Debug: Check if product contains any problematic nested objects
 
@@ -48,11 +51,22 @@ export function ProductCard({
   })
 
   const handleViewDetails = () => {
+    // Check if user is logged in before navigating
+    if (!isLoggedIn) {
+      toast({
+        title: 'Login Required',
+        description:
+          'Please login to view product details or create an account to explore our marketplace!',
+        variant: 'default',
+      })
+      return // Don't navigate
+    }
+
     // Track analytics if callback provided
     if (onViewDetails) {
       onViewDetails(product.id)
     }
-    // Always navigate to product page
+    // Navigate to product page
     router.push(`/product/${product.id}`)
   }
 

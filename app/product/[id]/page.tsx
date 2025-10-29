@@ -31,6 +31,7 @@ import type { FeaturedItem } from '@/lib/types'
 import PriceDisplay from '@/components/price-display'
 import { parseNumericPrice } from '@/lib/utils'
 import { handleAuthError } from '@/lib/auth-redirect'
+import { toast } from '@/components/ui/use-toast'
 
 export default function ProductPage() {
   const params = useParams()
@@ -45,7 +46,6 @@ export default function ProductPage() {
   const [error, setError] = useState<string | null>(null)
   const [currentImage, setCurrentImage] = useState(0)
   const [isSaved, setIsSaved] = useState(false)
-  const [redirecting, setRedirecting] = useState(false)
   const [sellerProfileImage, setSellerProfileImage] = useState<string | null>(null)
 
   // Transform backend data to FeaturedItem format
@@ -189,7 +189,7 @@ export default function ProductPage() {
           statusCode: apiError.statusCode,
         })
 
-        // Handle authentication errors - redirect to login
+        // Handle authentication errors - show toast
         if (
           apiError.isAuthError ||
           apiError.statusCode === 401 ||
@@ -201,22 +201,24 @@ export default function ProductPage() {
           errorMessage.toLowerCase().includes('login')
         ) {
           // Don't log as error - this is expected flow for unauthenticated users
-          console.log('🔐 Auth required, redirecting to login...')
-          // Set redirecting state to show loading UI instead of error
-          setRedirecting(true)
-          setError(null) // Don't show error
-          router.push(`/login?returnUrl=${encodeURIComponent(`/product/${id}`)}`)
+          console.log('🔐 Auth required, showing toast notification')
+          toast({
+            title: 'Login Required',
+            description:
+              'Please login to view product details or create an account to explore our marketplace!',
+            variant: 'default',
+          })
+          setError(null) // Don't show error in UI
           return
         }
 
         // Log non-auth errors
         console.error('❌ Error fetching product:', err)
 
-        // Handle other authentication errors with redirect helper
+        // Handle other authentication errors with toast helper
         if (handleAuthError(err, router, `/product/${id}`)) {
-          setRedirecting(true)
-          setError(null) // Don't show error
-          return // User being redirected to login
+          setError(null) // Don't show error in UI
+          return // Toast shown
         }
 
         setError(err instanceof Error ? err.message : 'Failed to fetch product')
@@ -235,19 +237,6 @@ export default function ProductPage() {
     ? [product.image, ...(product.images || [])]
     : ['/assets/images/products/placeholder.jpg']
 
-  // Redirecting to login state - show smooth transition
-  if (redirecting) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-brand-primary via-blue-800 to-cyan-600 flex items-center justify-center">
-        <div className="text-center text-white">
-          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Authentication Required</h2>
-          <p className="text-blue-100">Redirecting you to login...</p>
-        </div>
-      </div>
-    )
-  }
-
   // Loading state
   if (loading) {
     return (
@@ -255,6 +244,28 @@ export default function ProductPage() {
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-brand-primary" />
           <p className="text-gray-600">Loading product details...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // If no error but also no product (auth issue), show friendly message
+  if (!error && !product && !loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Login Required</h2>
+          <p className="text-gray-600 mb-6">
+            Please login to view product details or create an account to explore our marketplace!
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Link href="/login">
+              <Button className="bg-brand-primary hover:bg-brand-accent">Login</Button>
+            </Link>
+            <Link href="/register">
+              <Button variant="outline">Create Account</Button>
+            </Link>
+          </div>
         </div>
       </div>
     )

@@ -1,12 +1,13 @@
 /**
  * Authentication Error Handling Utilities
  *
- * Provides consistent auth error detection and redirect logic across the application.
- * Use these utilities in API error handlers to ensure users are redirected to login
- * when they encounter authentication errors.
+ * Provides consistent auth error detection and toast notification logic across the application.
+ * Use these utilities in API error handlers to show friendly toast messages
+ * when users encounter authentication errors.
  */
 
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
+import { toast } from '@/components/ui/use-toast'
 
 /**
  * Extended error type with authentication metadata
@@ -31,11 +32,11 @@ export function isAuthenticationError(error: unknown): boolean {
 }
 
 /**
- * Handles authentication errors by redirecting to login page with return URL
+ * Handles authentication errors by showing a toast notification to login
  *
  * @param error - The error object to check
- * @param router - Next.js router instance
- * @param returnPath - Path to return to after login (defaults to current path)
+ * @param router - Next.js router instance (kept for compatibility, not used)
+ * @param returnPath - Path context (kept for compatibility, not used)
  * @returns true if auth error was handled, false otherwise
  *
  * @example
@@ -44,7 +45,7 @@ export function isAuthenticationError(error: unknown): boolean {
  *   const data = await apiClient.getProduct(id)
  * } catch (err) {
  *   if (handleAuthError(err, router, `/product/${id}`)) {
- *     return // Error handled, user being redirected
+ *     return // Error handled, toast shown
  *   }
  *   // Handle other errors...
  * }
@@ -52,19 +53,21 @@ export function isAuthenticationError(error: unknown): boolean {
  */
 export function handleAuthError(
   error: unknown,
-  router: AppRouterInstance,
-  returnPath?: string
+  _router: AppRouterInstance,
+  _returnPath?: string
 ): boolean {
   if (!isAuthenticationError(error)) {
     return false
   }
 
-  // Get the current path from window if returnPath not provided
-  const currentPath = returnPath || (typeof window !== 'undefined' ? window.location.pathname : '/')
-  const loginUrl = `/login?returnUrl=${encodeURIComponent(currentPath)}`
+  console.log('🔐 Auth error detected, showing login toast')
 
-  console.log('🔐 Auth error detected, redirecting to:', loginUrl)
-  router.push(loginUrl)
+  toast({
+    title: 'Login Required',
+    description:
+      'Please login to access this content or create an account to join our expat community!',
+    variant: 'default',
+  })
 
   return true
 }
@@ -103,11 +106,11 @@ export function getErrorMessage(
  * Options for handling API errors
  */
 export interface HandleApiErrorOptions {
-  /** Router instance for redirects */
+  /** Router instance (kept for compatibility) */
   router: AppRouterInstance
-  /** Return path after login (defaults to current path) */
+  /** Return path (kept for compatibility) */
   returnPath?: string
-  /** Whether to redirect on auth errors (default: true) */
+  /** Whether to show toast on auth errors (default: true) */
   redirectOnAuth?: boolean
   /** Custom message handler */
   onError?: (message: string) => void
@@ -118,7 +121,7 @@ export interface HandleApiErrorOptions {
  *
  * @param error - The error to handle
  * @param options - Handler options
- * @returns Error message (only if not redirected)
+ * @returns Error message (only if not handled by auth toast)
  *
  * @example
  * ```tsx
@@ -137,9 +140,9 @@ export interface HandleApiErrorOptions {
 export function handleApiError(error: unknown, options: HandleApiErrorOptions): string | null {
   const { router, returnPath, redirectOnAuth = true, onError } = options
 
-  // Handle auth errors with redirect
+  // Handle auth errors with toast notification
   if (redirectOnAuth && handleAuthError(error, router, returnPath)) {
-    return null // Redirecting, no message needed
+    return null // Toast shown, no message needed
   }
 
   // Get error message

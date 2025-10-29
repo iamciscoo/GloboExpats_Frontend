@@ -1,32 +1,10 @@
-/**
- * User Verification Management Hook
- *
- * Provides functionality for checking user verification status and managing
- * verification-related UI states. Handles verification requirements for
- * actions like buying, selling, and contacting sellers.
- *
- * @example Basic usage:
- * ```tsx
- * function BuyButton({ productId }: { productId: string }) {
- *   const { checkVerification } = useVerification()
- *
- *   const handleBuy = () => {
- *     if (checkVerification('buy')) {
- *       // User is verified, proceed with purchase
- *       proceedToPurchase(productId)
- *     }
- *     // Verification popup will show automatically if needed
- *   }
- *
- *   return <Button onClick={handleBuy}>Buy Now</Button>
- * }
- * ```
- */
+'use client'
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/use-auth'
 import { canUserBuy, canUserSell, canUserContact } from '@/lib/verification-utils'
+import { toast } from '@/components/ui/use-toast'
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -116,8 +94,11 @@ export function useVerification(): UseVerificationReturn {
     (action: VerificationAction): boolean => {
       // Check if user is logged in
       if (!isLoggedIn) {
-        const currentPath = window.location.pathname
-        router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
+        toast({
+          title: 'Login Required',
+          description: 'Please login to access this feature or create an account to get started!',
+          variant: 'default',
+        })
         return false
       }
 

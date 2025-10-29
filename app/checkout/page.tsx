@@ -19,6 +19,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { useVerification } from '@/hooks/use-verification'
 import { apiClient } from '@/lib/api'
 import PriceDisplay from '@/components/price-display'
+import { toast } from '@/components/ui/use-toast'
 
 interface ShippingAddress {
   firstName: string
@@ -116,7 +117,6 @@ export default function CheckoutPage() {
 
   const [currentStep, setCurrentStep] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [authChecked, setAuthChecked] = useState(false)
   const [orderError, setOrderError] = useState<string | null>(null)
   const [selectedCountry, setSelectedCountry] = useState('TZ') // Default to Tanzania
 
@@ -223,14 +223,16 @@ export default function CheckoutPage() {
 
   // Comprehensive authentication and verification checks
   useEffect(() => {
-    // Set authChecked immediately if conditions are met to avoid loading delay
-    if (!authLoading && isLoggedIn && items.length > 0 && selectedItems.length > 0) {
-      setAuthChecked(true)
-    }
-
+    // Only check auth once it's loaded
     if (!authLoading) {
       if (!isLoggedIn) {
-        router.push('/login?redirect=/checkout')
+        toast({
+          title: 'Login Required',
+          description:
+            'Please login to proceed with checkout or create an account to complete your purchase!',
+          variant: 'default',
+        })
+        router.push('/')
         return
       }
 
@@ -256,7 +258,7 @@ export default function CheckoutPage() {
   }, [currentStep])
 
   // Show loading state while checking authentication
-  if (authLoading || !authChecked) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50">
         <div className="text-center bg-white p-12 rounded-3xl shadow-futuristic border border-neutral-200">
