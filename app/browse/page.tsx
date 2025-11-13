@@ -9,6 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Switch } from '@/components/ui/switch'
 import {
   Select,
   SelectContent,
@@ -31,11 +32,9 @@ import {
   List,
   SlidersHorizontal,
   X,
-  Shield,
   ChevronLeft,
   ChevronRight,
   MoreHorizontal,
-  ChevronDown,
   Loader2,
 } from 'lucide-react'
 
@@ -54,6 +53,7 @@ const getCategoryCounts = (products: FeaturedItem[]) => {
 interface FilterState {
   selectedCategory: string
   priceRange: [number, number]
+  priceFilterEnabled: boolean
   condition: string
   expatType: string
   location: string
@@ -68,7 +68,7 @@ interface FilterProps {
 
 const FilterContentEl = ({ filters, setFilters, clearAllFilters, categoryCounts }: FilterProps) => {
   const updateFilter = useCallback(
-    (key: keyof FilterState, value: string | number | string[] | [number, number]) => {
+    (key: keyof FilterState, value: string | number | string[] | [number, number] | boolean) => {
       setFilters({
         ...filters,
         [key]: value,
@@ -78,14 +78,8 @@ const FilterContentEl = ({ filters, setFilters, clearAllFilters, categoryCounts 
   )
 
   const hasActiveFilters =
-    filters.selectedCategory ||
-    filters.priceRange[0] > 0 ||
-    filters.priceRange[1] < 10000000 ||
-    filters.condition ||
-    filters.expatType ||
-    filters.location
+    filters.selectedCategory || filters.priceFilterEnabled || filters.condition || filters.location
 
-  const [showAdvanced, setShowAdvanced] = useState(false)
   // Local state for price inputs to allow smooth editing
   const [minPriceInput, setMinPriceInput] = useState(filters.priceRange[0].toString())
   const [maxPriceInput, setMaxPriceInput] = useState(filters.priceRange[1].toString())
@@ -161,10 +155,47 @@ const FilterContentEl = ({ filters, setFilters, clearAllFilters, categoryCounts 
 
       <Separator />
 
-      {/* Price Range - Primary Filter */}
+      {/* Location */}
+      <div className="space-y-3">
+        <Label className="text-sm font-semibold text-gray-700">Location</Label>
+        <Select
+          value={filters.location || 'all'}
+          onValueChange={(value) => updateFilter('location', value === 'all' ? '' : value)}
+        >
+          <SelectTrigger className="text-gray-600 h-10">
+            <SelectValue placeholder="Any location" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Any location</SelectItem>
+            {EXPAT_LOCATIONS.map((location) => (
+              <SelectItem key={location.value} value={location.value}>
+                {location.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Separator />
+
+      {/* Price Range */}
       <div className="space-y-4">
-        <Label className="text-sm font-semibold text-gray-700">Price Range (TZS)</Label>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-semibold text-gray-700">Price Range (TZS)</Label>
+          <div className="flex items-center space-x-2">
+            <Label htmlFor="price-filter-toggle" className="text-xs text-gray-500">
+              Enable
+            </Label>
+            <Switch
+              id="price-filter-toggle"
+              checked={filters.priceFilterEnabled}
+              onCheckedChange={(checked) => updateFilter('priceFilterEnabled', checked)}
+            />
+          </div>
+        </div>
+        <div
+          className={`grid grid-cols-2 gap-2 ${!filters.priceFilterEnabled ? 'opacity-50' : ''}`}
+        >
           <Input
             type="text"
             inputMode="numeric"
@@ -200,121 +231,40 @@ const FilterContentEl = ({ filters, setFilters, clearAllFilters, categoryCounts 
 
       <Separator />
 
-      {/* Advanced Filters Toggle */}
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setShowAdvanced(!showAdvanced)}
-        className="w-full"
-      >
-        {showAdvanced ? 'Hide' : 'Show'} Advanced Filters
-        <ChevronDown
-          className={`h-4 w-4 ml-2 transition-transform ${showAdvanced ? 'rotate-180' : ''}`}
-        />
-      </Button>
-
-      {/* Advanced Filters - Hidden by default */}
-      {showAdvanced && (
-        <>
-          <Separator />
-
-          {/* Condition */}
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold text-gray-700">Condition</Label>
-            <RadioGroup
-              value={filters.condition}
-              onValueChange={(value) => updateFilter('condition', value)}
-              className="space-y-2"
+      {/* Condition */}
+      <div className="space-y-3">
+        <Label className="text-sm font-semibold text-gray-700">Condition</Label>
+        <RadioGroup
+          value={filters.condition}
+          onValueChange={(value) => updateFilter('condition', value)}
+          className="space-y-2"
+        >
+          <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 transition-colors">
+            <RadioGroupItem value="" id="condition-all" />
+            <Label
+              htmlFor="condition-all"
+              className="text-sm text-gray-600 cursor-pointer hover:text-gray-800 transition-colors"
             >
-              <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 transition-colors">
-                <RadioGroupItem value="" id="condition-all" />
-                <Label
-                  htmlFor="condition-all"
-                  className="text-sm text-gray-600 cursor-pointer hover:text-gray-800 transition-colors"
-                >
-                  Any condition
-                </Label>
-              </div>
-              {ITEM_CONDITIONS.slice(0, 4).map((condition) => (
-                <div
-                  key={condition.value}
-                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 transition-colors"
-                >
-                  <RadioGroupItem value={condition.value} id={`condition-${condition.value}`} />
-                  <Label
-                    htmlFor={`condition-${condition.value}`}
-                    className="text-sm text-gray-600 cursor-pointer hover:text-gray-800 transition-colors"
-                  >
-                    {condition.label}
-                    <span className="text-gray-400 ml-1 text-xs">({condition.description})</span>
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
-
-          <Separator />
-
-          {/* Seller Type */}
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              <Shield className="h-4 w-4 text-blue-600" />
-              Expat Type
+              Any condition
             </Label>
-            <RadioGroup
-              value={filters.expatType}
-              onValueChange={(value) => updateFilter('expatType', value)}
-              className="space-y-2"
-            >
-              <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 transition-colors">
-                <RadioGroupItem value="" id="expat-all" />
-                <Label
-                  htmlFor="expat-all"
-                  className="text-sm text-gray-600 cursor-pointer hover:text-gray-800 transition-colors"
-                >
-                  All expats
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 transition-colors">
-                <RadioGroupItem value="verified" id="expat-verified" />
-                <Label
-                  htmlFor="expat-verified"
-                  className="text-sm text-gray-600 cursor-pointer hover:text-gray-800 transition-colors flex items-center gap-2"
-                >
-                  Verified expats only
-                  <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
-                    <Shield className="h-3 w-3 mr-1" />
-                    Trusted
-                  </Badge>
-                </Label>
-              </div>
-            </RadioGroup>
           </div>
-
-          <Separator />
-
-          {/* Location */}
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold text-gray-700">Location</Label>
-            <Select
-              value={filters.location || 'all'}
-              onValueChange={(value) => updateFilter('location', value === 'all' ? '' : value)}
+          {ITEM_CONDITIONS.slice(0, 4).map((condition) => (
+            <div
+              key={condition.value}
+              className="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 transition-colors"
             >
-              <SelectTrigger className="text-gray-600 h-10">
-                <SelectValue placeholder="Any location" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Any location</SelectItem>
-                {EXPAT_LOCATIONS.map((location) => (
-                  <SelectItem key={location.value} value={location.value}>
-                    {location.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </>
-      )}
+              <RadioGroupItem value={condition.value} id={`condition-${condition.value}`} />
+              <Label
+                htmlFor={`condition-${condition.value}`}
+                className="text-sm text-gray-600 cursor-pointer hover:text-gray-800 transition-colors"
+              >
+                {condition.label}
+                <span className="text-gray-400 ml-1 text-xs">({condition.description})</span>
+              </Label>
+            </div>
+          ))}
+        </RadioGroup>
+      </div>
     </div>
   )
 }
@@ -354,6 +304,7 @@ export default function BrowsePage() {
   const initialFilters: FilterState = {
     selectedCategory: '',
     priceRange: [0, 10000000],
+    priceFilterEnabled: false,
     condition: '',
     expatType: '',
     location: '',
@@ -382,6 +333,13 @@ export default function BrowsePage() {
         )
         setProducts(transformedProducts)
         setCategoryCounts(getCategoryCounts(transformedProducts))
+
+        // Debug: Log all unique categories found in products
+        const uniqueCategories = [
+          ...new Set(transformedProducts.map((p) => p.category).filter(Boolean)),
+        ]
+        console.log('All available categories:', uniqueCategories)
+        console.log('Category counts:', getCategoryCounts(transformedProducts))
       } catch (err) {
         // Check if this is an authentication error
         const error = err as Error & { isAuthError?: boolean; statusCode?: number }
@@ -429,6 +387,7 @@ export default function BrowsePage() {
     setFilters({
       selectedCategory: '',
       priceRange: [0, 10000000],
+      priceFilterEnabled: false,
       condition: '',
       expatType: '',
       location: '',
@@ -463,27 +422,138 @@ export default function BrowsePage() {
     if (filters.selectedCategory && product.category) {
       const selectedCat = filters.selectedCategory.toLowerCase().replace(/-/g, ' ')
       const productCat = product.category.toLowerCase().replace(/&/g, 'and')
+      const productCatSlug = generateSlug(product.category)
 
-      // Try exact match first, then partial match
+      // Debug logging (remove in production)
+      if (filters.selectedCategory === 'vehicles') {
+        console.log('Vehicle Debug:', {
+          selectedCategory: filters.selectedCategory,
+          selectedCat,
+          productCategory: product.category,
+          productCat,
+          productCatSlug,
+          title: product.title,
+        })
+      }
+
+      // Try exact match first (both ways: slug-to-slug and name-to-name)
+      const exactSlugMatch = productCatSlug === filters.selectedCategory
+      const exactNameMatch = productCat === selectedCat
+      const partialMatch = productCat.includes(selectedCat) || selectedCat.includes(productCat)
+
+      // Handle specific mappings for better category matching
+      const electronicsMatch =
+        selectedCat === 'electronics' &&
+        (productCat.includes('electronic') ||
+          productCat.includes('gadget') ||
+          productCat.includes('tech'))
+      const furnitureMatch =
+        selectedCat === 'furniture' &&
+        (productCat.includes('furniture') ||
+          productCat.includes('chair') ||
+          productCat.includes('table') ||
+          productCat.includes('sofa'))
+      const clothingMatch =
+        selectedCat === 'clothing' &&
+        (productCat.includes('clothing') ||
+          productCat.includes('fashion') ||
+          productCat.includes('apparel') ||
+          productCat.includes('wear'))
+      const vehiclesMatch =
+        (selectedCat === 'vehicles' || filters.selectedCategory === 'vehicles') &&
+        (productCat.includes('vehicle') ||
+          productCat.includes('car') ||
+          productCat.includes('auto') ||
+          productCat.includes('motorcycle') ||
+          productCat.includes('bike') ||
+          productCat.includes('truck') ||
+          productCat.includes('scooter') ||
+          productCat.includes('transport') ||
+          productCat.includes('automotive') ||
+          productCatSlug === 'vehicles' ||
+          productCat === 'vehicles' ||
+          product.category === 'Vehicles')
+      const realEstateMatch =
+        selectedCat === 'real estate' &&
+        (productCat.includes('real') ||
+          productCat.includes('estate') ||
+          productCat.includes('property') ||
+          productCat.includes('house') ||
+          productCat.includes('apartment') ||
+          productCat.includes('land'))
+      const booksMediaMatch =
+        selectedCat === 'books media' &&
+        (productCat.includes('book') ||
+          productCat.includes('media') ||
+          productCat.includes('dvd') ||
+          productCat.includes('cd') ||
+          productCat.includes('magazine'))
+      const sportsOutdoorsMatch =
+        selectedCat === 'sports outdoors' &&
+        (productCat.includes('sport') ||
+          productCat.includes('outdoor') ||
+          productCat.includes('fitness') ||
+          productCat.includes('exercise') ||
+          productCat.includes('camping'))
+      const homeAppliancesMatch =
+        selectedCat === 'home appliances' &&
+        (productCat.includes('appliance') ||
+          productCat.includes('kitchen') ||
+          productCat.includes('home') ||
+          productCat.includes('refrigerator') ||
+          productCat.includes('washing'))
+      const beautyHealthMatch =
+        selectedCat === 'beauty health' &&
+        (productCat.includes('beauty') ||
+          productCat.includes('health') ||
+          productCat.includes('cosmetic') ||
+          productCat.includes('skincare') ||
+          productCat.includes('makeup'))
+
       matchesCategory =
-        productCat === selectedCat ||
-        productCat.includes(selectedCat) ||
-        selectedCat.includes(productCat) ||
-        // Handle specific mappings
-        (selectedCat === 'books media' && productCat.includes('books')) ||
-        (selectedCat === 'sports outdoors' && productCat.includes('sports')) ||
-        (selectedCat === 'home appliances' && productCat.includes('appliance')) ||
-        (selectedCat === 'beauty health' && productCat.includes('beauty')) ||
-        (selectedCat === 'real estate' && productCat.includes('real'))
+        exactSlugMatch ||
+        exactNameMatch ||
+        partialMatch ||
+        electronicsMatch ||
+        furnitureMatch ||
+        clothingMatch ||
+        vehiclesMatch ||
+        realEstateMatch ||
+        booksMediaMatch ||
+        sportsOutdoorsMatch ||
+        homeAppliancesMatch ||
+        beautyHealthMatch
+
+      // Debug logging for matching result
+      if (filters.selectedCategory === 'vehicles') {
+        console.log('Detailed Vehicle Debug:', {
+          exactSlugMatch,
+          exactNameMatch,
+          partialMatch,
+          vehiclesMatch,
+          finalResult: matchesCategory,
+        })
+      }
     }
 
     // Convert price string to number for comparison
-    const priceNumber = parseInt(product.price.replace(/[^\d]/g, ''))
+    const priceNumber = parseInt(product.price.replace(/[^\d]/g, '')) || 0
     const matchesPrice =
-      priceNumber >= filters.priceRange[0] && priceNumber <= filters.priceRange[1]
+      !filters.priceFilterEnabled ||
+      (priceNumber >= filters.priceRange[0] && priceNumber <= filters.priceRange[1])
 
-    const matchesExpatType =
-      !filters.expatType || (filters.expatType === 'verified' && product.isVerified)
+    // Debug price filtering for vehicles
+    if (filters.selectedCategory === 'vehicles' && matchesCategory) {
+      console.log('Price Debug:', {
+        title: product.title,
+        originalPrice: product.price,
+        priceNumber,
+        priceRange: filters.priceRange,
+        matchesPrice,
+      })
+    }
+
+    const matchesExpatType = true // Always true since we removed expatType filter
 
     // Condition filtering using product.condition field
     const matchesCondition =
@@ -494,6 +564,26 @@ export default function BrowsePage() {
       !filters.location ||
       product.location?.toLowerCase().includes(filters.location.toLowerCase()) ||
       generateSlug(product.location).includes(filters.location)
+
+    // Debug all filter conditions for vehicles
+    if (filters.selectedCategory === 'vehicles' && matchesCategory) {
+      console.log('All Vehicle Filter Debug:', {
+        title: product.title,
+        matchesSearch,
+        matchesCategory,
+        matchesPrice,
+        matchesExpatType,
+        matchesCondition,
+        matchesLocation,
+        finalResult:
+          matchesSearch &&
+          matchesCategory &&
+          matchesPrice &&
+          matchesExpatType &&
+          matchesCondition &&
+          matchesLocation,
+      })
+    }
 
     return (
       matchesSearch &&
@@ -623,8 +713,8 @@ export default function BrowsePage() {
                     <SlidersHorizontal className="mr-1.5 h-4 w-4" />
                     Filters
                     {(filters.selectedCategory ||
+                      filters.priceFilterEnabled ||
                       filters.condition ||
-                      filters.expatType ||
                       filters.location) && (
                       <Badge
                         variant="secondary"

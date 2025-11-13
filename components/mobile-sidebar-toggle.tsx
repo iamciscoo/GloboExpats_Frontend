@@ -15,6 +15,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card'
 import { CATEGORIES } from '@/lib/constants'
 import { useAuth } from '@/hooks/use-auth'
+import AdminSection from '@/components/admin-section'
 
 export default function MobileSidebarToggle() {
   const [isOpen, setIsOpen] = useState(false)
@@ -135,6 +136,9 @@ export default function MobileSidebarToggle() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Admin Section - Only visible to admin users */}
+            <AdminSection />
 
             {/* Categories Section */}
             <div className="p-4">

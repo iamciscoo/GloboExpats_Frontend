@@ -88,7 +88,7 @@ export async function PATCH(
       console.log('[Proxy] Creating clean FormData for backend...')
       backendFormData = createCleanFormData(formData)
 
-      // Validate the clean FormData
+      // Validate the clean FormData (DO NOT APPEND - createCleanFormData already did that)
       let productData = null
       let imageCount = 0
 
@@ -123,8 +123,7 @@ export async function PATCH(
               )
             }
           }
-
-          backendFormData.append(key, value)
+          // NOTE: Do NOT append here - createCleanFormData already added this
         } else if (key === 'images') {
           imageCount++
           if (value instanceof File) {
@@ -160,12 +159,11 @@ export async function PATCH(
           } else {
             console.log(`[Proxy] Image ${imageCount}: non-file value`, typeof value)
           }
-
-          backendFormData.append(key, value)
+          // NOTE: Do NOT append here - createCleanFormData already added this
         } else {
           // Other form fields (like imageIds for removal)
           console.log(`[Proxy] Other field: ${key} = ${value}`)
-          backendFormData.append(key, value)
+          // NOTE: Do NOT append here - createCleanFormData already added this
         }
       }
 
