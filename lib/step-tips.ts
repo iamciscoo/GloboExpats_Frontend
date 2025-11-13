@@ -167,7 +167,7 @@ export const CATEGORY_TIPS: Record<string, StepTip[]> = {
       icon: Zap,
       title: 'Working Condition',
       description:
-        'Include screenshots showing the device working. Test all functions and mention any issues upfront.',
+        'Include screenshots showing the device working. Test all functions and mention any issues upfront (Scratches, dents, Battery percentage e.t.c).',
     },
     {
       icon: Package,
