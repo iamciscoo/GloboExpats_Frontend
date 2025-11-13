@@ -53,8 +53,8 @@ export async function POST(req: Request) {
           headers['Authorization'] = `Bearer ${token}`
         }
 
-        // Try the view tracking endpoint first
-        const backendUrl = `${BACKEND_URL}/api/v1/products/${payload.productId}/view`
+        // Try the product click count endpoint (POST to increment, GET to retrieve)
+        const backendUrl = `${BACKEND_URL}/api/v1/products/product-clickCount/${payload.productId}`
         console.log(`[analytics:event] 🌐 Calling: ${backendUrl}`)
 
         const backendResponse = await fetch(backendUrl, {
@@ -73,10 +73,10 @@ export async function POST(req: Request) {
           console.log(`[analytics:event] ✅ SUCCESS: Tracked view for product ${payload.productId}`)
         } else if (backendResponse.status === 404) {
           console.warn(
-            `[analytics:event] ⚠️ ENDPOINT NOT IMPLEMENTED: Backend view tracking endpoint not available yet`
+            `[analytics:event] ⚠️ ENDPOINT NOT IMPLEMENTED: Backend click tracking endpoint not available yet`
           )
           console.warn(
-            `[analytics:event] ℹ️  Product views will be tracked when backend implements POST /api/v1/products/{id}/view`
+            `[analytics:event] ℹ️  Product clicks will be tracked when backend implements POST /api/v1/products/product-clickCount/{productId}`
           )
         } else {
           console.warn(

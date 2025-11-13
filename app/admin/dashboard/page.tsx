@@ -33,41 +33,41 @@ export default function AdminDashboardPage() {
 
         {/* Tabs Navigation */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 gap-1">
+          <TabsList className="grid w-full grid-cols-5 h-11 p-1 bg-gray-100">
             <TabsTrigger
               value="overview"
-              className="flex items-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-4"
+              className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
             >
-              <LayoutDashboard className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">Overview</span>
+              <LayoutDashboard className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Overview</span>
             </TabsTrigger>
             <TabsTrigger
               value="users"
-              className="flex items-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-4"
+              className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
             >
-              <Users className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">Users</span>
+              <Users className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Users</span>
             </TabsTrigger>
             <TabsTrigger
               value="listings"
-              className="flex items-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-4"
+              className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
             >
-              <Package className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">Listings</span>
+              <Package className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Listings</span>
             </TabsTrigger>
             <TabsTrigger
               value="verification"
-              className="flex items-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-4"
+              className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
             >
-              <CheckCircle className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">Verification</span>
+              <CheckCircle className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Verification</span>
             </TabsTrigger>
             <TabsTrigger
               value="orders"
-              className="flex items-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-4"
+              className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
             >
-              <ShoppingCart className="h-3 w-3 md:h-4 md:w-4" />
-              <span className="hidden sm:inline">Orders</span>
+              <ShoppingCart className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Orders</span>
             </TabsTrigger>
           </TabsList>
 

@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useRef } from 'react'
 import { Star, MapPin, ArrowRight, Tag, ShoppingCart, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -32,6 +33,10 @@ export function ProductCard({
   const { addToCart } = useCart()
   const { isLoggedIn } = useAuth()
 
+  // Prevent double clicks with debouncing
+  const lastClickTime = useRef<number>(0)
+  const isProcessing = useRef<boolean>(false)
+
   // Debug: Check if product contains any problematic nested objects
 
   // Check for problematic review objects in product
@@ -51,6 +56,21 @@ export function ProductCard({
   })
 
   const handleViewDetails = () => {
+    // Prevent double clicks - debounce within 1 second
+    const now = Date.now()
+    if (isProcessing.current || now - lastClickTime.current < 1000) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `[ProductCard] Prevented double click for product ${product.id} (${now - lastClickTime.current}ms since last click)`
+        )
+      }
+      return
+    }
+
+    // Update tracking state
+    lastClickTime.current = now
+    isProcessing.current = true
+
     // Check if user is logged in before navigating
     if (!isLoggedIn) {
       toast({
@@ -59,6 +79,7 @@ export function ProductCard({
           'Please login to view product details or create an account to explore our marketplace!',
         variant: 'default',
       })
+      isProcessing.current = false // Reset processing state
       return // Don't navigate
     }
 
@@ -69,8 +90,14 @@ export function ProductCard({
       }
       onViewDetails(product.id)
     }
+
     // Navigate to product page
     router.push(`/product/${product.id}`)
+
+    // Reset processing state after a short delay
+    setTimeout(() => {
+      isProcessing.current = false
+    }, 1000)
   }
 
   const handleAddToCart = (e: React.MouseEvent) => {

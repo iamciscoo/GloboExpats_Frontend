@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import { Package, Shield, Store as StoreIcon } from 'lucide-react'
+import { Package, LayoutDashboard, Store as StoreIcon } from 'lucide-react'
 
 interface NavigationProps {
   isLoggedIn: boolean
@@ -35,7 +35,7 @@ export const Navigation = React.memo<NavigationProps>(
             href="/admin/dashboard"
             className="text-base font-medium text-neutral-200 hover:text-white hover:bg-white/10 px-4 py-2 rounded-md transition-colors flex items-center gap-2 flex-shrink-0 whitespace-nowrap"
           >
-            <Shield className="h-4 w-4" />
+            <LayoutDashboard className="h-4 w-4" />
             Admin
           </Link>
         )}
