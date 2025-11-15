@@ -78,6 +78,7 @@ export interface VerificationStatus {
 // Simplified User interface with essential information only
 export interface User {
   id: string
+  userId?: number // Numeric user ID from backend (for matching with sellerId)
   firstName: string
   lastName: string
   name: string // Computed from firstName + lastName

@@ -19,58 +19,87 @@ export default function FeaturedGrid() {
       try {
         setLoading(true)
         setError(null)
-        const res = await apiClient.getAllProducts(0)
-        const content = extractContentFromResponse(res)
+
+        // Fetch all three sections in parallel to determine which products to exclude
+        const [allProductsRes, newListingsRes, topPicksRes] = await Promise.all([
+          apiClient.getAllProductsComplete(10), // Fetch up to 10 pages (100 products)
+          apiClient.getNewestListings(0, 20),
+          apiClient.getTopPicks(0, 30),
+        ])
+
+        const allProducts = allProductsRes.content
+        const newListingsContent = extractContentFromResponse(newListingsRes)
+        const topPicksContent = extractContentFromResponse(topPicksRes)
+
+        // Get IDs of products already shown in New Listings and Top Picks
+        const excludedIds = new Set([
+          ...newListingsContent.map((p) => (p as Record<string, unknown>).productId),
+          ...topPicksContent.map((p) => (p as Record<string, unknown>).productId),
+        ])
 
         if (process.env.NODE_ENV === 'development') {
           console.log(
-            `[FeaturedGrid] Fetched ${content.length} products, getting real click counts...`
+            `[FeaturedGrid] Fetched ${allProducts.length} products, excluding ${excludedIds.size} from other sections`
           )
         }
 
-        // Get real view counts for featured products
-        const productsWithRealViews = await Promise.all(
-          content.slice(0, 25).map(async (it) => {
-            const product = it as Record<string, unknown>
-            const productId = product.productId as number
+        // Filter out products that appear in New Listings or Top Picks
+        const uniqueProducts = allProducts.filter((item) => {
+          const product = item as Record<string, unknown>
+          return !excludedIds.has(product.productId)
+        })
 
+        // Randomize the unique products using Fisher-Yates shuffle
+        const shuffled = [...uniqueProducts]
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1))
+          ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+        }
+
+        // Transform products immediately with default click counts
+        // This prevents flickering by showing products right away
+        const initialProducts = shuffled.slice(0, 25).map((it) => {
+          const product = it as Record<string, unknown>
+          const transformed = transformBackendProduct(product)
+          return {
+            ...transformed,
+            views: (product.clickCount as number) || 0,
+          }
+        })
+
+        // Show products immediately
+        setItems(initialProducts)
+        setLoading(false)
+
+        // Fetch real click counts in background (non-blocking)
+        // This happens after products are displayed to prevent loading delays
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[FeaturedGrid] Updating click counts in background...`)
+        }
+
+        Promise.all(
+          initialProducts.map(async (item, index) => {
             try {
-              // Get real click count data
-              const clickData = await apiClient.getProductClickCount(productId)
-              const realViews = clickData.clicks || 0
-
-              if (process.env.NODE_ENV === 'development') {
-                console.log(`[FeaturedGrid] Product ${productId}: REAL clickCount=${realViews}`)
-              }
-
-              const transformed = transformBackendProduct(product)
-              return {
-                ...transformed,
-                views: realViews,
-              }
+              const clickData = await apiClient.getProductClickCount(Number(item.id))
+              return { index, views: clickData.clicks || 0 }
             } catch {
-              // Fallback to hardcoded value if API call fails
-              const fallbackViews = (product.clickCount as number) || 0
-
-              if (process.env.NODE_ENV === 'development') {
-                console.warn(
-                  `[FeaturedGrid] Product ${productId}: Failed to get real click count, using fallback=${fallbackViews}`
-                )
-              }
-
-              const transformed = transformBackendProduct(product)
-              return {
-                ...transformed,
-                views: fallbackViews,
-              }
+              return { index, views: item.views }
             }
           })
-        )
-
-        setItems(productsWithRealViews)
+        ).then((results) => {
+          // Update products with real click counts
+          setItems((prevItems) => {
+            const updated = [...prevItems]
+            results.forEach(({ index, views }) => {
+              if (updated[index]) {
+                updated[index] = { ...updated[index], views }
+              }
+            })
+            return updated
+          })
+        })
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load featured products')
-      } finally {
         setLoading(false)
       }
     }
@@ -88,17 +117,24 @@ export default function FeaturedGrid() {
         ) : error ? (
           <p className="text-red-600">{error}</p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 lg:gap-4 p-1">
-            {items.map((item) => (
-              <div key={`featured-${item.id}`}>
-                <ProductCard
-                  product={item}
-                  onViewDetails={(id) => trackProductClick(id, 'featured')}
-                  compact
-                />
-              </div>
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 lg:gap-4 p-1">
+              {items.map((item) => (
+                <div key={`featured-${item.id}`}>
+                  <ProductCard
+                    product={item}
+                    onViewDetails={(id) => trackProductClick(id, 'featured')}
+                    compact
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Divider Line */}
+            <div className="mt-8 sm:mt-10">
+              <hr className="border-t border-gray-200" />
+            </div>
+          </>
         )}
       </div>
     </section>

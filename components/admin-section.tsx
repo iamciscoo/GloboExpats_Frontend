@@ -17,7 +17,7 @@ export default function AdminSection() {
 
   return (
     <div className="p-4 border-b border-slate-100">
-      <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200/50 shadow-sm">
+      <Card className="bg-blue-50 border-blue-200/50 shadow-sm">
         <CardContent className="p-3">
           <div className="space-y-2">
             {/* Header */}

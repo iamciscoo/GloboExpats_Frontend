@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/use-toast'
 import { productToCartItem } from '@/lib/cart-utils'
 import { useState } from 'react'
+import { useAuth } from '@/hooks/use-auth'
 
 interface ProductActionsProps {
   productId?: number
@@ -41,7 +42,25 @@ export function ProductActions({
   const { addToCart } = useCart()
   const router = useRouter()
   const { toast } = useToast()
+  const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
+
+  // Check if current user is the seller using multiple strategies
+  const userFullName = user ? `${user.firstName} ${user.lastName}`.trim() : ''
+  const isOwnProductByName =
+    user && sellerName && userFullName.toLowerCase() === sellerName.toLowerCase()
+  const isOwnProduct = isOwnProductByName
+
+  // Debug logging
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🔍 ProductActions Self-purchase check:', {
+      userFullName: userFullName,
+      sellerName: sellerName,
+      isOwnProductByName: isOwnProductByName,
+      isOwnProduct: isOwnProduct,
+      willBlock: isOwnProduct ? 'YES - BLOCKING PURCHASE' : 'NO - allowing purchase',
+    })
+  }
 
   const sanitizePrice = (p: string | number): number => {
     if (typeof p === 'number') return p
@@ -50,6 +69,17 @@ export function ProductActions({
   }
 
   const handleAddToCart = async () => {
+    // Check if user is trying to buy their own item
+    if (isOwnProduct) {
+      toast({
+        title: '🚫 Cannot Purchase Your Own Item',
+        description:
+          'You cannot add your own listed items to the cart. Please browse other products from the community!',
+        variant: 'default',
+      })
+      return
+    }
+
     if (!checkVerification('buy')) return
 
     // Validate productId before proceeding
@@ -99,6 +129,17 @@ export function ProductActions({
   }
 
   const handleBuy = async () => {
+    // Check if user is trying to buy their own item
+    if (isOwnProduct) {
+      toast({
+        title: '🚫 Cannot Purchase Your Own Item',
+        description:
+          'You cannot buy your own listed items. Please browse other products from the community!',
+        variant: 'default',
+      })
+      return
+    }
+
     if (!checkVerification('buy')) return
 
     // Validate productId before proceeding

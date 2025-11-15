@@ -16,7 +16,7 @@ export default function CategorySidebar() {
       <div className="h-screen flex flex-col">
         {/* Unified Expat Dashboard Section */}
         <div className="p-4 border-b border-slate-100">
-          <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-brand-primary/20 shadow-futuristic">
+          <Card className="bg-blue-50 border-brand-primary/20 shadow-futuristic">
             <CardContent className="p-4">
               {isLoggedIn ? (
                 <div className="space-y-3">
@@ -91,7 +91,7 @@ export default function CategorySidebar() {
                   <Button
                     asChild
                     size="sm"
-                    className="w-full bg-gradient-to-r from-brand-primary to-brand-accent hover:from-blue-800 hover:to-cyan-600 text-white"
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     <Link href="/register">Join Community</Link>
                   </Button>
@@ -120,7 +120,7 @@ export default function CategorySidebar() {
                     <Card className="group cursor-pointer transition-all duration-200 hover:shadow-md hover:bg-slate-50 border-slate-100 mr-1">
                       <CardContent className="p-3">
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                          <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
                             <IconComponent className="h-4 w-4 text-white" />
                           </div>
                           <div className="flex-1">

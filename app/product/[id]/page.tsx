@@ -52,6 +52,11 @@ export default function ProductPage() {
   const { user } = useAuth()
   const canContact = canUserContact(user)
 
+  // Check if user is trying to message themselves
+  const userFullName = user ? `${user.firstName} ${user.lastName}`.trim() : ''
+  const isOwnProduct =
+    user && product && userFullName.toLowerCase() === product.listedBy.toLowerCase()
+
   // Transform backend data to FeaturedItem format
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const transformToFeaturedItem = (item: any): FeaturedItem => {
@@ -150,17 +155,8 @@ export default function ProductPage() {
 
           // Fetch similar products from all products list
           try {
-            const allProductsResponse = await apiClient.getAllProducts(0)
-            const allRespData = allProductsResponse as {
-              data?: { content?: unknown[] } | unknown[]
-              content?: unknown[]
-            }
-
-            const allProducts =
-              (allRespData.data as { content?: unknown[] })?.content ||
-              (allRespData as { content?: unknown[] })?.content ||
-              (allRespData.data as unknown[]) ||
-              []
+            const allProductsResponse = await apiClient.getAllProductsComplete(10) // Fetch up to 10 pages
+            const allProducts = allProductsResponse.content
 
             // Get similar products (exclude current product)
             const similar = allProducts
@@ -809,10 +805,27 @@ export default function ProductPage() {
                     productLocation={product.location}
                     verifiedSeller={product.isVerified}
                     currency="TZS"
+                    expatId={String(rawProductData?.sellerId || 'unknown')}
                   />
 
                   <div className="space-y-3">
-                    {canContact ? (
+                    {isOwnProduct ? (
+                      <Button
+                        size="lg"
+                        className="w-full bg-gray-400 cursor-not-allowed text-white rounded-full h-11 sm:h-12 text-sm sm:text-base font-medium"
+                        onClick={() => {
+                          toast({
+                            title: '🚫 Cannot Message Yourself',
+                            description:
+                              'This is your own listing. You cannot send messages to yourself!',
+                            variant: 'default',
+                          })
+                        }}
+                      >
+                        <MessageCircle className="w-5 h-5 mr-2" />
+                        Message
+                      </Button>
+                    ) : canContact ? (
                       <Button
                         size="lg"
                         className="w-full bg-green-600 hover:bg-green-700 text-white rounded-full h-11 sm:h-12 text-sm sm:text-base font-medium"

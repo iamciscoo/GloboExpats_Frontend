@@ -39,6 +39,8 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
+  LayoutDashboard,
+  BarChart3,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { apiClient } from '@/lib/api'
@@ -408,11 +410,35 @@ function DashboardContent() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="listings">My Listings</TabsTrigger>
-            <TabsTrigger value="messages">Messages</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 h-11 p-1 bg-gray-100">
+            <TabsTrigger
+              value="overview"
+              className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
+            >
+              <LayoutDashboard className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Overview</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="listings"
+              className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
+            >
+              <Package className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">My Listings</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="messages"
+              className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
+            >
+              <MessageSquare className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Messages</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="analytics"
+              className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
+            >
+              <BarChart3 className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Analytics</span>
+            </TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}

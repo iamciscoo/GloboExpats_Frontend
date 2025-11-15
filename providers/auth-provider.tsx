@@ -431,7 +431,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Transform backend response to User interface
       const user: User = {
-        id: userDetails.loggingEmail, // Use email as ID
+        id: userDetails.loggingEmail, // Use email as ID for compatibility
+        userId: userDetails.userId, // Store numeric ID for seller comparison
         firstName: userDetails.firstName,
         lastName: userDetails.lastName,
         name: `${userDetails.firstName} ${userDetails.lastName}`.trim(),

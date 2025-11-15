@@ -22,6 +22,8 @@ import { Badge } from '@/components/ui/badge'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { useSearch, type SearchProduct } from '@/hooks/use-search'
 import { useCart } from '@/hooks/use-cart'
+import { useAuth } from '@/hooks/use-auth'
+import { useToast } from '@/components/ui/use-toast'
 import { formatPrice } from '@/lib/utils'
 
 function SearchPageContent() {
@@ -39,6 +41,8 @@ function SearchPageContent() {
   } = useSearch()
 
   const { addToCart, isInCart } = useCart()
+  const { user } = useAuth()
+  const { toast } = useToast()
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showFilters, setShowFilters] = useState(false)
@@ -78,6 +82,32 @@ function SearchPageContent() {
   }
 
   const handleAddToCart = (product: SearchProduct) => {
+    // Check if current user is the seller by comparing names
+    const userFullName = user ? `${user.firstName} ${user.lastName}`.trim() : ''
+    const isOwnProduct =
+      user && product.sellerName && userFullName.toLowerCase() === product.sellerName.toLowerCase()
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 SearchPage Self-purchase check:', {
+        userFullName: userFullName,
+        sellerName: product.sellerName,
+        isOwnProduct: isOwnProduct,
+        willBlock: isOwnProduct ? 'YES - BLOCKING' : 'NO - allowing',
+        productId: product.id,
+        productTitle: product.title,
+      })
+    }
+
+    if (isOwnProduct) {
+      toast({
+        title: '🚫 Cannot Purchase Your Own Item',
+        description:
+          'You cannot add your own listed items to the cart. Please browse other products from the community!',
+        variant: 'default',
+      })
+      return
+    }
+
     addToCart({
       id: product.id,
       title: product.title,

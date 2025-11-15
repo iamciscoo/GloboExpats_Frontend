@@ -23,7 +23,7 @@ import { CATEGORIES, ITEM_CONDITIONS, EXPAT_LOCATIONS } from '@/lib/constants'
 import { debounce, generateSlug } from '@/lib/utils'
 import { ProductCard } from '@/components/ui/product-card'
 import { apiClient } from '@/lib/api'
-import { transformBackendProduct, extractContentFromResponse } from '@/lib/image-utils'
+import { transformBackendProduct } from '@/lib/image-utils'
 import type { FeaturedItem } from '@/lib/types'
 import {
   Search,
@@ -341,11 +341,13 @@ export default function BrowsePage() {
 
   // Scroll to top on initial page load
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    window.scrollTo(0, 0) // Fallback for older browsers
   }, [])
 
   // Backend data state
   const [products, setProducts] = useState<FeaturedItem[]>([])
+  const [totalProductsCount, setTotalProductsCount] = useState(0) // Total count from backend
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
@@ -382,14 +384,24 @@ export default function BrowsePage() {
         setLoading(true)
         setError(null)
 
-        // Always fetch ALL products and filter client-side
-        // Backend filter API is unreliable, so we'll handle filtering in the browser
-        const response = await apiClient.getAllProducts(0)
-        const productsData = extractContentFromResponse(response)
+        // Fetch ALL products from backend with pagination metadata
+        // Backend limits to 10 products per page, so we fetch all pages
+        // and handle filtering client-side. totalElements gives us the total count for display
+        const response = await apiClient.getAllProductsComplete(20) // Fetch up to 20 pages (200 products)
+        const { content: productsData, totalElements } = response
         const transformedProducts = productsData.map((item) =>
           transformToFeaturedItem(item as Record<string, unknown>)
         )
-        setProducts(transformedProducts)
+
+        // Randomize products for initial display using Fisher-Yates shuffle
+        const shuffled = [...transformedProducts]
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1))
+          ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+        }
+
+        setProducts(shuffled)
+        setTotalProductsCount(totalElements) // Store backend total count
         setCategoryCounts(getCategoryCounts(transformedProducts))
 
         // Debug: Log all unique categories found in products
@@ -690,6 +702,41 @@ export default function BrowsePage() {
   const endIndex = startIndex + itemsPerPage
   const currentProducts = sortedProducts.slice(startIndex, endIndex)
 
+  // Extract product IDs for dependency tracking
+  const currentProductIds = useMemo(
+    () => currentProducts.map((p) => p.id).join(','),
+    [currentProducts]
+  )
+
+  // Fetch click counts for currently visible products in background
+  useEffect(() => {
+    if (currentProducts.length === 0) return
+
+    // Fetch click counts for visible products and update them
+    Promise.all(
+      currentProducts.map(async (product) => {
+        try {
+          const clickData = await apiClient.getProductClickCount(Number(product.id))
+          return { id: product.id, views: clickData.clicks || 0 }
+        } catch {
+          return { id: product.id, views: product.views || 0 }
+        }
+      })
+    ).then((clickCounts) => {
+      // Update products with real click counts
+      setProducts((prevProducts) => {
+        const updated = prevProducts.map((product) => {
+          const clickCount = clickCounts.find((cc) => cc.id === product.id)
+          if (clickCount) {
+            return { ...product, views: clickCount.views }
+          }
+          return product
+        })
+        return updated
+      })
+    })
+  }, [currentProductIds, currentProducts]) // Only re-run when visible product IDs change
+
   // Reset to page 1 when filters change
   useEffect(() => {
     if (isApplyingUrlParams.current) return
@@ -699,8 +746,9 @@ export default function BrowsePage() {
   const goToPage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page)
-      // Scroll to top of page
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      // Scroll to top of page instantly for better mobile experience
+      window.scrollTo({ top: 0, behavior: 'instant' })
+      window.scrollTo(0, 0) // Fallback for older browsers
     }
   }
 
@@ -873,7 +921,7 @@ export default function BrowsePage() {
               <div>
                 <h2 className="text-base sm:text-xl font-semibold text-gray-800">
                   Showing {startIndex + 1}-{Math.min(endIndex, filteredProducts.length)} of{' '}
-                  {filteredProducts.length} results
+                  {totalProductsCount} total products
                 </h2>
                 {totalPages > 1 && (
                   <p className="text-sm text-gray-500 mt-1">
@@ -933,7 +981,7 @@ export default function BrowsePage() {
                         <span className="font-medium">
                           {Math.min(endIndex, filteredProducts.length)}
                         </span>{' '}
-                        of <span className="font-medium">{filteredProducts.length}</span> results
+                        of <span className="font-medium">{totalProductsCount}</span> total products
                       </div>
 
                       {/* Pagination Controls */}

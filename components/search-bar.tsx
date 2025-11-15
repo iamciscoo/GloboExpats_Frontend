@@ -26,14 +26,9 @@ export default function SearchBar({ autoExpand = false, onClose }: SearchBarProp
     const fetchProducts = async () => {
       try {
         // ...existing code...
-        const response = await apiClient.getAllProducts(0)
-        // Access content directly from response (backend returns {content: Array, ...})
-        const responseData = response as Record<string, unknown>
-        const productsData =
-          (responseData.content as unknown[]) ||
-          ((responseData.data as Record<string, unknown>)?.content as unknown[]) ||
-          (responseData.data as unknown[]) ||
-          []
+        const response = await apiClient.getAllProductsComplete(10) // Fetch up to 10 pages
+        // Access content directly from complete response
+        const productsData = response.content
         setProducts(productsData as Record<string, unknown>[])
         // ...existing code...
       } catch (error) {

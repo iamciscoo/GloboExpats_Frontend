@@ -79,6 +79,12 @@ function SellPageContent() {
     Array<{ categoryId: number; categoryName: string }>
   >([])
 
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    window.scrollTo(0, 0) // Fallback
+  }, [])
+
   // Fetch categories from backend on component mount
   useEffect(() => {
     const fetchCategories = async () => {
@@ -229,7 +235,10 @@ function SellPageContent() {
   }
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Use instant scroll for better mobile experience
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    // Fallback for older browsers
+    window.scrollTo(0, 0)
   }
 
   const nextStep = () => {

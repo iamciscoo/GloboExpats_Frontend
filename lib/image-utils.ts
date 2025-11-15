@@ -173,3 +173,37 @@ export const extractContentFromResponse = (response: unknown): unknown[] => {
     []
   )
 }
+
+/**
+ * Extracts both content array and total count from backend paginated API response
+ * @param response - Backend API response with pagination metadata
+ * @returns Object containing content array and total elements count
+ */
+export const extractPaginatedResponse = (
+  response: unknown
+): { content: unknown[]; totalElements: number } => {
+  if (!response || typeof response !== 'object') {
+    return { content: [], totalElements: 0 }
+  }
+
+  const responseData = response as {
+    content?: unknown[]
+    totalElements?: number
+    data?: { content?: unknown[]; totalElements?: number } | { content?: unknown[] } | unknown[]
+  }
+
+  // Extract content array
+  const content =
+    responseData.content ||
+    (responseData.data as { content?: unknown[] })?.content ||
+    (responseData.data as unknown[]) ||
+    []
+
+  // Extract total elements count
+  const totalElements =
+    responseData.totalElements ||
+    (responseData.data as { totalElements?: number })?.totalElements ||
+    (Array.isArray(content) ? content.length : 0)
+
+  return { content, totalElements }
+}

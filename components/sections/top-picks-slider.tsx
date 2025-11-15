@@ -15,6 +15,13 @@ export default function TopPicksSlider() {
   const [error, setError] = useState<string | null>(null)
   const scrollerRef = useRef<HTMLDivElement | null>(null)
 
+  // Scroll to start when items are loaded
+  useEffect(() => {
+    if (items.length > 0 && scrollerRef.current) {
+      scrollerRef.current.scrollLeft = 0
+    }
+  }, [items])
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -24,88 +31,76 @@ export default function TopPicksSlider() {
         const content = extractContentFromResponse(res)
 
         if (process.env.NODE_ENV === 'development') {
-          console.log(
-            `[TopPicks] Fetched ${content.length} products, now getting real click counts...`
-          )
+          console.log(`[TopPicks] Fetched ${content.length} products`)
         }
 
-        // FIXED: Get real click counts using the working API endpoint
-        // DisplayItemsDTO.clickCount is hardcoded to 1, but product-clickCount API returns real data
-        const productsWithRealViews = await Promise.all(
+        // Show products immediately with default counts to prevent blocking
+        const initialProducts = content.slice(0, 8).map((it) => {
+          const product = it as Record<string, unknown>
+          const transformed = transformBackendProduct(product)
+          return {
+            ...transformed,
+            views: (product.clickCount as number) || 0,
+          }
+        })
+
+        setItems(initialProducts)
+        setLoading(false)
+
+        // Fetch real click counts in background
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`[TopPicks] Updating click counts in background...`)
+        }
+
+        Promise.all(
           content.map(async (it) => {
             const product = it as Record<string, unknown>
             const productId = product.productId as number
 
             try {
-              // Use the working click count API that returns real data
               const clickData = await apiClient.getProductClickCount(productId)
-              const realViews = clickData.clicks || 0
-
-              if (process.env.NODE_ENV === 'development') {
-                console.log(
-                  `[TopPicks] Product ${productId}: REAL clickCount=${realViews} (was hardcoded=${product.clickCount})`
-                )
-              }
-
               return {
                 ...product,
-                views: realViews,
+                views: clickData.clicks || 0,
               } as Record<string, unknown> & { views: number }
-            } catch (error) {
-              // Fallback to hardcoded value if API call fails (e.g., auth issues)
-              const fallbackViews = (product.clickCount as number) || 0
-
-              if (process.env.NODE_ENV === 'development') {
-                console.warn(
-                  `[TopPicks] Product ${productId}: Failed to get real click count, using fallback=${fallbackViews}`,
-                  error
-                )
-              }
-
+            } catch {
               return {
                 ...product,
-                views: fallbackViews,
+                views: (product.clickCount as number) || 0,
               } as Record<string, unknown> & { views: number }
             }
           })
-        )
+        ).then((productsWithRealViews) => {
+          // Sort by REAL view counts (highest to lowest)
+          const sortedProducts = productsWithRealViews
+            .sort((a, b) => {
+              const aViews = a.views || 0
+              const bViews = b.views || 0
 
-        // Sort by REAL view counts (highest to lowest)
-        const sortedProducts = productsWithRealViews
-          .sort((a, b) => {
-            const aViews = a.views || 0
-            const bViews = b.views || 0
+              if (bViews !== aViews) {
+                return bViews - aViews
+              }
+              const aProductId = (a.productId as number) || 0
+              const bProductId = (b.productId as number) || 0
+              return aProductId - bProductId
+            })
+            .slice(0, 8)
+            .map((it) => {
+              const transformed = transformBackendProduct(it as Record<string, unknown>)
+              return {
+                ...transformed,
+                views: it.views || 0,
+              }
+            })
 
-            // Sort by views (descending), then by productId (ascending) for consistent ordering
-            if (bViews !== aViews) {
-              return bViews - aViews
-            }
-            // Secondary sort by productId for consistent ordering when views are equal
-            const aProductId = (a.productId as number) || 0
-            const bProductId = (b.productId as number) || 0
-            return aProductId - bProductId
-          })
-          .slice(0, 8) // Take top 8 most viewed products
-          .map((it) => {
-            const transformed = transformBackendProduct(it as Record<string, unknown>)
-            // Ensure the REAL views property is carried through
-            return {
-              ...transformed,
-              views: it.views || 0,
-            }
-          })
+          if (process.env.NODE_ENV === 'development') {
+            console.log(`[TopPicks] Final sorted products:`, sortedProducts.length)
+          }
 
-        if (process.env.NODE_ENV === 'development') {
-          console.log(
-            `[TopPicks] Final sorted products:`,
-            sortedProducts.map((p) => ({ id: p.id, title: p.title, views: p.views }))
-          )
-        }
-
-        setItems(sortedProducts)
+          setItems(sortedProducts)
+        })
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Failed to load top picks')
-      } finally {
         setLoading(false)
       }
     }

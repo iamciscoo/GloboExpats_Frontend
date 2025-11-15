@@ -186,7 +186,7 @@ export default function RegisterPage() {
       // Success toast
       toast({
         title: '🎉 Welcome to GloboExpat!',
-        description: 'Account created successfully! Please sign in to continue.',
+        description: 'Account created successfully! Redirecting you to sign in...',
         variant: 'default',
       })
 

@@ -372,9 +372,15 @@ class ApiClient {
       }
 
       // Don't log verification errors as errors - they're expected for unverified users
-      const err = error as { isVerificationError?: boolean }
+      // Also suppress 404 errors for click count endpoint - they're expected for products without data
+      const err = error as { isVerificationError?: boolean; statusCode?: number }
+      const isClickCount404 = url.includes('product-clickCount') && err.statusCode === 404
+
       if (err.isVerificationError) {
         console.info('ℹ️ Verification required for this action')
+      } else if (isClickCount404) {
+        // Silently suppress 404 errors for click counts - they're expected
+        // The getProductClickCount method will handle this gracefully
       } else {
         console.error('API request failed:', error)
       }
@@ -635,10 +641,79 @@ class ApiClient {
   /**
    * Fetches all products with pagination
    * @param page - Page number (0-indexed)
+   * @param size - DEPRECATED: Backend doesn't support size parameter, always returns 10 items per page
    * @returns Promise resolving to paginated products
    */
-  async getAllProducts(page: number = 0): Promise<unknown> {
+  async getAllProducts(page: number = 0, _size?: number): Promise<unknown> {
+    // NOTE: Backend doesn't support size parameter - fixed at 10 items per page
     return this.request(`/api/v1/products/get-all-products?page=${page}`)
+  }
+
+  /**
+   * Fetches ALL products by making multiple page requests
+   * Backend limits to 10 products per page, so this fetches all pages
+   * @param maxPages - Maximum number of pages to fetch (default: 20, max 200 products)
+   * @returns Promise resolving to combined products from all pages with total count
+   */
+  async getAllProductsComplete(maxPages: number = 20): Promise<{
+    content: unknown[]
+    totalElements: number
+    totalPages: number
+  }> {
+    const allProducts: unknown[] = []
+    let totalElements = 0
+    let totalPages = 0
+
+    // Fetch first page to get total count
+    const firstPageResponse = await this.getAllProducts(0)
+    const firstPageData = firstPageResponse as {
+      content?: unknown[]
+      totalElements?: number
+      totalPages?: number
+      data?: { content?: unknown[]; totalElements?: number; totalPages?: number }
+    }
+
+    // Extract first page data
+    const firstContent =
+      firstPageData.content || (firstPageData.data as { content?: unknown[] })?.content || []
+
+    totalElements =
+      firstPageData.totalElements ||
+      (firstPageData.data as { totalElements?: number })?.totalElements ||
+      0
+
+    totalPages =
+      firstPageData.totalPages || (firstPageData.data as { totalPages?: number })?.totalPages || 0
+
+    allProducts.push(...firstContent)
+
+    // Fetch remaining pages if needed
+    const pagesToFetch = Math.min(totalPages - 1, maxPages - 1)
+
+    if (pagesToFetch > 0) {
+      const pagePromises = []
+      for (let page = 1; page <= pagesToFetch; page++) {
+        pagePromises.push(this.getAllProducts(page))
+      }
+
+      const responses = await Promise.all(pagePromises)
+
+      for (const response of responses) {
+        const pageData = response as {
+          content?: unknown[]
+          data?: { content?: unknown[] }
+        }
+        const content =
+          pageData.content || (pageData.data as { content?: unknown[] })?.content || []
+        allProducts.push(...content)
+      }
+    }
+
+    return {
+      content: allProducts,
+      totalElements,
+      totalPages,
+    }
   }
 
   /**
@@ -665,9 +740,65 @@ class ApiClient {
    * Fetches detailed product information by ID
    * @param productId - Product identifier
    * @returns Promise resolving to detailed product data
+   *
+   * FALLBACK STRATEGY: If the displayItem endpoint returns 404, this method will
+   * automatically fall back to fetching from the products list endpoint.
+   * This works around backend data consistency issues where products exist in the
+   * main products table but not in the displayItem view.
    */
   async getProductDetails(productId: number): Promise<unknown> {
-    return this.request(`/api/v1/displayItem/itemDetails/${productId}`)
+    try {
+      // Try the dedicated detail endpoint first (best case - includes reviews, ratings, etc.)
+      return await this.request(`/api/v1/displayItem/itemDetails/${productId}`)
+    } catch (error) {
+      // Check if this is a 404 error
+      const apiError = error as Error & { statusCode?: number }
+
+      if (apiError.statusCode === 404) {
+        // Product not found in displayItem view - try fallback to products list
+        console.warn(
+          `[API Fallback] Product ${productId} not found in displayItem endpoint, trying products list...`
+        )
+
+        try {
+          // Fetch from the working products endpoint (all pages)
+          const allProductsResponse = await this.getAllProductsComplete(10)
+
+          // Extract products array from complete response
+          const products = allProductsResponse.content
+
+          // Find the specific product
+          const product = products.find((item) => {
+            const prod = item as Record<string, unknown>
+            return Number(prod.productId) === productId || Number(prod.id) === productId
+          })
+
+          if (!product) {
+            // Product doesn't exist in either endpoint - throw original error
+            console.warn(`[API Fallback] Product ${productId} not found in products list either`)
+            throw error // Re-throw original 404 error
+          }
+
+          console.log(
+            `✅ [API Fallback] Successfully retrieved product ${productId} from products list`
+          )
+
+          // Return the found product (may have less detail than displayItem endpoint)
+          // Frontend transformation will handle converting this to the expected format
+          return product
+        } catch (fallbackError) {
+          // Fallback also failed - throw original error
+          console.error(
+            `[API Fallback] Failed to retrieve product ${productId} from fallback:`,
+            fallbackError
+          )
+          throw error // Re-throw original error
+        }
+      }
+
+      // Not a 404 error - throw original error (auth error, network error, etc.)
+      throw error
+    }
   }
 
   /**
@@ -733,7 +864,7 @@ class ApiClient {
   async getMyProducts(_userFullName: string): Promise<unknown> {
     // Backend filter API doesn't support sellerName filtering
     // Fetch all products and let the caller filter by sellerName client-side
-    return this.getAllProducts(0)
+    return this.getAllProductsComplete(20) // Fetch up to 20 pages (200 products)
   }
 
   /**
@@ -983,18 +1114,28 @@ class ApiClient {
 
       return clickData
     } catch (error) {
-      // If authentication fails or endpoint is unavailable, return 0 clicks
-      // This allows the UI to work gracefully for unauthenticated users
-      if (error && typeof error === 'object' && 'isAuthError' in error) {
-        if (process.env.NODE_ENV === 'development') {
+      // Gracefully handle ALL errors (404, auth, network, etc.) by returning 0 clicks
+      // This ensures products still display even if click count endpoint fails
+      const apiError = error as Error & { statusCode?: number; isAuthError?: boolean }
+
+      // Only log non-404 errors in development (404 is expected for new products)
+      if (process.env.NODE_ENV === 'development' && apiError.statusCode !== 404) {
+        if (apiError.isAuthError) {
           console.warn(
             `[API] Auth error fetching click count for product ${productId}, returning 0`
           )
+        } else {
+          console.warn(
+            `[API] Error fetching click count for product ${productId}:`,
+            apiError.message,
+            ', returning 0'
+          )
         }
-        return { clicks: 0, userId: 0 }
       }
-      // Re-throw other errors
-      throw error
+      // 404 errors are silently ignored - they're expected for products without click data
+
+      // Always return 0 clicks on any error - don't block product display
+      return { clicks: 0, userId: 0 }
     }
   }
 
@@ -1007,6 +1148,7 @@ class ApiClient {
    * @returns Promise resolving to user data
    */
   async getUserDetails(): Promise<{
+    userId?: number
     firstName: string
     lastName: string
     loggingEmail: string
@@ -1026,7 +1168,14 @@ class ApiClient {
     }>
   }> {
     const response = await this.request('/api/v1/userManagement/user-details')
+
+    // Debug: Log the full response to see if userId is present
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 getUserDetails API response:', response)
+    }
+
     return response as unknown as {
+      userId?: number
       firstName: string
       lastName: string
       loggingEmail: string

@@ -40,8 +40,9 @@ export default function VerificationPage() {
       // Immediate redirect for already verified users
       const timeoutId = setTimeout(() => {
         toast({
-          title: 'Already Verified!',
-          description: 'Redirecting to homepage...',
+          title: '✅ Already Verified!',
+          description:
+            'Your account is already verified. All features are unlocked! Redirecting you to the homepage...',
           variant: 'default',
         })
 
@@ -70,8 +71,10 @@ export default function VerificationPage() {
       setOtp('')
 
       toast({
-        title: 'Success!',
-        description: 'Your email has been verified. Redirecting to homepage...',
+        title: '🎉 Success! Email Verified',
+        description:
+          'Your work email has been verified successfully! All platform features are now unlocked. Redirecting you to the homepage...',
+        variant: 'default',
       })
 
       // Give backend a moment to update verification status, then refresh session multiple times
@@ -103,9 +106,9 @@ export default function VerificationPage() {
 
       setError(errorMessage)
       toast({
-        title: 'Verification Failed',
-        description: errorMessage,
-        variant: 'destructive',
+        title: '❌ Verification Failed',
+        description: `${errorMessage} Please double-check your code and try again. Need help? Our support team is here for you!`,
+        variant: 'default',
       })
     } finally {
       setIsSubmitting(false)
@@ -115,6 +118,34 @@ export default function VerificationPage() {
   const handleCompleteVerificationForTesting = async () => {
     if (!organizationEmail) {
       setError('Please enter your email address')
+      return
+    }
+
+    // Validate email domain - block personal email providers
+    const personalEmailDomains = [
+      'gmail.com',
+      'yahoo.com',
+      'outlook.com',
+      'hotmail.com',
+      'live.com',
+      'icloud.com',
+      'aol.com',
+      'protonmail.com',
+      'mail.com',
+      'zoho.com',
+    ]
+
+    const emailDomain = organizationEmail.toLowerCase().split('@')[1]
+    if (personalEmailDomains.includes(emailDomain)) {
+      setError(
+        'Please use your work or organization email address. Personal email addresses (Gmail, Yahoo, Outlook, etc.) are not accepted for verification.'
+      )
+      toast({
+        title: '⚠️ Work Email Required',
+        description:
+          'Please use your organization email address to verify your account. Personal emails like Gmail, Yahoo, and Outlook are not accepted for verification.',
+        variant: 'default',
+      })
       return
     }
 
@@ -128,8 +159,10 @@ export default function VerificationPage() {
       setOtpSent(true)
       setSuccess('OTP sent! Check your email or backend logs.')
       toast({
-        title: 'OTP Sent!',
-        description: 'Check your email for the verification code.',
+        title: '📧 Verification Code Sent!',
+        description:
+          'Check your work email for the 6-digit verification code. It should arrive within a few minutes.',
+        variant: 'default',
       })
     } catch (error) {
       const errorMessage =
@@ -137,9 +170,9 @@ export default function VerificationPage() {
 
       setError(errorMessage)
       toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
+        title: '😅 Oops! Something Went Wrong',
+        description: `${errorMessage} Please try again, and if the issue persists, our support team is ready to help!`,
+        variant: 'default',
       })
     } finally {
       setIsSubmitting(false)
@@ -207,7 +240,7 @@ export default function VerificationPage() {
               </CardTitle>
             </div>
             <p className="text-sm text-[#64748B]">
-              Verify your email to unlock all platform features
+              Verify your work email to unlock all platform features
             </p>
           </CardHeader>
           <CardContent className="p-8">
@@ -223,7 +256,7 @@ export default function VerificationPage() {
               <Alert className="mb-6 bg-[#F8FAFB] border-[#E2E8F0]">
                 <Mail className="h-4 w-4 text-[#64748B]" />
                 <AlertDescription className="text-[#64748B] text-sm">
-                  Please verify your email to unlock buying and selling features
+                  Please verify your work email to unlock buying and selling features
                 </AlertDescription>
               </Alert>
             )}
@@ -272,9 +305,9 @@ export default function VerificationPage() {
                   </Alert>
                 )}
                 {error && !success && (
-                  <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription className="text-sm">{error}</AlertDescription>
+                  <Alert className="bg-blue-50 border-blue-200 text-blue-900">
+                    <AlertTriangle className="h-4 w-4 text-blue-600" />
+                    <AlertDescription className="text-sm text-blue-900">{error}</AlertDescription>
                   </Alert>
                 )}
 

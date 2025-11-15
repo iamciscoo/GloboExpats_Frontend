@@ -56,7 +56,7 @@ export default function FeaturedListings() {
         const [newResponse, topResponse, allResponse] = await Promise.all([
           apiClient.getNewestListings(0, 9),
           apiClient.getTopPicks(0, 9),
-          apiClient.getAllProducts(0),
+          apiClient.getAllProductsComplete(10), // Fetch up to 10 pages (100 products)
         ])
 
         // Process newest listings - use centralized content extraction
@@ -67,8 +67,8 @@ export default function FeaturedListings() {
         const top = extractContentFromResponse(topResponse)
         setTopPicks(top.slice(0, 9).map(transformToFeaturedItem))
 
-        // Process featured listings - use centralized content extraction
-        const all = extractContentFromResponse(allResponse)
+        // Process featured listings - directly access content from complete response
+        const all = allResponse.content
 
         // Debug: Check for problematic objects in product data
         all.forEach((product, index) => {
