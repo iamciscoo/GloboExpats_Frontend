@@ -514,34 +514,61 @@ function EditListingContent() {
       // Temporary workaround: If we have both image uploads and deletions,
       // split into two operations to avoid multipart complexity issues
       let result: unknown
-      if (imagesToUpload.length > 0 && imageIdsToDelete.length > 0) {
-        console.log('🔄 Complex image operation detected - splitting into two requests...')
+      let dataUpdated = false
+      let imagesUpdated = false
 
-        // First, update product data without images
-        console.log('1️⃣ Updating product data only...')
-        await apiClient.updateProduct(productId, updateData)
+      try {
+        if (imagesToUpload.length > 0 && imageIdsToDelete.length > 0) {
+          console.log('🔄 Complex image operation detected - splitting into two requests...')
 
-        // Then, handle image operations separately
-        console.log('2️⃣ Handling image operations...')
-        result = await apiClient.updateProduct(
-          productId,
-          {}, // Empty product data for image-only operation
-          imagesToUpload,
-          imageIdsToDelete
-        )
+          // First, update product data without images
+          console.log('1️⃣ Updating product data only...')
+          await apiClient.updateProduct(productId, updateData)
+          dataUpdated = true
+          console.log('✅ Product data updated successfully')
 
-        console.log('✅ Split operation completed successfully')
-      } else {
-        // Single operation when only one type of change is needed
-        result = await apiClient.updateProduct(
-          productId,
-          updateData,
-          imagesToUpload.length > 0 ? imagesToUpload : undefined,
-          imageIdsToDelete.length > 0 ? imageIdsToDelete : undefined
-        )
+          // Then, handle image operations separately
+          console.log('2️⃣ Handling image operations...')
+          result = await apiClient.updateProduct(
+            productId,
+            {}, // Empty product data for image-only operation
+            imagesToUpload,
+            imageIdsToDelete
+          )
+          imagesUpdated = true
+          console.log('✅ Image operations completed successfully')
+
+          console.log('✅ Split operation completed successfully')
+        } else {
+          // Single operation when only one type of change is needed
+          result = await apiClient.updateProduct(
+            productId,
+            updateData,
+            imagesToUpload.length > 0 ? imagesToUpload : undefined,
+            imageIdsToDelete.length > 0 ? imageIdsToDelete : undefined
+          )
+          dataUpdated = true
+          imagesUpdated = true
+          console.log('✅ Single operation completed successfully')
+        }
+
+        console.log('✅ Product updated successfully!', result)
+      } catch (updateError) {
+        // Provide clear feedback about what succeeded
+        if (dataUpdated && !imagesUpdated) {
+          console.error('❌ Product data updated but image operations failed')
+          throw new Error(
+            'Product information was updated successfully, but image changes failed. ' +
+              'Please try editing the listing again to update the images.'
+          )
+        } else if (!dataUpdated) {
+          console.error('❌ Product data update failed')
+          throw new Error('Failed to update product information. Please try again.')
+        }
+
+        // If we get here, it's an unexpected error
+        throw updateError
       }
-
-      console.log('✅ Product updated successfully!', result)
 
       // Show success toast
       toast({

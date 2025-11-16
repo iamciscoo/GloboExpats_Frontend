@@ -41,6 +41,8 @@ import {
   ChevronRight,
   LayoutDashboard,
   BarChart3,
+  Filter,
+  ArrowUpDown,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { apiClient } from '@/lib/api'
@@ -48,6 +50,13 @@ import { getFullImageUrl, cleanLocationString } from '@/lib/image-utils'
 import { RouteGuard } from '@/components/route-guard'
 import PriceDisplay from '@/components/price-display'
 import type { CurrencyCode } from '@/lib/currency-types'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface UserListing {
   productId: number
@@ -58,6 +67,9 @@ interface UserListing {
   productImages?: Array<{ imageUrl: string }>
   productStatus?: string
   views?: number
+  categoryId?: number
+  categoryName?: string
+  createdAt?: string
 }
 
 interface DashboardStats {
@@ -100,11 +112,37 @@ function DashboardContent() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 20 // 5 rows × 4 columns = 20 items per page
 
-  // Pagination calculations
-  const totalPages = Math.ceil(listings.length / itemsPerPage)
+  // Filtering and sorting state
+  const [categories, setCategories] = useState<Array<{ categoryId: number; categoryName: string }>>(
+    []
+  )
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest')
+
+  // Apply filtering and sorting
+  const filteredAndSortedListings = listings
+    .filter((listing) => {
+      // Category filter
+      if (selectedCategory === 'all') return true
+      return listing.categoryId?.toString() === selectedCategory
+    })
+    .sort((a, b) => {
+      // Time-based sorting
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+
+      if (sortOrder === 'newest') {
+        return dateB - dateA // Newest first
+      } else {
+        return dateA - dateB // Oldest first
+      }
+    })
+
+  // Pagination calculations (on filtered/sorted list)
+  const totalPages = Math.ceil(filteredAndSortedListings.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const currentListings = listings.slice(startIndex, endIndex)
+  const currentListings = filteredAndSortedListings.slice(startIndex, endIndex)
 
   // Scroll to top function
   const scrollToTop = () => {
@@ -117,12 +155,26 @@ function DashboardContent() {
     setTimeout(scrollToTop, 100) // Small delay to ensure content has updated
   }
 
-  // Reset to first page when switching to listings tab
+  // Reset to first page when switching to listings tab or changing filters
   useEffect(() => {
     if (activeTab === 'listings') {
       setCurrentPage(1)
     }
-  }, [activeTab])
+  }, [activeTab, selectedCategory, sortOrder])
+
+  // Fetch categories from backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const cats = await apiClient.getCategories()
+        setCategories(cats)
+      } catch (error) {
+        console.error('[Dashboard] Failed to fetch categories:', error)
+        setCategories([])
+      }
+    }
+    fetchCategories()
+  }, [])
 
   // Check for tab parameter in URL
   useEffect(() => {
@@ -498,7 +550,7 @@ function DashboardContent() {
 
           {/* Listings Tab */}
           <TabsContent value="listings" className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h2 className="text-xl font-semibold text-[#0F172A]">My Listings</h2>
               <Button asChild className="bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">
                 <Link href="/sell">
@@ -508,7 +560,64 @@ function DashboardContent() {
               </Button>
             </div>
 
-            {listings.length > 0 ? (
+            {/* Filters and Sorting */}
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Filter className="w-5 h-5 text-[#64748B]" />
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-full sm:w-[200px]">
+                    <SelectValue placeholder="Filter by category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.categoryId} value={cat.categoryId.toString()}>
+                        {cat.categoryName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <ArrowUpDown className="w-5 h-5 text-[#64748B]" />
+                <Select
+                  value={sortOrder}
+                  onValueChange={(val) => setSortOrder(val as 'newest' | 'oldest')}
+                >
+                  <SelectTrigger className="w-full sm:w-[200px]">
+                    <SelectValue placeholder="Sort by time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Newest First</SelectItem>
+                    <SelectItem value="oldest">Oldest First</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {(selectedCategory !== 'all' || sortOrder !== 'newest') && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedCategory('all')
+                    setSortOrder('newest')
+                  }}
+                  className="text-[#64748B] hover:text-[#0F172A]"
+                >
+                  Clear Filters
+                </Button>
+              )}
+            </div>
+
+            {/* Results count */}
+            {filteredAndSortedListings.length < listings.length && (
+              <div className="text-sm text-[#64748B]">
+                Showing {filteredAndSortedListings.length} of {listings.length} listings
+              </div>
+            )}
+
+            {currentListings.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {currentListings.map((listing) => (
@@ -665,12 +774,40 @@ function DashboardContent() {
                 )}
 
                 {/* Pagination Info */}
-                <div className="text-center text-sm text-[#64748B] mt-4">
-                  Showing {startIndex + 1} to {Math.min(endIndex, listings.length)} of{' '}
-                  {listings.length} listings
-                </div>
+                {totalPages > 0 && (
+                  <div className="text-center text-sm text-[#64748B] mt-4">
+                    Showing {startIndex + 1} to{' '}
+                    {Math.min(endIndex, filteredAndSortedListings.length)} of{' '}
+                    {filteredAndSortedListings.length} listings
+                  </div>
+                )}
               </>
+            ) : filteredAndSortedListings.length === 0 && listings.length > 0 ? (
+              // No results after filtering
+              <Card className="border border-[#E2E8F0]">
+                <CardContent className="py-12">
+                  <div className="text-center">
+                    <Filter className="w-16 h-16 text-[#CBD5E1] mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-[#0F172A] mb-2">
+                      No listings match your filters
+                    </h3>
+                    <p className="text-[#64748B] mb-6">
+                      Try adjusting your category or sort filters to see more results
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedCategory('all')
+                        setSortOrder('newest')
+                      }}
+                    >
+                      Clear Filters
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             ) : (
+              // No listings at all
               <Card className="border border-[#E2E8F0]">
                 <CardContent className="py-12">
                   <div className="text-center">

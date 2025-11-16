@@ -258,26 +258,36 @@ export default function ProductPage() {
     [product]
   )
 
-  // Preload all images for smooth switching
+  // Preload only first 3 images for better perceived performance
   useEffect(() => {
     if (!product || imagesPreloaded) return
 
     const preloadImages = async () => {
-      const imagePromises = productImages.map((src) => {
-        return new Promise((resolve, reject) => {
+      // Only preload first 3 images to avoid blocking
+      const imagesToPreload = productImages.slice(0, 3)
+
+      const imagePromises = imagesToPreload.map((src) => {
+        return new Promise((resolve) => {
           const img = new window.Image()
           img.src = src
-          img.onload = resolve
-          img.onerror = reject
+          img.onload = () => resolve(true)
+          img.onerror = () => resolve(false)
+          // Add timeout to prevent hanging
+          setTimeout(() => resolve(false), 3000)
         })
       })
 
       try {
-        await Promise.all(imagePromises)
+        // Race with 5 second timeout
+        await Promise.race([
+          Promise.all(imagePromises),
+          new Promise((resolve) => setTimeout(() => resolve(null), 5000)),
+        ])
         setImagesPreloaded(true)
-        console.log('✅ All product images preloaded')
+        console.log('✅ First 3 product images preloaded')
       } catch (error) {
         console.warn('⚠️ Some images failed to preload:', error)
+        setImagesPreloaded(true) // Continue anyway
       }
     }
 
@@ -381,9 +391,9 @@ export default function ProductPage() {
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 60vw, 600px"
                       className="object-contain p-3 sm:p-5 transition-opacity duration-300"
-                      priority
-                      quality={90}
-                      loading="eager"
+                      priority={currentImage === 0}
+                      quality={75}
+                      loading={currentImage === 0 ? 'eager' : 'lazy'}
                       onLoad={() => setImageLoading(false)}
                       onLoadStart={() => setImageLoading(true)}
                     />
@@ -451,7 +461,7 @@ export default function ProductPage() {
                               sizes="(max-width: 640px) 80px, 96px"
                               className="object-cover"
                               loading="lazy"
-                              quality={100}
+                              quality={60}
                             />
                           </button>
                         )
@@ -485,7 +495,7 @@ export default function ProductPage() {
                                 sizes="(max-width: 640px) 80px, 96px"
                                 className="object-cover"
                                 loading="lazy"
-                                quality={100}
+                                quality={60}
                               />
                             </button>
                           )

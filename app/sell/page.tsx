@@ -105,41 +105,48 @@ function SellPageContent() {
   }
 
   // Handle real file upload
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
     if (!files) {
       return
     }
+
     const newFiles = Array.from(files)
+    const validFiles: File[] = []
     const newImageUrls: string[] = []
 
-    newFiles.forEach((file) => {
+    // Show processing toast
+    toast({
+      title: '📸 Processing Images',
+      description: `Processing ${newFiles.length} image${newFiles.length > 1 ? 's' : ''}...`,
+    })
+
+    // Validate all files first
+    for (const file of newFiles) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
         toast({
           title: '🖼️ Image Files Only',
           description: 'Please upload JPG or PNG images to showcase your item!',
         })
-        return
+        continue
       }
 
       // Validate file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         toast({
           title: '📦 File Too Large',
-          description: 'Please use images under 10MB for faster loading!',
+          description: `${file.name} is too large. Please use images under 10MB!`,
         })
-        return
+        continue
       }
 
-      // Create preview URL
-      const imageUrl = URL.createObjectURL(file)
-      newImageUrls.push(imageUrl)
-    })
+      validFiles.push(file)
+    }
 
     // Check total file size before adding new files
     const currentSize = formData.images.reduce((sum, file) => sum + file.size, 0)
-    const newFilesSize = newFiles.reduce((sum, file) => sum + file.size, 0)
+    const newFilesSize = validFiles.reduce((sum, file) => sum + file.size, 0)
     const totalSize = currentSize + newFilesSize
 
     if (totalSize > 100 * 1024 * 1024) {
@@ -153,8 +160,16 @@ function SellPageContent() {
       return
     }
 
+    // Create preview URLs asynchronously to avoid blocking UI
+    // Use requestAnimationFrame to allow UI to update between operations
+    for (const file of validFiles) {
+      await new Promise((resolve) => requestAnimationFrame(resolve))
+      const imageUrl = URL.createObjectURL(file)
+      newImageUrls.push(imageUrl)
+    }
+
     // Update form data
-    const updatedImages = [...formData.images, ...newFiles]
+    const updatedImages = [...formData.images, ...validFiles]
     const updatedImageUrls = [...formData.imageUrls, ...newImageUrls]
     const newMainImage = formData.mainImage || newImageUrls[0] || ''
 
@@ -162,6 +177,13 @@ function SellPageContent() {
       images: updatedImages,
       imageUrls: updatedImageUrls,
       mainImage: newMainImage,
+    })
+
+    // Show success toast
+    toast({
+      title: '✅ Images Added',
+      description: `Successfully added ${validFiles.length} image${validFiles.length > 1 ? 's' : ''}!`,
+      variant: 'default',
     })
 
     // Clear the input
@@ -403,40 +425,83 @@ function SellPageContent() {
       if (reorderedImages.length > 10) {
         console.warn(`[Sell] Many images (${reorderedImages.length}) - implementing batch approach`)
 
-        // First, create product with first batch of images (including main image)
-        const firstBatch = reorderedImages.slice(0, 5) // First 5 images including main
-        console.log(`[Sell] Creating product with first batch: ${firstBatch.length} images`)
+        let createdProductId: number | null = null
 
-        result = await apiClient.createProduct(productData, firstBatch)
+        try {
+          // First, create product with first batch of images (including main image)
+          const firstBatch = reorderedImages.slice(0, 5) // First 5 images including main
+          console.log(`[Sell] Creating product with first batch: ${firstBatch.length} images`)
 
-        // If successful and we have more images, add them in batches using update
-        if (result.productId && reorderedImages.length > 5) {
-          const remainingImages = reorderedImages.slice(5)
-          console.log(`[Sell] Adding remaining ${remainingImages.length} images in batches`)
+          result = await apiClient.createProduct(productData, firstBatch)
+          createdProductId = result.productId
 
-          // Split remaining images into smaller batches
-          const batchSize = 5
-          for (let i = 0; i < remainingImages.length; i += batchSize) {
-            const batch = remainingImages.slice(i, i + batchSize)
-            console.log(
-              `[Sell] Adding batch ${Math.floor(i / batchSize) + 1}: ${batch.length} images`
+          if (!createdProductId) {
+            throw new Error('Product creation failed: No product ID returned')
+          }
+
+          console.log(`[Sell] Product created with ID: ${createdProductId}`)
+
+          // If successful and we have more images, add them in batches using update
+          if (reorderedImages.length > 5) {
+            const remainingImages = reorderedImages.slice(5)
+            console.log(`[Sell] Adding remaining ${remainingImages.length} images in batches`)
+
+            // Split remaining images into smaller batches
+            const batchSize = 5
+            for (let i = 0; i < remainingImages.length; i += batchSize) {
+              const batch = remainingImages.slice(i, i + batchSize)
+              const batchNumber = Math.floor(i / batchSize) + 1
+
+              console.log(`[Sell] Adding batch ${batchNumber}: ${batch.length} images`)
+
+              try {
+                await apiClient.updateProduct(createdProductId.toString(), {}, batch)
+                console.log(`[Sell] ✅ Successfully added batch ${batchNumber}`)
+              } catch (batchError) {
+                console.error(`[Sell] ❌ Failed to add batch ${batchNumber}:`, batchError)
+                // Don't continue - stop on first failure to trigger rollback
+                throw new Error(
+                  `Failed to upload batch ${batchNumber} of ${Math.ceil(remainingImages.length / batchSize)}. ` +
+                    `${batchError instanceof Error ? batchError.message : 'Unknown error'}`
+                )
+              }
+            }
+          }
+
+          console.log('[Sell] ✅ All batches uploaded successfully')
+        } catch (batchUploadError) {
+          // Rollback: Delete the partially created product
+          if (createdProductId) {
+            console.warn(
+              `[Sell] 🔄 Rolling back product creation (ID: ${createdProductId}) due to batch upload failure`
             )
 
             try {
-              await apiClient.updateProduct(result.productId.toString(), {}, batch)
-              console.log(`[Sell] Successfully added batch ${Math.floor(i / batchSize) + 1}`)
-            } catch (batchError) {
-              console.error(
-                `[Sell] Failed to add batch ${Math.floor(i / batchSize) + 1}:`,
-                batchError
-              )
-              // Continue with other batches even if one fails
+              await apiClient.deleteProduct(createdProductId.toString())
+              console.log('[Sell] ✅ Product successfully rolled back (deleted)')
+
+              toast({
+                title: '❌ Upload Failed',
+                description:
+                  'Some images failed to upload. The listing was not created. Please try with fewer images or smaller file sizes.',
+                variant: 'destructive',
+                duration: 8000,
+              })
+            } catch (deleteError) {
+              console.error('[Sell] ❌ Rollback failed - could not delete product:', deleteError)
+
+              toast({
+                title: '⚠️ Partial Upload',
+                description: `Product was created (ID: ${createdProductId}) but some images failed. Please edit the listing to add missing images.`,
+                variant: 'destructive',
+                duration: 10000,
+              })
             }
           }
-        }
 
-        console.log('[Sell] Batch upload completed')
-        // Result already contains the product info from the first batch
+          // Re-throw the error to be caught by outer catch block
+          throw batchUploadError
+        }
       } else {
         // Normal single request for 10 or fewer images
         console.log(
@@ -450,8 +515,21 @@ function SellPageContent() {
       if (!result.productId && !(result as any).data?.productId) {
         console.error('❌ CRITICAL: No productId in response!')
         console.error('❌ Product may not have been saved to database')
-        console.error('❌ Full response:', result)
-        alert('⚠️ Warning: Product creation returned no ID. Please check with support.')
+        console.error('❌ Full response:', JSON.stringify(result, null, 2))
+
+        // Show user-friendly toast instead of alert
+        toast({
+          title: '⚠️ Listing May Need Review',
+          description:
+            'Your listing was submitted but confirmation was not received. Please check "My Listings" to verify it was created.',
+          variant: 'destructive',
+          duration: 10000, // 10 seconds
+        })
+
+        // Still redirect but with warning parameter
+        await new Promise((resolve) => setTimeout(resolve, 3000))
+        window.location.href = '/expat/dashboard?tab=listings&warning=check-status'
+        return
       }
 
       // Store the product ID for verification
