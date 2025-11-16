@@ -46,7 +46,7 @@ export default function MobileSidebarToggle() {
           <div className="overflow-y-auto flex-1">
             {/* Unified Expat Dashboard Section */}
             <div className="p-4 border-b border-slate-100">
-              <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 border-brand-primary/20 shadow-futuristic">
+              <Card className="bg-blue-50 border-blue-200/50 shadow-sm">
                 <CardContent className="p-4">
                   {isLoggedIn ? (
                     <div className="space-y-3">
@@ -81,11 +81,11 @@ export default function MobileSidebarToggle() {
                         >
                           <Link
                             href="/expat/dashboard"
-                            className="flex items-center gap-2 py-2 px-3 rounded-md text-neutral-700 hover:bg-neutral-100 hover:text-brand-primary transition-all duration-200"
+                            className="flex flex-col items-center gap-1"
                           >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5"
+                              className="h-3 w-3"
                               fill="none"
                               viewBox="0 0 24 24"
                               stroke="currentColor"
@@ -126,7 +126,7 @@ export default function MobileSidebarToggle() {
                       <Button
                         asChild
                         size="sm"
-                        className="w-full bg-gradient-to-r from-brand-primary to-brand-accent hover:from-blue-800 hover:to-cyan-600 text-white"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                         onClick={() => setIsOpen(false)}
                       >
                         <Link href="/register">Join Community</Link>
@@ -155,7 +155,7 @@ export default function MobileSidebarToggle() {
                       <Card className="group cursor-pointer transition-all duration-200 hover:shadow-md hover:bg-slate-50 border-slate-100">
                         <CardContent className="p-3">
                           <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                            <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
                               <IconComponent className="h-4 w-4 text-white" />
                             </div>
                             <div className="flex-1">
