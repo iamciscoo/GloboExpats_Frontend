@@ -89,9 +89,9 @@ const faqCategories = [
           'Shipping times vary by seller location and destination. Domestic shipping typically takes 3-7 days, while international shipping can take 7-21 days.',
       },
       {
-        question: 'How can I track my order?',
+        question: 'How can I check my order status?',
         answer:
-          "Once shipped, you'll receive a tracking number via email. You can also track orders from your account dashboard under 'My Orders'.",
+          "You can view your order history and status from your dashboard under 'Orders'. For 'Arrange with Us' orders, our team will contact you with updates. For 'Arrange with Seller' orders, coordinate directly with the seller.",
       },
       {
         question: "What if my item doesn't arrive?",

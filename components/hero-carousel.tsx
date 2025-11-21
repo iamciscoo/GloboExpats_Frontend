@@ -7,7 +7,7 @@ import Image from 'next/image'
 export default function HeroCarousel() {
   return (
     <section className="mb-4 sm:mb-6 mx-4 sm:mx-6 lg:mx-0 lg:pr-8">
-      <div className="relative h-[450px] sm:h-[500px] lg:h-[600px] text-white overflow-hidden rounded-2xl shadow-xl">
+      <div className="relative h-[400px] sm:h-[450px] lg:h-[500px] text-white overflow-hidden rounded-2xl shadow-xl">
         {/* Background Image */}
         <Image
           src="/assets/images/heroes/home-bottom-hero.jpeg"
@@ -24,11 +24,11 @@ export default function HeroCarousel() {
         {/* Content */}
         <div className="container mx-auto px-4 sm:px-8 relative z-20 flex flex-col items-start justify-center h-full">
           <div className="max-w-2xl">
-            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 sm:mb-6 leading-tight drop-shadow-lg">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 sm:mb-5 leading-tight drop-shadow-lg">
               Got Items Taking Up Space?
             </h1>
 
-            <p className="text-base sm:text-xl lg:text-2xl text-white/95 mb-5 sm:mb-8 leading-relaxed drop-shadow-md">
+            <p className="text-sm sm:text-lg lg:text-xl text-white/95 mb-4 sm:mb-6 leading-relaxed drop-shadow-md">
               Moving, relocating, or just need to declutter? Connect with fellow expats who need
               exactly what you&apos;re ready to let go. Turn your unused items into someone
               else&apos;s perfect find.

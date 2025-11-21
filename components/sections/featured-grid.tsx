@@ -108,7 +108,7 @@ export default function FeaturedGrid() {
 
   return (
     <section className="py-4 sm:py-6 lg:py-8">
-      <div className="mx-4 sm:mx-6 lg:mx-0 lg:pr-8">
+      <div className="mx-4 sm:mx-6 lg:mx-0">
         <SectionHeader title="Featured Collection" subtitle="Handpicked items for you" />
         {loading ? (
           <div className="flex justify-center items-center h-40">
@@ -118,7 +118,7 @@ export default function FeaturedGrid() {
           <p className="text-red-600">{error}</p>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 lg:gap-4 p-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 lg:gap-4 p-1">
               {items.map((item) => (
                 <div key={`featured-${item.id}`}>
                   <ProductCard

@@ -116,7 +116,7 @@ export default function TopPicksSlider() {
 
   return (
     <section className="py-3 sm:py-4 lg:py-5">
-      <div className="mx-4 sm:mx-6 lg:mx-0 lg:pl-6 lg:pr-8">
+      <div className="mx-4 sm:mx-6 lg:mx-0">
         <SectionHeader title="Trending Now" subtitle="Most popular items right now" />
 
         {loading ? (

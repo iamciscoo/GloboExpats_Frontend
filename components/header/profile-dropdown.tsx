@@ -39,11 +39,11 @@ export const ProfileDropdown = React.memo<ProfileDropdownProps>(
               </AvatarFallback>
             </Avatar>
             <div className="hidden md:flex items-center gap-2">
-              <span className="font-medium hover:text-brand-secondary transition-colors">
+              <span className="font-medium hover:text-brand-secondary transition-colors truncate max-w-[100px] lg:max-w-[150px]">
                 {user.name}
               </span>
               {isVerifiedBuyer && (
-                <Badge className="bg-status-success text-white text-xs">
+                <Badge className="bg-status-success text-white text-xs shrink-0">
                   <Shield className="w-3 h-3 mr-1" />
                   Verified
                 </Badge>

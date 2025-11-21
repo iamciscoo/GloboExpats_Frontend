@@ -429,7 +429,7 @@ const Header = React.memo(() => {
       role="banner"
       aria-label="Main navigation"
     >
-      <div className="container mx-auto px-4">
+      <div className="w-full px-4 lg:px-6 xl:px-8">
         <div className="flex items-center justify-between h-16">
           {/* 
             =================================================================
@@ -472,7 +472,7 @@ const Header = React.memo(() => {
             search is either not needed or has dedicated space.
           */}
           {routeConfig.showSearch && (
-            <div className="hidden md:flex flex-1 max-w-lg mx-4 lg:mx-8">
+            <div className="hidden md:flex flex-1 md:max-w-[260px] lg:max-w-lg md:mx-3 lg:mx-8 transition-all duration-300">
               <SearchBar />
             </div>
           )}

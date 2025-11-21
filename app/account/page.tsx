@@ -21,8 +21,8 @@ const accountMenuItems = [
     id: 'orders',
     label: 'My Orders',
     icon: Package,
-    href: '/account/orders',
-    description: 'Track, return, or buy things again',
+    href: '/expat/dashboard?tab=orders',
+    description: 'View your purchase history',
     count: 0,
   },
   {
@@ -58,14 +58,14 @@ const _accountStats = [
   {
     label: 'Total Orders',
     value: 0,
-    href: '/account/orders',
+    href: '/expat/dashboard?tab=orders',
     icon: Package,
     color: 'text-blue-600',
   },
   {
     label: 'Reviews Written',
     value: 0,
-    href: '/account/orders?tab=reviews',
+    href: '/expat/dashboard?tab=orders',
     icon: MessageCircle,
     color: 'text-green-600',
   },
@@ -83,14 +83,14 @@ export default function AccountDashboard() {
     {
       label: 'Total Orders',
       value: backendStats?.totalOrders ?? 0,
-      href: '/account/orders',
+      href: '/expat/dashboard?tab=orders',
       icon: Package,
       color: 'text-blue-600',
     },
     {
       label: 'Reviews Written',
       value: backendStats?.reviewsWritten ?? 0,
-      href: '/account/orders?tab=reviews',
+      href: '/expat/dashboard?tab=orders',
       icon: MessageCircle,
       color: 'text-green-600',
     },
@@ -290,7 +290,7 @@ export default function AccountDashboard() {
               <TabsContent value="orders" className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-semibold">Recent Orders</h3>
-                  <Link href="/account/orders">
+                  <Link href="/expat/dashboard?tab=orders">
                     <Button variant="outline" size="sm">
                       View All Orders
                     </Button>
@@ -344,7 +344,7 @@ export default function AccountDashboard() {
                               {order.total}
                             </p>
                             <div className="flex gap-2 mt-2">
-                              <Link href={`/account/orders/${order.id}`}>
+                              <Link href={`/expat/dashboard?tab=orders`}>
                                 <Button variant="outline" size="sm">
                                   View Details
                                 </Button>

@@ -43,6 +43,7 @@ import {
   BarChart3,
   Filter,
   ArrowUpDown,
+  ShoppingBag,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { apiClient } from '@/lib/api'
@@ -117,14 +118,26 @@ function DashboardContent() {
     []
   )
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [selectedStatus, setSelectedStatus] = useState<string>('all')
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest')
 
   // Apply filtering and sorting
   const filteredAndSortedListings = listings
     .filter((listing) => {
       // Category filter
-      if (selectedCategory === 'all') return true
-      return listing.categoryId?.toString() === selectedCategory
+      if (selectedCategory !== 'all' && listing.categoryId?.toString() !== selectedCategory) {
+        return false
+      }
+
+      // Status filter (frontend only for now)
+      if (selectedStatus !== 'all') {
+        // TODO: This will be replaced with actual backend status field when implemented
+        // For now, we're not filtering by status since backend doesn't support it yet
+        // Once backend adds status field, uncomment:
+        // if (listing.productStatus !== selectedStatus) return false
+      }
+
+      return true
     })
     .sort((a, b) => {
       // Time-based sorting
@@ -160,7 +173,7 @@ function DashboardContent() {
     if (activeTab === 'listings') {
       setCurrentPage(1)
     }
-  }, [activeTab, selectedCategory, sortOrder])
+  }, [activeTab, selectedCategory, selectedStatus, sortOrder])
 
   // Fetch categories from backend
   useEffect(() => {
@@ -462,7 +475,7 @@ function DashboardContent() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 h-11 p-1 bg-gray-100">
+          <TabsList className="grid w-full grid-cols-5 h-11 p-1 bg-gray-100">
             <TabsTrigger
               value="overview"
               className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
@@ -490,6 +503,13 @@ function DashboardContent() {
             >
               <BarChart3 className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
               <span className="hidden sm:inline truncate">Analytics</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="orders"
+              className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
+            >
+              <ShoppingBag className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Orders</span>
             </TabsTrigger>
           </TabsList>
 
@@ -580,6 +600,21 @@ function DashboardContent() {
               </div>
 
               <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Filter className="w-5 h-5 text-[#64748B]" />
+                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                  <SelectTrigger className="w-full sm:w-[200px]">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="sold">Sold</SelectItem>
+                    <SelectItem value="archived">Archived</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <ArrowUpDown className="w-5 h-5 text-[#64748B]" />
                 <Select
                   value={sortOrder}
@@ -595,12 +630,15 @@ function DashboardContent() {
                 </Select>
               </div>
 
-              {(selectedCategory !== 'all' || sortOrder !== 'newest') && (
+              {(selectedCategory !== 'all' ||
+                selectedStatus !== 'all' ||
+                sortOrder !== 'newest') && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => {
                     setSelectedCategory('all')
+                    setSelectedStatus('all')
                     setSortOrder('newest')
                   }}
                   className="text-[#64748B] hover:text-[#0F172A]"
@@ -877,6 +915,27 @@ function DashboardContent() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Orders Tab */}
+          <TabsContent value="orders" className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <h2 className="text-xl font-semibold text-[#0F172A]">Order History</h2>
+            </div>
+
+            {/* Empty State - No orders yet */}
+            <Card className="border border-[#E2E8F0]">
+              <CardContent className="p-12 text-center">
+                <ShoppingBag className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-neutral-800 mb-2">No Orders Yet</h3>
+                <p className="text-neutral-600 mb-6">
+                  Your purchase history will appear here once you complete your first order.
+                </p>
+                <Button asChild className="bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">
+                  <Link href="/browse">Start Shopping</Link>
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 

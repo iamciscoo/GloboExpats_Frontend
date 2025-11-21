@@ -40,9 +40,9 @@ export default function VerificationPage() {
       // Immediate redirect for already verified users
       const timeoutId = setTimeout(() => {
         toast({
-          title: '✅ Already Verified!',
+          title: 'Already Verified',
           description:
-            'Your account is already verified. All features are unlocked! Redirecting you to the homepage...',
+            'Your account is already verified. All features are unlocked. Redirecting you to the homepage...',
           variant: 'default',
         })
 
@@ -71,9 +71,9 @@ export default function VerificationPage() {
       setOtp('')
 
       toast({
-        title: '🎉 Success! Email Verified',
+        title: 'Success - Email Verified',
         description:
-          'Your work email has been verified successfully! All platform features are now unlocked. Redirecting you to the homepage...',
+          'Your work email has been verified successfully. All platform features are now unlocked. Redirecting you to the homepage...',
         variant: 'default',
       })
 
@@ -106,8 +106,8 @@ export default function VerificationPage() {
 
       setError(errorMessage)
       toast({
-        title: '❌ Verification Failed',
-        description: `${errorMessage} Please double-check your code and try again. Need help? Our support team is here for you!`,
+        title: 'Verification Failed',
+        description: `${errorMessage} Please double-check your code and try again. Need help? Contact our support team.`,
         variant: 'default',
       })
     } finally {
@@ -141,7 +141,7 @@ export default function VerificationPage() {
         'Please use your work or organization email address. Personal email addresses (Gmail, Yahoo, Outlook, etc.) are not accepted for verification.'
       )
       toast({
-        title: '⚠️ Work Email Required',
+        title: 'Work Email Required',
         description:
           'Please use your organization email address to verify your account. Personal emails like Gmail, Yahoo, and Outlook are not accepted for verification.',
         variant: 'default',
@@ -157,11 +157,11 @@ export default function VerificationPage() {
 
       // After OTP is sent, show success message
       setOtpSent(true)
-      setSuccess('OTP sent! Check your email or backend logs.')
+      setSuccess('OTP sent! Check your email.')
       toast({
-        title: '📧 Verification Code Sent!',
+        title: 'Verification Code Sent',
         description:
-          'Check your work email for the 6-digit verification code. It should arrive within a few minutes.',
+          "Check your work email for the 6-digit verification code. It should arrive within a few minutes. Please check your spam folder if you don't see it.",
         variant: 'default',
       })
     } catch (error) {
@@ -170,8 +170,8 @@ export default function VerificationPage() {
 
       setError(errorMessage)
       toast({
-        title: '😅 Oops! Something Went Wrong',
-        description: `${errorMessage} Please try again, and if the issue persists, our support team is ready to help!`,
+        title: 'Something Went Wrong',
+        description: `${errorMessage} Please try again. If the issue persists, contact our support team.`,
         variant: 'default',
       })
     } finally {
@@ -234,14 +234,9 @@ export default function VerificationPage() {
       <div className="container max-w-2xl mx-auto px-4">
         <Card className="border border-[#E2E8F0] bg-white">
           <CardHeader className="bg-white border-b border-[#E2E8F0] p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <CardTitle className="text-xl font-semibold text-[#0F172A]">
-                Email Verification
-              </CardTitle>
-            </div>
-            <p className="text-sm text-[#64748B]">
-              Verify your work email to unlock all platform features
-            </p>
+            <CardTitle className="text-xl font-semibold text-[#0F172A]">
+              Email Verification
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-8">
             {/* Status Banner */}
@@ -255,8 +250,12 @@ export default function VerificationPage() {
             ) : (
               <Alert className="mb-6 bg-[#F8FAFB] border-[#E2E8F0]">
                 <Mail className="h-4 w-4 text-[#64748B]" />
-                <AlertDescription className="text-[#64748B] text-sm">
-                  Please verify your work email to unlock buying and selling features
+                <AlertDescription className="text-[#64748B] text-sm space-y-1">
+                  <p>Please verify your work email to unlock buying and selling features</p>
+                  <p className="font-medium">
+                    Note: Check your spam folder if you don&apos;t see the email within a few
+                    minutes
+                  </p>
                 </AlertDescription>
               </Alert>
             )}
@@ -286,9 +285,20 @@ export default function VerificationPage() {
                     onClick={handleCompleteVerificationForTesting}
                     disabled={isSubmitting || !organizationEmail}
                     size="lg"
-                    className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-white h-11"
+                    className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-white h-11 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    {isSubmitting ? 'Sending...' : 'Step 1: Send Verification Code'}
+                    {isSubmitting ? (
+                      <span className="flex items-center gap-2">
+                        Sending
+                        <span className="flex gap-1">
+                          <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                          <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                          <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></span>
+                        </span>
+                      </span>
+                    ) : (
+                      'Step 1: Send Verification Code'
+                    )}
                   </Button>
                   <p className="mt-2 text-xs text-[#64748B]">
                     We&apos;ll send a 6-digit code to your email
@@ -331,13 +341,24 @@ export default function VerificationPage() {
                       onClick={handleVerifyOTP}
                       disabled={isSubmitting || otp.length !== 6}
                       size="lg"
-                      className="h-11 px-8 bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-white whitespace-nowrap"
+                      className="h-11 px-8 bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-white whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                      {isSubmitting ? 'Verifying...' : 'Verify'}
+                      {isSubmitting ? (
+                        <span className="flex items-center gap-2">
+                          Verifying
+                          <span className="flex gap-1">
+                            <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                            <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                            <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></span>
+                          </span>
+                        </span>
+                      ) : (
+                        'Verify'
+                      )}
                     </Button>
                   </div>
                   <p className="mt-2 text-xs text-[#64748B]">
-                    Enter the 6-digit code from your email (or check backend logs if testing)
+                    Enter the 6-digit code from your email
                   </p>
                 </div>
               </div>
