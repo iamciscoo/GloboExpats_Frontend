@@ -55,8 +55,7 @@ interface ProductListParams {
   search?: string
 }
 
-/** Payload for initiating the mobile checkout flow */
-interface MobileCheckoutPayload {
+interface MobileCheckoutBuyDetails {
   firstName: string
   lastName: string
   emailAddress: string
@@ -72,6 +71,17 @@ interface MobileCheckoutPayload {
   agreeToTerms: boolean
   totalAmount: number
   currency: string
+}
+
+interface MobileCheckoutItem {
+  productId: number
+  quantity: number
+}
+
+/** Payload for initiating the mobile checkout flow */
+interface MobileCheckoutPayload {
+  buyDetails: MobileCheckoutBuyDetails
+  items: MobileCheckoutItem[]
 }
 
 /** Response returned by the mobile checkout endpoint */

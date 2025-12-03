@@ -456,28 +456,60 @@ export default function CheckoutPage() {
       const paymentLabel =
         paymentMethods.find((m) => m.id === selectedPayment)?.name || 'Cash on Delivery'
 
+      let checkoutItemsPayload: { productId: number; quantity: number }[] = []
+
       let orderId = ''
       let mobileReference: string | undefined
       let mobileStatus: string | undefined
       let mobileMessage: string | undefined
 
       if (isMobilePayment) {
+        checkoutItemsPayload = checkoutItems.reduce<
+          { productId: number; quantity: number }[]
+        >((acc, item) => {
+          const rawId =
+            typeof item.productId === 'number' ? item.productId : Number(item.productId)
+          const fallbackId = Number(item.id)
+          const productIdValue = Number.isFinite(rawId) ? rawId : fallbackId
+
+          if (!Number.isFinite(productIdValue)) {
+            console.warn('[Checkout] Skipping item without numeric productId', item)
+            return acc
+          }
+
+          acc.push({
+            productId: productIdValue,
+            quantity: Math.max(1, item.quantity || 1),
+          })
+
+          return acc
+        }, [])
+
+        if (checkoutItemsPayload.length === 0) {
+          throw new Error(
+            'Unable to prepare checkout items. Please refresh your cart and try again.'
+          )
+        }
+
         const mobilePayload: MobileCheckoutPayload = {
-          firstName: shippingAddress.firstName,
-          lastName: shippingAddress.lastName,
-          emailAddress: shippingAddress.email,
-          phoneNumber: paymentDetails.mobileNumber || shippingAddress.phone,
-          address: shippingAddress.address,
-          city: shippingAddress.city,
-          state: shippingAddress.state || '',
-          country: shippingAddress.country,
-          zipCode: shippingAddress.zip || '',
-          deliveryInstructions: shippingAddress.instructions || '',
-          deliveryMethod: shippingMethod,
-          paymentMethod: paymentLabel,
-          agreeToTerms,
-          totalAmount: Number(checkoutSubtotal.toFixed(2)),
-          currency: selectedCountryData?.currency || 'TZS',
+          buyDetails: {
+            firstName: shippingAddress.firstName,
+            lastName: shippingAddress.lastName,
+            emailAddress: shippingAddress.email,
+            phoneNumber: paymentDetails.mobileNumber || shippingAddress.phone,
+            address: shippingAddress.address,
+            city: shippingAddress.city,
+            state: shippingAddress.state || '',
+            country: shippingAddress.country,
+            zipCode: shippingAddress.zip || '',
+            deliveryInstructions: shippingAddress.instructions || '',
+            deliveryMethod: shippingMethod,
+            paymentMethod: paymentLabel,
+            agreeToTerms,
+            totalAmount: Number(checkoutSubtotal.toFixed(2)),
+            currency: selectedCountryData?.currency || 'TZS',
+          },
+          items: checkoutItemsPayload,
         }
 
         const mobileResponse = await api.checkout.mobilePay(mobilePayload)
