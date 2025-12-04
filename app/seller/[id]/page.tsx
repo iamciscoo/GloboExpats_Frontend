@@ -47,7 +47,60 @@ interface SellerProfile {
   averageRating: number
 }
 
-const ITEMS_PER_PAGE = 6
+const ITEMS_PER_PAGE = 12
+
+const getCountryFlag = (location: string): string => {
+  const loc = location.toLowerCase()
+  if (
+    loc.includes('tz') ||
+    loc.includes('tanzania') ||
+    loc.includes('dar') ||
+    loc.includes('zanzibar') ||
+    loc.includes('dodoma') ||
+    loc.includes('arusha')
+  )
+    return '🇹🇿'
+  if (
+    loc.includes('ke') ||
+    loc.includes('kenya') ||
+    loc.includes('nairobi') ||
+    loc.includes('mombasa')
+  )
+    return '🇰🇪'
+  if (loc.includes('ug') || loc.includes('uganda') || loc.includes('kampala')) return '🇺🇬'
+  if (loc.includes('rw') || loc.includes('rwanda') || loc.includes('kigali')) return '🇷🇼'
+  if (loc.includes('bi') || loc.includes('burundi') || loc.includes('bujumbura')) return '🇧🇮'
+  return '🌍'
+}
+
+const formatLocation = (location: string): string => {
+  if (!location) return ''
+
+  // Handle common cities to ensure nice formatting
+  let formatted = location.toLowerCase()
+  if (formatted.includes('dar-es-salaam') || formatted.includes('dar es salaam')) {
+    formatted = 'Dar es Salaam, Tanzania'
+  } else if (formatted === 'zanzibar') {
+    formatted = 'Zanzibar, Tanzania'
+  } else if (formatted === 'arusha') {
+    formatted = 'Arusha, Tanzania'
+  } else if (formatted === 'dodoma') {
+    formatted = 'Dodoma, Tanzania'
+  } else if (formatted === 'mombasa') {
+    formatted = 'Mombasa, Kenya'
+  } else if (formatted === 'nairobi') {
+    formatted = 'Nairobi, Kenya'
+  } else {
+    // Generic title case
+    formatted = location
+      .split(/[\s-]+/) // Split by space or hyphen
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ')
+  }
+
+  const flag = getCountryFlag(location)
+  return `${flag} ${formatted}`
+}
 
 export default function SellerProfilePage() {
   const params = useParams()
@@ -466,7 +519,9 @@ export default function SellerProfilePage() {
                       <MapPin className="w-5 h-5 text-brand-primary" />
                       <div>
                         <p className="text-xs text-neutral-500 mb-0.5">Location</p>
-                        <p className="font-semibold text-neutral-900">{seller.location}</p>
+                        <p className="font-semibold text-neutral-900">
+                          {formatLocation(seller.location)}
+                        </p>
                       </div>
                     </div>
                   )}
