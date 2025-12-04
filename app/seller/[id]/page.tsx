@@ -117,26 +117,32 @@ export default function SellerProfilePage() {
         const firstProduct = sellerProducts[0] as Record<string, unknown>
         const userSellerId = firstProduct.sellerId as number
 
-        console.log('Fetching seller profile for sellerId:', userSellerId)
+        console.log('══════════════════════════════════════')
+        console.log('📍 Loading Seller Profile')
+        console.log('Seller Name from URL:', decodedSellerName)
+        console.log('Seller ID from Product:', userSellerId)
+        console.log('Total Products Found:', sellerProducts.length)
+        console.log('══════════════════════════════════════')
 
-        // Fetch actual user profile data using sellerId
-        let userProfile: {
-          firstName?: string
-          lastName?: string
-          profileImageUrl?: string
-          location?: string
-          organization?: string
-          position?: string
-          aboutMe?: string
-          verificationStatus?: 'VERIFIED' | 'PENDING' | 'REJECTED'
-        } | null = null
-        try {
-          userProfile = await apiClient.getSellerProfile(userSellerId)
-          console.log('✅ Successfully fetched seller profile:', userProfile)
-        } catch (profileError) {
-          console.warn('⚠️ Could not fetch seller profile from API:', profileError)
-          // Fall back to extracting what we can from product data
-        }
+        // NOTE: Backend limitation - no public endpoint to fetch other users' profiles
+        // The /api/v1/userManagement/user-details endpoint only returns the CURRENT user's data
+        // and ignores any userId parameter passed to it.
+        // Therefore, we extract seller information from product data only.
+
+        // Extract seller details from product data
+        // The backend stores seller info as a snapshot when the product is created
+        const profileImageUrl =
+          firstProduct.sellerProfileImage ||
+          firstProduct.sellerProfileImageUrl ||
+          firstProduct.profileImageUrl ||
+          firstProduct.userProfileImage
+
+        // Determine verification status from product data
+        const isVerified =
+          firstProduct.sellerVerified === true ||
+          firstProduct.isVerified === true ||
+          firstProduct.sellerVerificationStatus === 'VERIFIED' ||
+          (sellerProducts.length > 0 && firstProduct.sellerEmail !== undefined)
 
         // Calculate stats from products
         const totalReviews = sellerProducts.reduce(
@@ -153,29 +159,20 @@ export default function SellerProfilePage() {
 
         // Build seller profile from API data if available, otherwise use product data
         const sellerProfile: SellerProfile = {
-          firstName:
-            userProfile?.firstName || String(firstProduct.sellerName || '').split(' ')[0] || '',
+          firstName: String(firstProduct.sellerName || '').split(' ')[0] || '',
           lastName:
-            userProfile?.lastName ||
             String(firstProduct.sellerName || '')
               .split(' ')
               .slice(1)
-              .join(' ') ||
-            '',
-          profileImageUrl: userProfile?.profileImageUrl
-            ? getFullImageUrl(userProfile.profileImageUrl)
+              .join(' ') || '',
+          profileImageUrl: profileImageUrl ? getFullImageUrl(String(profileImageUrl)) : undefined,
+          location: firstProduct.sellerLocation ? String(firstProduct.sellerLocation) : undefined,
+          organization: firstProduct.sellerOrganization
+            ? String(firstProduct.sellerOrganization)
             : undefined,
-          location:
-            userProfile?.location ||
-            (firstProduct.sellerLocation ? String(firstProduct.sellerLocation) : undefined),
-          organization: userProfile?.organization || undefined,
-          position: userProfile?.position || undefined,
-          aboutMe: userProfile?.aboutMe || undefined,
-          isVerified:
-            userProfile?.verificationStatus === 'VERIFIED' ||
-            firstProduct.sellerVerified === true ||
-            firstProduct.isVerified === true ||
-            (sellerProducts.length > 0 && firstProduct.sellerEmail !== undefined),
+          position: firstProduct.sellerPosition ? String(firstProduct.sellerPosition) : undefined,
+          aboutMe: firstProduct.sellerAboutMe ? String(firstProduct.sellerAboutMe) : undefined,
+          isVerified: isVerified,
           joinedDate: firstProduct.sellerJoinedDate
             ? String(firstProduct.sellerJoinedDate)
             : undefined,
