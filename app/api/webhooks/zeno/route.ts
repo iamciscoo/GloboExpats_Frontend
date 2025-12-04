@@ -4,8 +4,8 @@ import { logger } from '@/lib/logger'
 export const runtime = 'nodejs'
 
 interface ZenoWebhookPayload {
-  orderId?: string
   paymentStatus?: string
+  orderId?: string
   transactionId?: string
   reference?: string
   amount?: number
@@ -13,8 +13,10 @@ interface ZenoWebhookPayload {
   metadata?: Record<string, unknown>
 }
 
-function isPayloadValid(payload: ZenoWebhookPayload): payload is Required<Pick<ZenoWebhookPayload, 'orderId' | 'paymentStatus'>> {
-  return Boolean(payload.orderId && payload.paymentStatus)
+function isPayloadValid(
+  payload: ZenoWebhookPayload
+): payload is Required<Pick<ZenoWebhookPayload, 'paymentStatus'>> {
+  return Boolean(payload.paymentStatus)
 }
 
 export async function POST(req: NextRequest) {
@@ -24,7 +26,7 @@ export async function POST(req: NextRequest) {
     if (!isPayloadValid(payload)) {
       logger.error('[Webhook:Zeno] Invalid payload', payload)
       return NextResponse.json(
-        { success: false, message: 'orderId and paymentStatus are required' },
+        { success: false, message: 'paymentStatus is required' },
         { status: 400 }
       )
     }
