@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Menu, Plus } from 'lucide-react'
+import { Menu, Plus, HelpCircle } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,10 +16,12 @@ import { Card, CardContent } from '@/components/ui/card'
 import { CATEGORIES } from '@/lib/constants'
 import { useAuth } from '@/hooks/use-auth'
 import AdminSection from '@/components/admin-section'
+import { useTutorial } from '@/providers/tutorial-provider'
 
 export default function MobileSidebarToggle() {
   const [isOpen, setIsOpen] = useState(false)
   const { isLoggedIn } = useAuth()
+  const { startTutorial } = useTutorial()
 
   return (
     <div className="lg:hidden">
@@ -170,6 +172,21 @@ export default function MobileSidebarToggle() {
                   )
                 })}
               </div>
+            </div>
+
+            {/* Platform Tutorial Button */}
+            <div className="p-4 border-t border-slate-100 mt-auto">
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2 text-slate-600 border-slate-200 hover:bg-slate-50"
+                onClick={() => {
+                  setIsOpen(false)
+                  setTimeout(() => startTutorial(), 100)
+                }}
+              >
+                <HelpCircle className="w-4 h-4" />
+                Platform Tutorial
+              </Button>
             </div>
           </div>
         </SheetContent>

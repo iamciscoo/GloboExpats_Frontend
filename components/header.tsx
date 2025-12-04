@@ -52,7 +52,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Bell, ShoppingCart, Search, User, Shield, Settings } from 'lucide-react'
+import { Bell, ShoppingCart, Search, User, Shield, Settings, HelpCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 import { useCart } from '@/hooks/use-cart'
@@ -76,6 +76,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getInitials } from '@/lib/utils'
+import { useTutorial } from '@/providers/tutorial-provider'
 
 /**
  * =============================================================================
@@ -143,6 +144,7 @@ const UserNavigation = React.memo<{
   cartItemCount: number
 }>(({ user, isVerifiedBuyer, isAdmin, handleLogout, cartItemCount }) => {
   const { notificationCounts } = useNotifications()
+  const { startTutorial } = useTutorial()
   const userInitials = React.useMemo(() => getInitials(user?.name || 'U'), [user?.name])
 
   return (
@@ -218,6 +220,21 @@ const UserNavigation = React.memo<{
                   <Bell className="w-4 h-4" />
                   <span>Notifications</span>
                 </Link>
+              </DropdownMenuItem>
+            </div>
+
+            <DropdownMenuSeparator />
+
+            {/* Tutorial Link */}
+            <div className="py-1">
+              <DropdownMenuItem
+                onClick={() => setTimeout(() => startTutorial(), 100)}
+                className="cursor-pointer px-3 py-2"
+              >
+                <div className="flex items-center gap-2">
+                  <HelpCircle className="w-4 h-4" />
+                  <span>Platform Tutorial</span>
+                </div>
               </DropdownMenuItem>
             </div>
 

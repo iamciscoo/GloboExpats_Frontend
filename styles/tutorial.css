@@ -245,25 +245,72 @@
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .driver-popover.globoexpats-tour-popover {
-    max-width: calc(100vw - 40px);
-    margin: 20px;
+    max-width: calc(100vw - 32px) !important;
+    min-width: unset !important;
+    width: calc(100vw - 32px) !important;
+    margin: 0 auto !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    position: fixed !important; /* Force fixed positioning for better mobile experience */
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+
+  /* When attached to an element, we might want to keep it relative, 
+     but for the welcome modal (which is usually the problem), fixed center is best.
+     Driver.js adds 'driver-popover-floating' class when not attached to element? 
+     Let's try to be general but safe. */
+  
+  /* Actually, forcing fixed center for ALL steps on mobile might be better 
+     to avoid "off screen" elements causing scroll issues. 
+     But then the arrow points nowhere. 
+     
+     Let's just fix the width first. */
+     
+  .driver-popover.globoexpats-tour-popover {
+     position: fixed !important;
+     top: auto !important;
+     bottom: 20px !important; /* Stick to bottom on mobile? Or center? */
+     left: 16px !important;
+     right: 16px !important;
+     transform: none !important;
+     width: auto !important;
+     max-width: none !important;
+     min-width: 0 !important;
+     margin: 0 !important;
+  }
+
+  /* Hide arrow on mobile as we are positioning fixed */
+  .driver-popover.globoexpats-tour-popover .driver-popover-arrow {
+    display: none !important;
   }
 
   .driver-popover.globoexpats-tour-popover.driver-popover-loading {
-    min-width: calc(100vw - 60px) !important;
-    max-width: calc(100vw - 60px) !important;
+    min-width: unset !important;
+    max-width: calc(100vw - 40px) !important;
+    width: calc(100vw - 40px) !important;
   }
 
   .driver-popover.globoexpats-tour-popover .driver-popover-title {
-    font-size: 16px;
+    font-size: 18px;
+    text-align: center;
   }
 
   .driver-popover.globoexpats-tour-popover .driver-popover-description {
-    font-size: 13px;
+    font-size: 14px;
+    text-align: center;
+  }
+  
+  .driver-popover.globoexpats-tour-popover .driver-popover-footer {
+    justify-content: center;
+    margin-top: 15px;
   }
 
   .driver-popover.globoexpats-tour-popover .driver-popover-footer button {
-    padding: 8px 16px;
-    font-size: 13px;
+    padding: 10px 16px;
+    font-size: 14px;
+    flex: 1;
+    display: flex;
+    justify-content: center;
   }
 }
