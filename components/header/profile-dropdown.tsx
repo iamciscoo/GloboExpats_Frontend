@@ -2,9 +2,18 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ChevronDown, Shield, User, Bell, Settings, LayoutDashboard } from 'lucide-react'
+import {
+  ChevronDown,
+  Shield,
+  User,
+  Bell,
+  Settings,
+  LayoutDashboard,
+  HelpCircle,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { useTutorial } from '@/providers/tutorial-provider'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,10 +35,11 @@ interface ProfileDropdownProps {
 export const ProfileDropdown = React.memo<ProfileDropdownProps>(
   ({ user, isVerifiedBuyer, isAdmin, onLogout }) => {
     const userInitials = React.useMemo(() => getInitials(user.name), [user.name])
+    const { startTutorial } = useTutorial()
 
     return (
       <DropdownMenu>
-        <div className="flex items-center">
+        <div className="flex items-center" data-tutorial="user-menu">
           {/* Clickable profile link */}
           <Link href="/account" className="flex items-center gap-2 mr-2">
             <Avatar className="h-8 w-8 hover:ring-2 hover:ring-white/30 transition-all">
@@ -120,6 +130,14 @@ export const ProfileDropdown = React.memo<ProfileDropdownProps>(
               <Bell className="w-4 h-4 mr-2" />
               Notifications
             </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={startTutorial}
+            className="cursor-pointer hover:bg-neutral-100 focus:bg-neutral-100"
+          >
+            <HelpCircle className="w-4 h-4 mr-2" />
+            Tutorial
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {isAdmin && (

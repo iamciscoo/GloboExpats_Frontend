@@ -23,11 +23,19 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
+import { FlagDisplay } from '@/components/ui/flag-display'
 import { useCart } from '@/hooks/use-cart'
 import { useAuth } from '@/hooks/use-auth'
 import { useVerification } from '@/hooks/use-verification'
@@ -318,8 +326,7 @@ export default function CheckoutPage() {
     setShippingAddress((prev) => ({ ...prev, [field]: value }))
   }, [])
 
-  const handleCountryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const countryCode = e.target.value
+  const handleCountryChange = useCallback((countryCode: string) => {
     const country = eastAfricanCountries.find((c) => c.code === countryCode)
 
     // Batch all state updates together for better performance
@@ -335,8 +342,8 @@ export default function CheckoutPage() {
     // but doesn't affect cart prices or any stored values
   }, [])
 
-  const handleCityChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setShippingAddress((prev) => ({ ...prev, city: e.target.value }))
+  const handleCityChange = useCallback((city: string) => {
+    setShippingAddress((prev) => ({ ...prev, city }))
   }, [])
 
   // Comprehensive authentication and verification checks
@@ -782,48 +789,71 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="country">Country *</Label>
-                      <select
-                        id="country"
-                        value={selectedCountry}
-                        onChange={handleCountryChange}
-                        className="w-full h-11 px-3 py-2 border-2 border-neutral-200 rounded-md focus:border-brand-primary focus:outline-none bg-white appearance-none cursor-pointer transition-colors"
-                        style={{
-                          backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                          backgroundPosition: 'right 0.5rem center',
-                          backgroundRepeat: 'no-repeat',
-                          backgroundSize: '1.5em 1.5em',
-                          paddingRight: '2.5rem',
-                        }}
-                      >
-                        {eastAfricanCountries.map((country) => (
-                          <option key={country.code} value={country.code}>
-                            {country.flag} {country.name}
-                          </option>
-                        ))}
-                      </select>
+                      <Select value={selectedCountry} onValueChange={handleCountryChange}>
+                        <SelectTrigger className="w-full h-11 border-2 border-neutral-200 rounded-md focus:border-brand-primary">
+                          <SelectValue>
+                            {selectedCountry && (
+                              <span className="flex items-center gap-2">
+                                {(() => {
+                                  const country = eastAfricanCountries.find(
+                                    (c) => c.code === selectedCountry
+                                  )
+                                  if (!country) return selectedCountry
+                                  return (
+                                    <>
+                                      <FlagDisplay
+                                        emoji={country.flag}
+                                        fallback={country.code}
+                                        countryName={country.name}
+                                        variant="minimal"
+                                      />
+                                      <span>{country.name}</span>
+                                    </>
+                                  )
+                                })()}
+                              </span>
+                            )}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {eastAfricanCountries.map((country) => (
+                            <SelectItem key={country.code} value={country.code}>
+                              <span className="flex items-center gap-2">
+                                <FlagDisplay
+                                  emoji={country.flag}
+                                  fallback={country.code}
+                                  countryName={country.name}
+                                  variant="dropdown"
+                                />
+                                <span>{country.name}</span>
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="city">City *</Label>
-                      <select
-                        id="city"
-                        value={shippingAddress.city}
-                        onChange={handleCityChange}
-                        className="w-full h-11 px-3 py-2 border-2 border-neutral-200 rounded-md focus:border-brand-primary focus:outline-none bg-white appearance-none cursor-pointer transition-colors"
-                        style={{
-                          backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                          backgroundPosition: 'right 0.5rem center',
-                          backgroundRepeat: 'no-repeat',
-                          backgroundSize: '1.5em 1.5em',
-                          paddingRight: '2.5rem',
-                        }}
-                      >
-                        <option value="">Select a city</option>
-                        {availableCities.map((city) => (
-                          <option key={city.name} value={city.name}>
-                            {city.flag} {city.name}
-                          </option>
-                        ))}
-                      </select>
+                      <Select value={shippingAddress.city} onValueChange={handleCityChange}>
+                        <SelectTrigger className="w-full h-11 border-2 border-neutral-200 rounded-md focus:border-brand-primary">
+                          <SelectValue placeholder="Choose city" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableCities.map((city) => (
+                            <SelectItem key={city.name} value={city.name}>
+                              <span className="flex items-center gap-2">
+                                <FlagDisplay
+                                  emoji={city.flag}
+                                  fallback={selectedCountry}
+                                  countryName={shippingAddress.country || 'City'}
+                                  variant="dropdown"
+                                />
+                                <span>{city.name}</span>
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 

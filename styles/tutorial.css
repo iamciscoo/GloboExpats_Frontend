@@ -1,0 +1,269 @@
+/**
+ * Custom styling for platform tutorial (driver.js)
+ * Matches Globoexpats brand identity
+ */
+
+/* Popover container */
+.driver-popover.globoexpats-tour-popover {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 520px;
+  min-width: 420px;
+  margin: 20px !important;
+}
+
+/* Popover title */
+.driver-popover.globoexpats-tour-popover .driver-popover-title {
+  color: #1e293b;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* Popover description */
+.driver-popover.globoexpats-tour-popover .driver-popover-description {
+  color: #475569;
+  font-size: 15px;
+  line-height: 1.7;
+  white-space: pre-line;
+}
+
+/* Progress text */
+.driver-popover.globoexpats-tour-popover .driver-popover-progress-text {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Loading Spinner */
+.driver-popover-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #1e3a8a;
+  border-radius: 50%;
+  animation: driver-spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes driver-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.driver-popover-loading-container {
+  text-align: center;
+  padding: 20px 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.driver-popover-loading-text {
+  color: #475569;
+  font-size: 15px;
+  font-weight: 500;
+  margin-top: 12px;
+}
+
+/* Ensure loading content is visible in loading state */
+.driver-popover.globoexpats-tour-popover.driver-popover-loading .driver-popover-loading-container {
+  padding: 20px 0 !important;
+  width: 100% !important;
+}
+
+.driver-popover.globoexpats-tour-popover.driver-popover-loading .driver-popover-spinner {
+  margin: 20px auto !important;
+}
+
+.driver-popover.globoexpats-tour-popover.driver-popover-loading .driver-popover-loading-text {
+  font-size: 16px !important;
+  color: #475569 !important;
+}
+
+/* Buttons */
+.driver-popover.globoexpats-tour-popover .driver-popover-footer button {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+/* Next button */
+.driver-popover.globoexpats-tour-popover .driver-popover-next-btn {
+  background-color: #1e3a8a;
+  color: #ffffff;
+}
+
+.driver-popover.globoexpats-tour-popover .driver-popover-next-btn:hover {
+  background-color: #1e40af;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+}
+
+/* Previous button */
+.driver-popover.globoexpats-tour-popover .driver-popover-prev-btn {
+  background-color: transparent;
+  color: #64748b;
+}
+
+.driver-popover.globoexpats-tour-popover .driver-popover-prev-btn:hover {
+  background-color: #f1f5f9;
+  color: #334155;
+}
+
+/* Close button */
+.driver-popover.globoexpats-tour-popover .driver-popover-close-btn {
+  background-color: transparent;
+  color: #94a3b8;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.driver-popover.globoexpats-tour-popover .driver-popover-close-btn:hover {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+/* Arrow styling - Smooth triangular pointers */
+.driver-popover.globoexpats-tour-popover .driver-popover-arrow {
+  border-width: 8px;
+}
+
+.driver-popover.globoexpats-tour-popover .driver-popover-arrow-side-left .driver-popover-arrow {
+  border-right-color: #ffffff;
+  border-left-width: 0;
+}
+
+.driver-popover.globoexpats-tour-popover .driver-popover-arrow-side-right .driver-popover-arrow {
+  border-left-color: #ffffff;
+  border-right-width: 0;
+}
+
+.driver-popover.globoexpats-tour-popover .driver-popover-arrow-side-top .driver-popover-arrow {
+  border-bottom-color: #ffffff;
+  border-top-width: 0;
+}
+
+.driver-popover.globoexpats-tour-popover .driver-popover-arrow-side-bottom .driver-popover-arrow {
+  border-top-color: #ffffff;
+  border-bottom-width: 0;
+}
+
+/* Overlay styling */
+.driver-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Highlighted element */
+.driver-active-element {
+  box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.3);
+}
+
+/* Loading State - Centered Fixed Position */
+.driver-popover.globoexpats-tour-popover.driver-popover-loading {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+  z-index: 100002 !important;
+  min-width: 450px !important;
+  max-width: 550px !important;
+  width: auto !important;
+  height: auto !important;
+  background: #ffffff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3) !important;
+  padding: 32px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.driver-popover.globoexpats-tour-popover.driver-popover-loading .driver-popover-arrow {
+  display: none !important;
+}
+
+.driver-popover.globoexpats-tour-popover.driver-popover-loading .driver-popover-arrow-side-left,
+.driver-popover.globoexpats-tour-popover.driver-popover-loading .driver-popover-arrow-side-right,
+.driver-popover.globoexpats-tour-popover.driver-popover-loading .driver-popover-arrow-side-top,
+.driver-popover.globoexpats-tour-popover.driver-popover-loading .driver-popover-arrow-side-bottom {
+  display: none !important;
+}
+
+.driver-popover.globoexpats-tour-popover.driver-popover-loading .driver-popover-title {
+  text-align: center !important;
+  margin-bottom: 16px !important;
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: #1e293b !important;
+  width: 100% !important;
+}
+
+.driver-popover.globoexpats-tour-popover.driver-popover-loading .driver-popover-description {
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 120px !important;
+}
+
+.driver-popover.globoexpats-tour-popover.driver-popover-loading .driver-popover-body {
+  padding: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.driver-popover.globoexpats-tour-popover.driver-popover-loading .driver-popover-header {
+  text-align: center !important;
+  padding: 0 !important;
+  margin-bottom: 16px !important;
+  width: 100% !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .driver-popover.globoexpats-tour-popover {
+    max-width: calc(100vw - 40px);
+    margin: 20px;
+  }
+
+  .driver-popover.globoexpats-tour-popover.driver-popover-loading {
+    min-width: calc(100vw - 60px) !important;
+    max-width: calc(100vw - 60px) !important;
+  }
+
+  .driver-popover.globoexpats-tour-popover .driver-popover-title {
+    font-size: 16px;
+  }
+
+  .driver-popover.globoexpats-tour-popover .driver-popover-description {
+    font-size: 13px;
+  }
+
+  .driver-popover.globoexpats-tour-popover .driver-popover-footer button {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}

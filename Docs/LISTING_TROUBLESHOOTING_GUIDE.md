@@ -9,6 +9,7 @@
 **Root Cause**: Batch upload logic fails if any batch after the first one fails
 
 **Immediate Solution**:
+
 1. Try uploading in smaller batches (≤10 images at a time)
 2. Create listing with first 5-10 images
 3. Edit listing to add remaining images in groups of 5
@@ -26,11 +27,13 @@
 **Root Cause**: Batch upload partially succeeds - first batch creates product, subsequent batches fail
 
 **Immediate Solution**:
+
 1. Edit the listing
 2. Add missing images (they're still in your browser if you haven't refreshed)
 3. Save changes
 
 **Prevention**:
+
 - Use fewer images (≤10) in single upload
 - Compress images before uploading
 - Ensure stable internet connection
@@ -48,11 +51,13 @@
 **Root Cause**: System downloads ALL images then re-uploads them. On slow connections or many images, this times out.
 
 **Immediate Solution**:
+
 1. Don't change image order if you have many images
 2. Use strong internet connection
 3. Try removing some images first, then reorder
 
 **Workaround**:
+
 1. Note current image order
 2. Delete all images from listing
 3. Re-upload in desired order
@@ -68,6 +73,7 @@
 **Symptoms**: Upload fails with this error message
 
 **Common Causes**:
+
 1. Too many images in single request
 2. Total file size too large (>100MB)
 3. Individual file too large (>10MB)
@@ -77,11 +83,12 @@
 **Solutions**:
 
 **For New Listings**:
+
 ```bash
 1. Check total file size:
    - Individual: Max 10MB per image
    - Total: Max 100MB all images combined
-   
+
 2. Reduce if needed:
    - Compress images
    - Upload fewer images at once
@@ -89,17 +96,19 @@
 ```
 
 **For Editing**:
+
 ```bash
 1. Split operations:
    - Update product info first (Save)
    - Then add/remove images separately (Save again)
-   
+
 2. Avoid complex operations:
    - Don't update data + add images + remove images in one save
    - Do one operation at a time
 ```
 
-**Code Location**: 
+**Code Location**:
+
 - API Client: `/lib/api.ts` lines 567-588
 - Proxy: `/app/api/products/[id]/route.ts` lines 281-299
 
@@ -109,13 +118,16 @@
 
 **Symptoms**: Upload starts but never completes, shows timeout error after 5 minutes
 
-**Root Cause**: 
+**Root Cause**:
+
 - Very slow internet connection
 - Too many/large images
 - Server processing time exceeds timeout
 
 **Solutions**:
+
 1. **Reduce image sizes**:
+
    ```bash
    - Use online compression tools
    - Target 1MB per image
@@ -123,6 +135,7 @@
    ```
 
 2. **Upload fewer images**:
+
    ```bash
    - Start with 5 images
    - Add more later via edit
@@ -145,6 +158,7 @@
 **Root Cause**: Split operation - product data update succeeded, image operation failed
 
 **Immediate Solution**:
+
 1. Edit listing again
 2. Try image operations only (don't change product data)
 3. Save
@@ -158,9 +172,10 @@
 ### 🚨 Issue: Image size validation errors
 
 **Current Limits**:
+
 - **Per Image**: 10MB maximum
 - **Total Upload**: 100MB maximum
-- **Image Count**: 
+- **Image Count**:
   - Sell page: 30 images max
   - Edit page: 50 images max (but backend may reject >30)
 - **File Types**: JPG, PNG, WebP
@@ -168,18 +183,21 @@
 **How to Check Image Size**:
 
 **On Windows**:
+
 ```bash
 Right-click image → Properties → Details
 Look at "Size" field
 ```
 
 **On Mac**:
+
 ```bash
 Right-click image → Get Info
 Look at "Size" field
 ```
 
 **On Linux**:
+
 ```bash
 ls -lh image.jpg
 # Shows size in human-readable format
@@ -212,16 +230,19 @@ ls -lh image.jpg
 **Cause**: Image limit reached
 
 **Current Limits**:
+
 - Sell page: 30 images
 - Edit page: 50 images
 - Backend: May vary (check with support)
 
 **Solution**:
+
 1. Remove some existing images
 2. Choose best quality images
 3. Create multiple listings if needed
 
 **Code Location**:
+
 - Sell page: `/app/sell/page.tsx` line 335
 - Edit page: `/app/edit-listing/[id]/page.tsx` line 252
 
@@ -229,7 +250,8 @@ ls -lh image.jpg
 
 ### 🚨 Issue: Currency conversion problems
 
-**Symptoms**: 
+**Symptoms**:
+
 - Price shows as 0
 - Wrong price displayed
 - Price rounded unexpectedly
@@ -237,6 +259,7 @@ ls -lh image.jpg
 **Root Cause**: Prices converted to TZS before sending to backend, then rounded
 
 **Current Behavior**:
+
 ```typescript
 // Example: User enters 100 USD
 const enteredPrice = 100
@@ -256,7 +279,8 @@ const priceInTZS = enteredPrice * conversionRate
 
 **Status**: Bug - currency conversion logic needs review
 
-**Code Location**: 
+**Code Location**:
+
 - Sell: `/app/sell/page.tsx` lines 356-367
 - Edit: `/app/edit-listing/[id]/page.tsx` lines 388-397
 
@@ -267,6 +291,7 @@ const priceInTZS = enteredPrice * conversionRate
 ### Enable Debug Logging
 
 **Browser Console**:
+
 ```javascript
 // Open browser DevTools (F12)
 // Look for these log prefixes:
@@ -277,6 +302,7 @@ const priceInTZS = enteredPrice * conversionRate
 ```
 
 **Check Network Tab**:
+
 ```bash
 1. Open DevTools → Network tab
 2. Try upload operation
@@ -284,7 +310,7 @@ const priceInTZS = enteredPrice * conversionRate
    - /api/products/[id] (proxy)
    - /api/v1/products/post-product (backend)
    - /api/v1/products/update/[id] (backend)
-   
+
 4. Check request payload size
 5. Check response status and body
 ```
@@ -292,6 +318,7 @@ const priceInTZS = enteredPrice * conversionRate
 ### Common Error Patterns
 
 **401 Unauthorized**:
+
 ```bash
 Cause: Auth token expired or invalid
 Solution: Log out and log back in
@@ -299,6 +326,7 @@ Location: Token refresh at /lib/api.ts lines 141-160
 ```
 
 **413 Payload Too Large**:
+
 ```bash
 Cause: Total request >100MB
 Solution: Reduce image sizes or count
@@ -306,6 +334,7 @@ Validation: /lib/api.ts lines 507-512
 ```
 
 **500 Internal Server Error**:
+
 ```bash
 Cause: Backend processing error
 Check: Browser console for details
@@ -313,6 +342,7 @@ Check: Backend logs if accessible
 ```
 
 **502 Bad Gateway**:
+
 ```bash
 Cause: Proxy can't reach backend
 Check: BACKEND_URL environment variable
@@ -321,6 +351,7 @@ Location: /app/api/products/[id]/route.ts line 6
 ```
 
 **504 Gateway Timeout**:
+
 ```bash
 Cause: Backend didn't respond in 5 minutes
 Solution: Reduce upload size
@@ -330,6 +361,7 @@ Location: Timeout set at multiple locations
 ### Debugging Steps
 
 1. **Check Browser Console**:
+
    ```bash
    Look for error messages starting with:
    - ❌ (errors)
@@ -339,6 +371,7 @@ Location: Timeout set at multiple locations
    ```
 
 2. **Check Network Tab**:
+
    ```bash
    - Look at request/response sizes
    - Check status codes
@@ -347,6 +380,7 @@ Location: Timeout set at multiple locations
    ```
 
 3. **Reproduce with Minimal Data**:
+
    ```bash
    - Try with 1 image only
    - Try with smallest file size
@@ -365,25 +399,27 @@ Location: Timeout set at multiple locations
 ### Testing Endpoints Manually
 
 **Using Browser Fetch**:
+
 ```javascript
 // Test backend connectivity
 fetch('https://dev.globoexpats.com/api/v1/products/categories')
-  .then(r => r.json())
-  .then(data => console.log('Categories:', data))
-  .catch(err => console.error('Error:', err))
+  .then((r) => r.json())
+  .then((data) => console.log('Categories:', data))
+  .catch((err) => console.error('Error:', err))
 
 // Test auth
 fetch('https://dev.globoexpats.com/api/v1/userManagement/user-details', {
   headers: {
-    'Authorization': 'Bearer YOUR_TOKEN_HERE'
-  }
+    Authorization: 'Bearer YOUR_TOKEN_HERE',
+  },
 })
-  .then(r => r.json())
-  .then(data => console.log('User:', data))
-  .catch(err => console.error('Error:', err))
+  .then((r) => r.json())
+  .then((data) => console.log('User:', data))
+  .catch((err) => console.error('Error:', err))
 ```
 
 **Using cURL**:
+
 ```bash
 # Test categories endpoint
 curl https://dev.globoexpats.com/api/v1/products/categories
@@ -413,6 +449,7 @@ Contact support if:
 5. **Production Issues**: Affecting business operations
 
 **What to Include**:
+
 ```bash
 1. Error message (exact text)
 2. Steps to reproduce
@@ -427,16 +464,16 @@ Contact support if:
 
 ## 🔄 Workaround Summary Table
 
-| Issue | Quick Fix | Better Solution |
-|-------|-----------|----------------|
-| Too many images fail | Upload in batches | Wait for rollback logic fix |
-| Reorder timeout | Use good internet | Wait for backend order endpoint |
-| Multipart error | Reduce file sizes | Compress images first |
-| Timeout error | Upload fewer images | Use image optimization |
-| Split operation fail | Edit again separately | Wait for atomic transaction |
-| Image missing | Edit and re-add | Check upload completion |
-| Wrong price | Enter in TZS | Wait for currency fix |
-| Size limit | Compress images | Use online tools |
+| Issue                | Quick Fix             | Better Solution                 |
+| -------------------- | --------------------- | ------------------------------- |
+| Too many images fail | Upload in batches     | Wait for rollback logic fix     |
+| Reorder timeout      | Use good internet     | Wait for backend order endpoint |
+| Multipart error      | Reduce file sizes     | Compress images first           |
+| Timeout error        | Upload fewer images   | Use image optimization          |
+| Split operation fail | Edit again separately | Wait for atomic transaction     |
+| Image missing        | Edit and re-add       | Check upload completion         |
+| Wrong price          | Enter in TZS          | Wait for currency fix           |
+| Size limit           | Compress images       | Use online tools                |
 
 ---
 

@@ -3,12 +3,15 @@
 ## Problem Identified
 
 ### Backend Limitation
+
 The backend endpoint `/api/v1/products/get-all-products` has a **fixed page size of 10 products** and does NOT accept a `size` parameter. With 48 total products, this means:
+
 - Only 10 products appear on page 0
 - Remaining 38 products distributed across pages 1-4
 - Frontend was only fetching page 0, showing 10/48 products
 
 ### Console Evidence
+
 ```
 [FeaturedGrid] Fetched 10 products, getting real click counts...
 Category counts: {home-appliances: 10}
@@ -32,6 +35,7 @@ async getAllProductsComplete(maxPages: number = 20): Promise<{
 ```
 
 **How it works:**
+
 1. Fetches page 0 to get `totalElements` and `totalPages`
 2. Calculates remaining pages needed
 3. Fetches all remaining pages in parallel using `Promise.all()`
@@ -39,6 +43,7 @@ async getAllProductsComplete(maxPages: number = 20): Promise<{
 5. Returns complete dataset with metadata
 
 **Performance:**
+
 - For 48 products (5 pages): Makes 5 requests in parallel
 - Much faster than sequential requests
 - Capped at `maxPages` parameter for safety (default 20)
@@ -47,15 +52,15 @@ async getAllProductsComplete(maxPages: number = 20): Promise<{
 
 Updated all components to use `getAllProductsComplete()`:
 
-| Component | Location | Max Pages |
-|-----------|----------|-----------|
-| **Browse Page** | `app/browse/page.tsx` | 20 pages (200 products) |
-| **Featured Grid** | `components/sections/featured-grid.tsx` | 10 pages (100 products) |
-| **Featured Listings** | `components/featured-listings.tsx` | 10 pages (100 products) |
-| **Search Bar** | `components/search-bar.tsx` | 10 pages (100 products) |
-| **Product Detail** | `app/product/[id]/page.tsx` | 10 pages (100 products) |
-| **API Fallback** | `lib/api.ts` - `getProductDetails()` | 10 pages (100 products) |
-| **My Products** | `lib/api.ts` - `getMyProducts()` | 20 pages (200 products) |
+| Component             | Location                                | Max Pages               |
+| --------------------- | --------------------------------------- | ----------------------- |
+| **Browse Page**       | `app/browse/page.tsx`                   | 20 pages (200 products) |
+| **Featured Grid**     | `components/sections/featured-grid.tsx` | 10 pages (100 products) |
+| **Featured Listings** | `components/featured-listings.tsx`      | 10 pages (100 products) |
+| **Search Bar**        | `components/search-bar.tsx`             | 10 pages (100 products) |
+| **Product Detail**    | `app/product/[id]/page.tsx`             | 10 pages (100 products) |
+| **API Fallback**      | `lib/api.ts` - `getProductDetails()`    | 10 pages (100 products) |
+| **My Products**       | `lib/api.ts` - `getMyProducts()`        | 20 pages (200 products) |
 
 ### 3. Deprecated `size` Parameter
 
@@ -71,12 +76,14 @@ async getAllProducts(page: number = 0, _size?: number): Promise<unknown> {
 ## Results
 
 ### Before Fix
+
 - ❌ Only 10 products visible across entire platform
 - ❌ Browse page: "Showing 1-10 of 48 total products" but only showing 10
 - ❌ Homepage sections: Only 10 products in Featured Grid
 - ❌ Search: Only 10 products searchable
 
 ### After Fix
+
 - ✅ All 48 products loaded and visible
 - ✅ Browse page: "Showing 1-48 of 48 total products" (with pagination)
 - ✅ Homepage sections: All products available
@@ -86,17 +93,21 @@ async getAllProducts(page: number = 0, _size?: number): Promise<unknown> {
 ## Performance Considerations
 
 ### Network Requests
+
 - **Before**: 1 request, 10 products
 - **After**: 5 parallel requests, 48 products
 
 ### Optimization Strategies
+
 1. **Parallel fetching**: All pages fetched simultaneously with `Promise.all()`
 2. **Capped limits**: `maxPages` prevents runaway requests
 3. **Frontend caching**: Products loaded once per component mount
 4. **Client-side filtering**: No repeated requests for filters/search
 
 ### Recommended Backend Improvements
+
 To improve performance, the backend should:
+
 1. Add support for `size` parameter (e.g., `?page=0&size=100`)
 2. Increase default page size from 10 to 20 or 50
 3. Add maximum limit (e.g., max 100 per request)
@@ -138,15 +149,19 @@ To improve performance, the backend should:
 ## Future Enhancements
 
 ### Option 1: Backend Update (Recommended)
+
 Contact backend team to add `size` parameter support to `/api/v1/products/get-all-products`
 
 ### Option 2: Use Different Endpoint
+
 If available, use `/api/v1/displayItem/filter` with higher page size limits
 
 ### Option 3: Incremental Loading
+
 Implement lazy loading: Fetch page 0 initially, then load remaining pages in background
 
 ### Option 4: Server-Side Filtering
+
 Move filtering logic to backend to reduce data transfer
 
 ## Notes

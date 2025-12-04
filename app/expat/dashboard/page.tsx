@@ -48,6 +48,7 @@ import {
 import { useAuth } from '@/hooks/use-auth'
 import { apiClient } from '@/lib/api'
 import { getFullImageUrl, cleanLocationString } from '@/lib/image-utils'
+import { cn } from '@/lib/utils'
 import { RouteGuard } from '@/components/route-guard'
 import PriceDisplay from '@/components/price-display'
 import type { CurrencyCode } from '@/lib/currency-types'
@@ -447,7 +448,10 @@ function DashboardContent() {
     <div className="min-h-screen bg-[#F8FAFB] py-6 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+        <div
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8"
+          data-tutorial="my-space-header"
+        >
           <div className="flex items-center space-x-4">
             <Avatar className="h-12 w-12">
               <AvatarImage src={user?.avatar} />
@@ -475,7 +479,10 @@ function DashboardContent() {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 h-11 p-1 bg-gray-100">
+          <TabsList
+            className="grid w-full grid-cols-5 h-11 p-1 bg-gray-100"
+            data-tutorial="dashboard-tabs"
+          >
             <TabsTrigger
               value="overview"
               className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
@@ -486,6 +493,7 @@ function DashboardContent() {
             <TabsTrigger
               value="listings"
               className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
+              data-tutorial="dashboard-listings-tab"
             >
               <Package className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
               <span className="hidden sm:inline truncate">My Listings</span>
@@ -493,6 +501,7 @@ function DashboardContent() {
             <TabsTrigger
               value="messages"
               className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
+              data-tutorial="dashboard-messages-tab"
             >
               <MessageSquare className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
               <span className="hidden sm:inline truncate">Messages</span>
@@ -500,6 +509,7 @@ function DashboardContent() {
             <TabsTrigger
               value="analytics"
               className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
+              data-tutorial="dashboard-analytics-tab"
             >
               <BarChart3 className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
               <span className="hidden sm:inline truncate">Analytics</span>
@@ -507,6 +517,7 @@ function DashboardContent() {
             <TabsTrigger
               value="orders"
               className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
+              data-tutorial="dashboard-orders-tab"
             >
               <ShoppingBag className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
               <span className="hidden sm:inline truncate">Orders</span>
@@ -630,9 +641,8 @@ function DashboardContent() {
                 </Select>
               </div>
 
-              {(selectedCategory !== 'all' ||
-                selectedStatus !== 'all' ||
-                sortOrder !== 'newest') && (
+              {/* eslint-disable-next-line prettier/prettier */}
+              {(selectedCategory !== 'all' || selectedStatus !== 'all' || sortOrder !== 'newest') && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -789,9 +799,10 @@ function DashboardContent() {
                             variant={currentPage === page ? 'default' : 'outline'}
                             size="sm"
                             onClick={() => handlePageChange(page)}
-                            className={`h-9 w-9 p-0 ${
-                              currentPage === page ? 'bg-[#1E3A8A] hover:bg-[#1E3A8A]/90' : ''
-                            }`}
+                            className={cn(
+                              'h-9 w-9 p-0',
+                              currentPage === page && 'bg-[#1E3A8A] hover:bg-[#1E3A8A]/90'
+                            )}
                           >
                             {page}
                           </Button>

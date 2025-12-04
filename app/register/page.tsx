@@ -34,8 +34,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Globe,
-  Users,
-  Shield,
+  UserCheck,
+  Briefcase,
   Eye,
   EyeOff,
   Check,
@@ -276,7 +276,7 @@ export default function RegisterPage() {
 
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Shield className="w-6 h-6 text-green-400" />
+                    <UserCheck className="w-6 h-6 text-green-400" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Verified Expats</h3>
@@ -288,7 +288,7 @@ export default function RegisterPage() {
 
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Users className="w-6 h-6 text-purple-400" />
+                    <Briefcase className="w-6 h-6 text-purple-400" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Professional Network</h3>

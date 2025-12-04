@@ -6,6 +6,7 @@
 ## Overview
 
 Fixed two critical performance issues:
+
 1. **Product page** - Slow image loading (thumbnails at 100% quality, aggressive preloading)
 2. **Sell page** - UI freezing when uploading multiple images
 
@@ -36,6 +37,7 @@ Fixed two critical performance issues:
 ### Solutions Implemented
 
 #### 1. Reduced Thumbnail Quality ✅
+
 **File**: `/app/product/[id]/page.tsx`
 
 ```typescript
@@ -53,6 +55,7 @@ Fixed two critical performance issues:
 ```
 
 **Impact**:
+
 - Thumbnail file sizes reduced by ~40%
 - Faster initial load
 - Improved LCP (Largest Contentful Paint)
@@ -76,6 +79,7 @@ Fixed two critical performance issues:
 ```
 
 **Impact**:
+
 - Main image files reduced by ~15-20%
 - Only first image prioritized
 - Subsequent images load on-demand
@@ -90,41 +94,42 @@ const preloadImages = async () => {
       const img = new window.Image()
       img.src = src
       img.onload = resolve
-      img.onerror = reject  // ❌ Can hang forever
+      img.onerror = reject // ❌ Can hang forever
     })
   })
 
-  await Promise.all(imagePromises)  // ❌ Blocks until ALL load
+  await Promise.all(imagePromises) // ❌ Blocks until ALL load
 }
 
 // After - Smart preloading
 const preloadImages = async () => {
   // Only preload first 3 images
-  const imagesToPreload = productImages.slice(0, 3)  // ✅
-  
+  const imagesToPreload = productImages.slice(0, 3) // ✅
+
   const imagePromises = imagesToPreload.map((src) => {
     return new Promise((resolve) => {
       const img = new window.Image()
       img.src = src
       img.onload = () => resolve(true)
       img.onerror = () => resolve(false)
-      
+
       // Timeout to prevent hanging
-      setTimeout(() => resolve(false), 3000)  // ✅
+      setTimeout(() => resolve(false), 3000) // ✅
     })
   })
 
   // Race with 5 second timeout
   await Promise.race([
     Promise.all(imagePromises),
-    new Promise(resolve => setTimeout(() => resolve(null), 5000))
+    new Promise((resolve) => setTimeout(() => resolve(null), 5000)),
   ])
-  
-  setImagesPreloaded(true)  // Continue even if some fail
+
+  setImagesPreloaded(true) // Continue even if some fail
 }
 ```
 
 **Impact**:
+
 - Only 3 images preloaded instead of ALL (e.g., 24 images)
 - 3 second timeout per image prevents hanging
 - 5 second total timeout for safety
@@ -152,6 +157,7 @@ const preloadImages = async () => {
 ### Solutions Implemented
 
 #### 1. Async Image Processing ✅
+
 **File**: `/app/sell/page.tsx`
 
 ```typescript
@@ -160,7 +166,8 @@ const handleImageUpload = (event) => {
   const files = Array.from(event.target.files)
   const newImageUrls: string[] = []
 
-  files.forEach((file) => {  // ❌ Synchronous blocking
+  files.forEach((file) => {
+    // ❌ Synchronous blocking
     const imageUrl = URL.createObjectURL(file)
     newImageUrls.push(imageUrl)
   })
@@ -171,8 +178,8 @@ const handleImageUpload = (event) => {
 // After - Async non-blocking
 const handleImageUpload = async (event) => {
   const files = Array.from(event.target.files)
-  setIsUploadingImages(true)  // ✅ Show loading
-  
+  setIsUploadingImages(true) // ✅ Show loading
+
   const validFiles: File[] = []
   const newImageUrls: string[] = []
 
@@ -190,14 +197,14 @@ const handleImageUpload = async (event) => {
 
   // Create preview URLs asynchronously
   for (const file of validFiles) {
-    await new Promise(resolve => requestAnimationFrame(resolve))  // ✅
+    await new Promise((resolve) => requestAnimationFrame(resolve)) // ✅
     const imageUrl = URL.createObjectURL(file)
     newImageUrls.push(imageUrl)
   }
 
   updateFormData({
     images: [...images, ...validFiles],
-    imageUrls: [...imageUrls, ...newImageUrls]
+    imageUrls: [...imageUrls, ...newImageUrls],
   })
 
   // Show success
@@ -206,11 +213,12 @@ const handleImageUpload = async (event) => {
     description: `Successfully added ${validFiles.length} image(s)!`,
   })
 
-  setIsUploadingImages(false)  // ✅ Hide loading
+  setIsUploadingImages(false) // ✅ Hide loading
 }
 ```
 
 **Key Changes**:
+
 - Made function `async`
 - Used `for...of` instead of `forEach` for sequential async processing
 - `await requestAnimationFrame()` between each image allows UI to update
@@ -223,7 +231,7 @@ const handleImageUpload = async (event) => {
 files.forEach((file) => {
   if (!file.type.startsWith('image/')) {
     toast({ title: 'Error' })
-    return  // ❌ Still adds to array
+    return // ❌ Still adds to array
   }
 })
 
@@ -236,22 +244,23 @@ for (const file of files) {
       title: '🖼️ Image Files Only',
       description: 'Please upload JPG or PNG images!',
     })
-    continue  // ✅ Skip this file
+    continue // ✅ Skip this file
   }
-  
+
   if (file.size > 10 * 1024 * 1024) {
     toast({
       title: '📦 File Too Large',
-      description: `${file.name} is too large!`,  // ✅ Show filename
+      description: `${file.name} is too large!`, // ✅ Show filename
     })
     continue
   }
-  
+
   validFiles.push(file)
 }
 ```
 
 **Impact**:
+
 - Only valid files processed
 - Better error messages with filenames
 - No invalid files in state
@@ -263,11 +272,12 @@ for (const file of files) {
 const [isUploadingImages, setIsUploadingImages] = useState(false)
 
 // Toast notifications
-toast({ title: '📸 Processing Images', description: '...' })  // Start
-toast({ title: '✅ Images Added', description: '...' })        // Success
+toast({ title: '📸 Processing Images', description: '...' }) // Start
+toast({ title: '✅ Images Added', description: '...' }) // Success
 ```
 
 **Impact**:
+
 - Users know processing is happening
 - Clear success feedback
 - No perceived "freezing"
@@ -278,23 +288,23 @@ toast({ title: '✅ Images Added', description: '...' })        // Success
 
 ### Product Page
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| Thumbnail quality | 100% | 60% | 40% smaller files |
-| Main image quality | 90% | 75% | ~15% smaller files |
-| Images preloaded | ALL (24) | First 3 | 8x fewer |
-| Preload timeout | None | 5s max | No hanging |
-| Initial load time | ~3-5s | ~1-2s | 50-66% faster |
-| LCP | 2.5s+ | <1.5s | ✅ Good |
+| Metric             | Before   | After   | Improvement        |
+| ------------------ | -------- | ------- | ------------------ |
+| Thumbnail quality  | 100%     | 60%     | 40% smaller files  |
+| Main image quality | 90%      | 75%     | ~15% smaller files |
+| Images preloaded   | ALL (24) | First 3 | 8x fewer           |
+| Preload timeout    | None     | 5s max  | No hanging         |
+| Initial load time  | ~3-5s    | ~1-2s   | 50-66% faster      |
+| LCP                | 2.5s+    | <1.5s   | ✅ Good            |
 
 ### Sell Page
 
-| Metric | Before | After | Improvement |
-|--------|--------|-------|-------------|
-| UI blocking | Yes (100%) | No | ✅ Non-blocking |
-| User feedback | None | Toast + Loading | ✅ Clear |
-| Processing time | Same | Same | (But non-blocking) |
-| Perceived speed | Frozen | Smooth | ✅ Much better |
+| Metric          | Before     | After           | Improvement        |
+| --------------- | ---------- | --------------- | ------------------ |
+| UI blocking     | Yes (100%) | No              | ✅ Non-blocking    |
+| User feedback   | None       | Toast + Loading | ✅ Clear           |
+| Processing time | Same       | Same            | (But non-blocking) |
+| Perceived speed | Frozen     | Smooth          | ✅ Much better     |
 
 ---
 
@@ -350,12 +360,14 @@ toast({ title: '✅ Images Added', description: '...' })        // Success
 ### Image Quality Trade-offs
 
 **Thumbnail Quality 60**:
+
 - Perfect for 80x96px display
 - JPEG artifacts not visible at this size
 - Reduces CDN bandwidth costs
 - Faster initial page paint
 
 **Main Image Quality 75**:
+
 - Still looks crisp on retina displays
 - Good compression/quality balance
 - Standard web quality
@@ -364,12 +376,14 @@ toast({ title: '✅ Images Added', description: '...' })        // Success
 ### Async Processing Strategy
 
 **requestAnimationFrame()**:
+
 - Yields to browser between operations
 - Allows UI to update/repaint
 - Non-blocking for event handlers
 - Perfect for chunking work
 
 **Why not Web Workers?**:
+
 - `URL.createObjectURL()` already fast
 - Overhead of worker setup not worth it
 - `requestAnimationFrame` sufficient
@@ -378,12 +392,14 @@ toast({ title: '✅ Images Added', description: '...' })        // Success
 ### Preload Strategy
 
 **Why First 3 Images?**:
+
 - First image = main view
 - 2nd & 3rd = likely to be viewed next
 - Balance between speed and UX
 - Rest load on-demand (lazy)
 
 **Why 3s per image, 5s total?**:
+
 - 3s reasonable for image over slow network
 - 5s total prevents page hang
 - Better to continue with partial load
@@ -401,12 +417,14 @@ toast({ title: '✅ Images Added', description: '...' })        // Success
 ## 🎯 User Impact
 
 ### Before
+
 - 😞 Product pages felt "slow"
 - 😞 Thumbnails took forever on slow connections
 - 😞 Upload page froze when adding images
 - 😞 Users thought browser crashed
 
 ### After
+
 - ✅ Product pages load instantly
 - ✅ Thumbnails appear quickly
 - ✅ Upload page stays responsive

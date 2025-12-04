@@ -1,17 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import {
-  User as UserIcon,
-  Shield,
-  Eye,
-  EyeOff,
-  Save,
-  Camera,
-  Edit,
-  Upload,
-  Building,
-} from 'lucide-react'
+import { User as UserIcon, Shield, Eye, EyeOff, Save, Camera, Edit, Building } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -94,11 +84,6 @@ export default function AccountSettings() {
     confirmPassword: '',
   })
   const [isChangingPassword, setIsChangingPassword] = useState(false)
-
-  // Verification documents state
-  const [passportFile, setPassportFile] = useState<File | null>(null)
-  const [addressFile, setAddressFile] = useState<File | null>(null)
-  const [isUploadingDocs, setIsUploadingDocs] = useState(false)
 
   const handleProfileUpdate = (field: string, value: string) => {
     setProfileData((prev) => ({ ...prev, [field]: value }))
@@ -211,48 +196,6 @@ export default function AccountSettings() {
         organization: userProfile.organization || '',
         position: userProfile.position || '',
       })
-    }
-  }
-
-  const handleVerificationSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!passportFile && !addressFile) {
-      toast({
-        title: 'No Documents Selected',
-        description: 'Please select at least one document to upload.',
-        variant: 'destructive',
-      })
-      return
-    }
-
-    setIsUploadingDocs(true)
-    try {
-      const { api } = await import('@/lib/api')
-      const files: File[] = []
-      if (passportFile) files.push(passportFile)
-      if (addressFile) files.push(addressFile)
-
-      await api.profile.uploadVerificationDocs(files)
-
-      toast({
-        title: 'Documents Uploaded Successfully',
-        description: 'Your verification documents have been submitted for review.',
-        variant: 'default',
-      })
-
-      // Clear selected files
-      setPassportFile(null)
-      setAddressFile(null)
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to upload documents'
-      toast({
-        title: 'Upload Failed',
-        description: errorMessage,
-        variant: 'destructive',
-      })
-    } finally {
-      setIsUploadingDocs(false)
     }
   }
 
@@ -398,19 +341,15 @@ export default function AccountSettings() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="profile">Profile</SelectItem>
-              <SelectItem value="verification">Verification</SelectItem>
               <SelectItem value="security">Security</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="hidden md:block">
-          <TabsList className="grid w-full grid-cols-3 max-w-xl mb-8">
+          <TabsList className="grid w-full grid-cols-2 max-w-xl mb-8">
             <TabsTrigger value="profile">
               <UserIcon className="w-4 h-4 mr-2" /> Profile
-            </TabsTrigger>
-            <TabsTrigger value="verification">
-              <Shield className="w-4 h-4 mr-2" /> Verification
             </TabsTrigger>
             <TabsTrigger value="security">
               <Shield className="w-4 h-4 mr-2" /> Security
@@ -697,119 +636,6 @@ export default function AccountSettings() {
                     </div>
                   </>
                 )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Verification Tab */}
-        <div className={activeTab === 'verification' ? 'block' : 'hidden'}>
-          <Card className="shadow-sm">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Expat Verification</CardTitle>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={
-                      userProfile?.verified
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }
-                  >
-                    {userProfile?.verified ? 'Verified' : 'Unverified'}
-                  </Badge>
-                  {userProfile?.verificationBadges && (
-                    <span className="text-sm text-neutral-600">
-                      {Object.values(userProfile.verificationBadges).filter(Boolean).length}/
-                      {Object.keys(userProfile.verificationBadges).length} badges
-                    </span>
-                  )}
-                </div>
-              </div>
-              <p className="text-sm text-neutral-600">
-                Complete your verification to unlock all platform features and build trust with
-                other users.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleVerificationSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="passport-upload">Passport or Residence Permit</Label>
-                    <label
-                      htmlFor="passport-upload"
-                      className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center hover:border-brand-primary transition-colors cursor-pointer block"
-                    >
-                      <input
-                        id="passport-upload"
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0]
-                          if (file) {
-                            if (file.size > 5 * 1024 * 1024) {
-                              toast({
-                                title: 'File Too Large',
-                                description: 'Maximum file size is 5MB',
-                                variant: 'destructive',
-                              })
-                              return
-                            }
-                            setPassportFile(file)
-                          }
-                        }}
-                      />
-                      <Upload className="h-8 w-8 text-neutral-400 mx-auto mb-2" />
-                      <p className="text-sm text-neutral-600">
-                        {passportFile ? passportFile.name : 'Upload document'}
-                      </p>
-                      <p className="text-xs text-neutral-500">PDF, JPG, PNG up to 5MB</p>
-                    </label>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="address-upload">Proof of Address</Label>
-                    <label
-                      htmlFor="address-upload"
-                      className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center hover:border-brand-primary transition-colors cursor-pointer block"
-                    >
-                      <input
-                        id="address-upload"
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0]
-                          if (file) {
-                            if (file.size > 5 * 1024 * 1024) {
-                              toast({
-                                title: 'File Too Large',
-                                description: 'Maximum file size is 5MB',
-                                variant: 'destructive',
-                              })
-                              return
-                            }
-                            setAddressFile(file)
-                          }
-                        }}
-                      />
-                      <Upload className="h-8 w-8 text-neutral-400 mx-auto mb-2" />
-                      <p className="text-sm text-neutral-600">
-                        {addressFile ? addressFile.name : 'Upload document'}
-                      </p>
-                      <p className="text-xs text-neutral-500">PDF, JPG, PNG up to 5MB</p>
-                    </label>
-                  </div>
-                </div>
-                <Alert className="bg-blue-50 text-blue-900 border-blue-200">
-                  <AlertDescription>
-                    After document submission, we'll review your information and update your
-                    verification status.
-                  </AlertDescription>
-                </Alert>
-                <Button type="submit" className="w-full" disabled={isUploadingDocs}>
-                  {isUploadingDocs ? 'Uploading...' : 'Submit for Verification'}
-                </Button>
-              </form>
             </CardContent>
           </Card>
         </div>

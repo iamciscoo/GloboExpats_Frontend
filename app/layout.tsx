@@ -8,7 +8,9 @@ import { Toaster } from '@/components/ui/toaster'
 import { AuthProvider } from '@/providers/auth-provider'
 import { CartProvider } from '@/providers/cart-provider'
 import { CurrencyProvider } from '@/providers/currency-provider'
+import { TutorialProvider } from '@/providers/tutorial-provider'
 import { ScrollToTop } from '@/components/scroll-to-top'
+import { PlatformTutorial } from '@/components/platform-tutorial'
 import { seoConfig } from '@/lib/seo-config'
 
 const inter = Inter({
@@ -134,11 +136,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <CurrencyProvider enableAutoRefresh>
           <AuthProvider>
             <CartProvider>
-              <ScrollToTop />
-              <ErrorBoundary level="page" name="Application">
-                <LayoutContent>{children}</LayoutContent>
-                <Toaster />
-              </ErrorBoundary>
+              <TutorialProvider>
+                <ScrollToTop />
+                <ErrorBoundary level="page" name="Application">
+                  <LayoutContent>{children}</LayoutContent>
+                  <Toaster />
+                  <PlatformTutorial />
+                </ErrorBoundary>
+              </TutorialProvider>
             </CartProvider>
           </AuthProvider>
         </CurrencyProvider>

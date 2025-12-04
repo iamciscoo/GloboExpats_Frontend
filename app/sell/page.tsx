@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { RouteGuard } from '@/components/route-guard'
+import { LocationSelect } from '@/components/ui/location-select'
 import { apiClient } from '@/lib/api'
 import { ITEM_CONDITIONS, EXPAT_LOCATIONS, CURRENCIES } from '@/lib/constants'
 import { CURRENCIES as CURRENCY_CONFIG } from '@/lib/currency-converter'
@@ -854,21 +855,13 @@ function Step1Content({
 
       <div className="space-y-3">
         <Label className="text-base font-semibold text-neutral-800">Location *</Label>
-        <Select
-          onValueChange={(value) => updateFormData({ location: value })}
+        <LocationSelect
+          locations={EXPAT_LOCATIONS}
           value={formData.location}
-        >
-          <SelectTrigger className="h-12 sm:h-14 border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 bg-white">
-            <SelectValue placeholder="Select your location" />
-          </SelectTrigger>
-          <SelectContent>
-            {EXPAT_LOCATIONS.map((loc) => (
-              <SelectItem key={loc.value} value={loc.label}>
-                {loc.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          onValueChange={(value) => updateFormData({ location: value })}
+          placeholder="Select your location"
+          className="h-12 sm:h-14 border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 bg-white"
+        />
       </div>
     </>
   )

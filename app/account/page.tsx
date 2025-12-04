@@ -3,7 +3,15 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Package, Settings, History, Shield, ChevronRight, MessageCircle } from 'lucide-react'
+import {
+  Package,
+  Settings,
+  History,
+  Shield,
+  ChevronRight,
+  MessageCircle,
+  HelpCircle,
+} from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -14,6 +22,7 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/ui/use-toast'
 import { useAuth } from '@/hooks/use-auth'
 import { useAccountStats } from '@/hooks/use-account-stats'
+import { useTutorial } from '@/providers/tutorial-provider'
 import { getInitials } from '@/lib/utils'
 
 const accountMenuItems = [
@@ -34,10 +43,10 @@ const accountMenuItems = [
   },
   {
     id: 'verification',
-    label: 'Expat Verification',
+    label: 'Email Verification',
     icon: Shield,
     href: '/account/verification',
-    description: 'Verify your expat status',
+    description: 'Verify your email address',
   },
 ]
 
@@ -77,6 +86,7 @@ export default function AccountDashboard() {
   const [activeTab, setActiveTab] = useState('overview')
   const { stats: backendStats, isLoading: statsLoading, error: statsError } = useAccountStats()
   const { toast } = useToast()
+  const { startTutorial } = useTutorial()
 
   // Compute dynamic stats from backend data
   const stats = [
@@ -126,7 +136,7 @@ export default function AccountDashboard() {
     <div className="min-h-screen bg-neutral-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-6" data-tutorial="account-header">
           <h1 className="text-3xl font-bold text-neutral-800 mb-1">My Account</h1>
           <p className="text-neutral-600">Manage your account settings and view your activity</p>
         </div>
@@ -201,6 +211,19 @@ export default function AccountDashboard() {
                     )
                   })}
                 </nav>
+
+                {/* Tutorial Button */}
+                <div className="mt-4 pt-4 border-t border-neutral-100">
+                  <Button
+                    onClick={startTutorial}
+                    variant="outline"
+                    size="sm"
+                    className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 hover:bg-blue-100 hover:border-blue-300 text-blue-700 font-medium"
+                  >
+                    <HelpCircle className="w-4 h-4 mr-2" />
+                    Platform Tutorial
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>

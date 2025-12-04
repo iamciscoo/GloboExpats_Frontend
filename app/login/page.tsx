@@ -22,7 +22,7 @@ import type React from 'react'
 import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Mail, Lock, Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, Loader2, Shield, UserCheck, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -291,7 +291,7 @@ function LoginContent() {
               <div className="space-y-6 mb-8">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-brand-secondary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Mail className="w-6 h-6 text-brand-secondary" />
+                    <Shield className="w-6 h-6 text-brand-secondary" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Secure Access</h3>
@@ -303,7 +303,7 @@ function LoginContent() {
 
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Lock className="w-6 h-6 text-green-400" />
+                    <UserCheck className="w-6 h-6 text-green-400" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Trusted Community</h3>
@@ -315,7 +315,7 @@ function LoginContent() {
 
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="w-6 h-6 text-purple-400" />
+                    <Clock className="w-6 h-6 text-purple-400" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Quick & Easy</h3>
@@ -328,16 +328,14 @@ function LoginContent() {
 
               <div className="pt-6 border-t border-white/20">
                 <div className="text-center">
-                  <h4 className="text-lg font-semibold mb-3 text-brand-secondary">
-                    New to GloboExpat?
-                  </h4>
-                  <p className="text-sm text-blue-200 mb-4">
+                  <h4 className="text-xl font-semibold mb-3 text-white">New to GloboExpat?</h4>
+                  <p className="text-sm text-blue-100 mb-4">
                     Join our growing community of verified expat professionals
                   </p>
                   <Link href="/register">
                     <Button
                       variant="outline"
-                      className="w-full bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/50"
+                      className="w-full rounded-full bg-white/10 border-2 border-white/40 text-white hover:bg-white/20 hover:border-white/60 font-semibold"
                     >
                       Create Account
                     </Button>

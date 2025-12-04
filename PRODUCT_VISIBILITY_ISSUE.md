@@ -50,27 +50,34 @@ User Flow:
 ### API Test Results
 
 **Test 1: Product Listing Endpoint**
+
 ```bash
 curl -X 'GET' 'https://dev.globoexpats.com/api/v1/products/get-all-products?page=0'
 ```
+
 **Result**: ✅ Success - Returns 48 products including:
+
 - Product ID: 71 (New Design Plant pots with water chamber)
 - Product ID: 70 (Bottom Plates - Various size)
 - Product ID: 69 (Epipremnum aureum - Money Plant)
 - ... and 45 more products
 
 **Test 2: Product Detail Endpoint**
+
 ```bash
 curl -X 'GET' 'https://dev.globoexpats.com/api/v1/displayItem/itemDetails/71'
 ```
+
 **Result**: ❌ CORS Error / Failed to fetch (Swagger UI test)
+
 - Indicates possible authentication requirement or configuration issue
 
 ### Frontend Error Pattern
 
 ```typescript
 // Error from /lib/api.ts line 300
-errorMessage = 'Product not found. The item you are looking for may have been removed or is no longer available.'
+errorMessage =
+  'Product not found. The item you are looking for may have been removed or is no longer available.'
 
 // Stack trace shows error in parseError catch block (line 277-309)
 // Suggests backend is returning 404 but error response parsing is failing
@@ -100,19 +107,21 @@ errorMessage = 'Product not found. The item you are looking for may have been re
 
 ```typescript
 // Current: /app/product/[id]/page.tsx
-const response = await apiClient.getProductDetails(Number(id))  // ❌ Uses /displayItem/itemDetails
+const response = await apiClient.getProductDetails(Number(id)) // ❌ Uses /displayItem/itemDetails
 
 // Proposed:
-const response = await apiClient.getAllProducts(0)  // ✅ Uses /products/get-all-products
-const product = response.content.find(p => p.productId === Number(id))
+const response = await apiClient.getAllProducts(0) // ✅ Uses /products/get-all-products
+const product = response.content.find((p) => p.productId === Number(id))
 ```
 
 **Pros:**
+
 - Immediate fix for frontend
 - Uses proven working endpoint
 - No backend changes required
 
 **Cons:**
+
 - Less efficient (fetches all products)
 - Doesn't fix root cause
 - Temporary workaround
@@ -122,25 +131,28 @@ const product = response.content.find(p => p.productId === Number(id))
 **Investigate and fix the displayItem service/view:**
 
 1. **Check Backend Logs**: Look for errors in the Spring Boot application
+
    ```bash
    # On backend server
    tail -f logs/application.log | grep displayItem
    ```
 
 2. **Verify Database View**: Ensure displayItem view/table has all products
+
    ```sql
    -- Compare product counts
    SELECT COUNT(*) FROM products;
    SELECT COUNT(*) FROM display_items; -- or whatever view/table name is used
-   
+
    -- Find missing products
-   SELECT p.product_id, p.product_name 
+   SELECT p.product_id, p.product_name
    FROM products p
    LEFT JOIN display_items d ON p.product_id = d.product_id
    WHERE d.product_id IS NULL;
    ```
 
 3. **Check Authentication**: Verify if endpoint requires auth
+
    ```java
    // In Spring Boot controller
    @GetMapping("/displayItem/itemDetails/{productId}")
@@ -173,18 +185,19 @@ async function getProductDetails(productId: number) {
     // Fallback to fetching from all products
     console.warn(`Product ${productId} not found in displayItem, falling back to products list`)
     const allProducts = await apiClient.getAllProducts(0)
-    const product = allProducts.content.find(p => p.productId === productId)
-    
+    const product = allProducts.content.find((p) => p.productId === productId)
+
     if (!product) {
       throw new Error('Product not found in any endpoint')
     }
-    
+
     return product
   }
 }
 ```
 
 **Benefits:**
+
 - Immediate user experience improvement
 - Provides time to fix backend properly
 - Maintains best-case performance (detail endpoint when working)
@@ -193,12 +206,14 @@ async function getProductDetails(productId: number) {
 ## 🚀 Implementation Plan
 
 ### Phase 1: Immediate Relief (Frontend)
+
 1. Run diagnostic script to identify affected products
 2. Implement fallback logic in product detail page
 3. Add error monitoring to track which products fail
 4. Deploy frontend update
 
 ### Phase 2: Root Cause Fix (Backend)
+
 1. Review backend logs for displayItem errors
 2. Audit database consistency
 3. Fix data synchronization issues
@@ -206,6 +221,7 @@ async function getProductDetails(productId: number) {
 5. Deploy backend fix
 
 ### Phase 3: Prevention (Both)
+
 1. Add health check comparing product counts between endpoints
 2. Implement automated testing for product visibility
 3. Add monitoring alerts for 404 rates
@@ -224,6 +240,7 @@ npm run diagnose-products
 ```
 
 The script will:
+
 - Fetch all products from the listing endpoint
 - Test each product against the detail endpoint
 - Generate a report showing which products are inaccessible
@@ -232,12 +249,14 @@ The script will:
 ## 🔗 Related Files
 
 ### Frontend Files Affected
+
 - `/lib/api.ts` - API client with error handling (lines 260-323)
 - `/app/product/[id]/page.tsx` - Product detail page (lines 61-254)
 - `/app/edit-listing/[id]/page.tsx` - Edit listing page
 - `/app/browse/page.tsx` - Browse page (working correctly)
 
 ### Backend Endpoints
+
 - `GET /api/v1/products/get-all-products` ✅ Working
 - `GET /api/v1/displayItem/itemDetails/{id}` ❌ Failing
 - `POST /api/v1/displayItem/filter` ❓ Unknown status
@@ -254,6 +273,7 @@ The script will:
 ## 🤝 Support Needed
 
 If you have access to the backend codebase (gitignored in this repo), please:
+
 1. Share the displayItem controller/service implementation
 2. Provide database schema for products and display_items tables
 3. Share any recent migration scripts or data updates

@@ -148,7 +148,10 @@ const UserNavigation = React.memo<{
   return (
     <div className="flex items-center gap-2" role="navigation" aria-label="User navigation">
       {/* Shopping Cart - Quick access side panel with keyboard shortcut (Ctrl/Cmd+K) */}
-      <CartSidePanelTrigger className="relative p-2 rounded-md text-white hover:bg-brand-primary/80 transition-colors">
+      <CartSidePanelTrigger
+        className="relative p-2 rounded-md text-white hover:bg-brand-primary/80 transition-colors"
+        data-tutorial="cart"
+      >
         <ShoppingCart className="h-5 w-5" />
         {cartItemCount > 0 && (
           <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs font-semibold flex items-center justify-center">
@@ -234,7 +237,7 @@ const UserNavigation = React.memo<{
       </div>
 
       {/* Notifications - Real-time updates from backend - HIDDEN ON MOBILE */}
-      <div className="hidden md:block">
+      <div className="hidden md:block" data-tutorial="notifications">
         <NotificationBadge
           href="/notifications"
           icon={Bell}
@@ -246,7 +249,7 @@ const UserNavigation = React.memo<{
       </div>
 
       {/* Messages - Real-time messaging system - HIDDEN ON MOBILE */}
-      <div className="hidden md:block">
+      <div className="hidden md:block" data-tutorial="messages">
         <NotificationBadge
           href="/messages"
           icon={MessageCircle}
@@ -258,7 +261,7 @@ const UserNavigation = React.memo<{
       </div>
 
       {/* User Profile Dropdown - Account management and settings - HIDDEN ON MOBILE */}
-      <div className="hidden md:block">
+      <div className="hidden md:block" data-tutorial="profile-dropdown">
         <ProfileDropdown
           user={user}
           isVerifiedBuyer={isVerifiedBuyer}
@@ -439,7 +442,7 @@ const Header = React.memo(() => {
             on the left side for consistent navigation expectations.
           */}
           {/* Responsive Logo to avoid pushing actions off-screen on small devices */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" data-tutorial="logo">
             <div className="md:hidden">
               <Logo size="sm" className="whitespace-nowrap" />
             </div>
@@ -472,7 +475,10 @@ const Header = React.memo(() => {
             search is either not needed or has dedicated space.
           */}
           {routeConfig.showSearch && (
-            <div className="hidden md:flex flex-1 md:max-w-[260px] lg:max-w-lg md:mx-3 lg:mx-8 transition-all duration-300">
+            <div
+              className="hidden md:flex flex-1 md:max-w-[260px] lg:max-w-lg md:mx-3 lg:mx-8 transition-all duration-300"
+              data-tutorial="search"
+            >
               <SearchBar />
             </div>
           )}

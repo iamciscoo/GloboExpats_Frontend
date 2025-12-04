@@ -40,6 +40,7 @@ import { useCurrency } from '@/providers/currency-provider'
 import type { CurrencyCode } from '@/lib/currency-types'
 import { CURRENCY_CONFIG } from '@/lib/currency-types'
 import { cn } from '@/lib/utils'
+import { FlagDisplay } from '@/components/ui/flag-display'
 
 /**
  * Currency Toggle Props
@@ -134,6 +135,14 @@ export function CurrencyToggle({
 
   const currentCurrency = currencies[selectedCurrency]
 
+  // Map emoji flags to text codes for fallback
+  const flagToText: Record<string, string> = {
+    '🇹🇿': 'TZ',
+    '🇺🇸': 'US',
+    '🇰🇪': 'KE',
+    '🇺🇬': 'UG',
+  }
+
   // Button size classes
   const sizeClasses = {
     sm: 'h-8 px-3 text-sm',
@@ -157,9 +166,13 @@ export function CurrencyToggle({
             )}
             aria-label="Select currency"
           >
-            <span className="mr-1" aria-hidden="true">
-              {currentCurrency.flag}
-            </span>
+            <FlagDisplay
+              emoji={currentCurrency.flag}
+              fallback={flagToText[currentCurrency.flag] || selectedCurrency}
+              countryName={currentCurrency.name}
+              variant="button"
+              className="mr-1.5"
+            />
             {variant !== 'minimal' && <span className="font-semibold">{selectedCurrency}</span>}
             <ChevronDown className="ml-1 h-3 w-3 opacity-70" />
           </Button>
@@ -212,9 +225,12 @@ export function CurrencyToggle({
                   )}
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-2xl" aria-hidden="true">
-                      {currency.flag}
-                    </span>
+                    <FlagDisplay
+                      emoji={currency.flag}
+                      fallback={flagToText[currency.flag] || currency.code}
+                      countryName={currency.name}
+                      variant="dropdown"
+                    />
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm">{currency.code}</span>

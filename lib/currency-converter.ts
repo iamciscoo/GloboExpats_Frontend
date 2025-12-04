@@ -42,7 +42,7 @@ export const CURRENCIES: Record<CurrencyCode, Currency> = {
     code: 'TZS',
     symbol: 'TSh',
     name: 'Tanzanian Shilling',
-    flag: '🇹🇿',
+    flag: '🇹🇿', // Emoji flag with text fallback
     exchangeRate: 1, // Base currency
     decimals: 0,
     symbolPosition: 'before',
@@ -53,7 +53,7 @@ export const CURRENCIES: Record<CurrencyCode, Currency> = {
     code: 'USD',
     symbol: '$',
     name: 'US Dollar',
-    flag: '🇺🇸',
+    flag: '🇺🇸', // Emoji flag with text fallback
     exchangeRate: 0.0004, // 1 TZS = 0.0004 USD (2,500 TZS = 1 USD)
     decimals: 2,
     symbolPosition: 'before',
@@ -64,7 +64,7 @@ export const CURRENCIES: Record<CurrencyCode, Currency> = {
     code: 'KES',
     symbol: 'KSh',
     name: 'Kenyan Shilling',
-    flag: '🇰🇪',
+    flag: '🇰🇪', // Emoji flag with text fallback
     exchangeRate: 0.0525, // 1 TZS = 0.0525 KES (19 TZS ≈ 1 KES)
     decimals: 0,
     symbolPosition: 'before',
@@ -75,7 +75,7 @@ export const CURRENCIES: Record<CurrencyCode, Currency> = {
     code: 'UGX',
     symbol: 'USh',
     name: 'Ugandan Shilling',
-    flag: '🇺🇬',
+    flag: '🇺🇬', // Emoji flag with text fallback
     exchangeRate: 1.48, // 1 TZS = 1.48 UGX (0.68 TZS ≈ 1 UGX)
     decimals: 0,
     symbolPosition: 'before',
