@@ -8,7 +8,6 @@ import {
   MapPin,
   ChevronLeft,
   ChevronRight,
-  MessageCircle,
   Loader2,
   TrendingUp,
   ExternalLink,
@@ -54,7 +53,7 @@ export default function ProductPage() {
 
   // Check if user is trying to message themselves
   const userFullName = user ? `${user.firstName} ${user.lastName}`.trim() : ''
-  const isOwnProduct =
+  const _isOwnProduct =
     user && product && userFullName.toLowerCase() === product.listedBy.toLowerCase()
 
   // Transform backend data to FeaturedItem format
@@ -817,55 +816,6 @@ export default function ProductPage() {
                     currency="TZS"
                     expatId={String(rawProductData?.sellerId || 'unknown')}
                   />
-
-                  <div className="space-y-3">
-                    {isOwnProduct ? (
-                      <Button
-                        size="lg"
-                        className="w-full bg-gray-400 cursor-not-allowed text-white rounded-full h-11 sm:h-12 text-sm sm:text-base font-medium"
-                        onClick={() => {
-                          toast({
-                            title: '🚫 Cannot Message Yourself',
-                            description:
-                              'This is your own listing. You cannot send messages to yourself!',
-                            variant: 'default',
-                          })
-                        }}
-                      >
-                        <MessageCircle className="w-5 h-5 mr-2" />
-                        Message
-                      </Button>
-                    ) : canContact ? (
-                      <Button
-                        size="lg"
-                        className="w-full bg-green-600 hover:bg-green-700 text-white rounded-full h-11 sm:h-12 text-sm sm:text-base font-medium"
-                        asChild
-                      >
-                        <Link
-                          href={`/messages?seller=${encodeURIComponent(product.listedBy)}&product=${encodeURIComponent(product.title)}`}
-                        >
-                          <MessageCircle className="w-5 h-5 mr-2" />
-                          Message
-                        </Link>
-                      </Button>
-                    ) : (
-                      <Button
-                        size="lg"
-                        className="w-full bg-green-600 hover:bg-green-700 text-white rounded-full h-11 sm:h-12 text-sm sm:text-base font-medium"
-                        onClick={() => {
-                          toast({
-                            title: 'Verification Required',
-                            description:
-                              'Please verify your account to contact sellers. Visit your account settings to complete verification.',
-                            variant: 'default',
-                          })
-                        }}
-                      >
-                        <MessageCircle className="w-5 h-5 mr-2" />
-                        Message
-                      </Button>
-                    )}
-                  </div>
                 </div>
               </CardContent>
             </Card>

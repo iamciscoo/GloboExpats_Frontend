@@ -13,21 +13,13 @@ import { useAuth } from '@/hooks/use-auth'
 export interface NotificationCounts {
   total: number
   unread: number
-  messages: number
   admin: number
   updates: number
 }
 
-export interface MessageCounts {
-  total: number
-  unread: number
-}
-
 interface UseNotificationsReturn {
   notificationCounts: NotificationCounts
-  messageCounts: MessageCounts
   markNotificationAsRead: (notificationId: number) => void
-  markMessageAsRead: (conversationId: number) => void
   markAllNotificationsAsRead: () => void
   refreshCounts: () => void
   isLoading: boolean
@@ -40,14 +32,8 @@ export function useNotifications(): UseNotificationsReturn {
   const [notificationCounts, setNotificationCounts] = useState<NotificationCounts>({
     total: 0,
     unread: 0,
-    messages: 0,
     admin: 0,
     updates: 0,
-  })
-
-  const [messageCounts, setMessageCounts] = useState<MessageCounts>({
-    total: 0,
-    unread: 0,
   })
 
   /**
@@ -60,13 +46,8 @@ export function useNotifications(): UseNotificationsReturn {
       setNotificationCounts({
         total: 0,
         unread: 0,
-        messages: 0,
         admin: 0,
         updates: 0,
-      })
-      setMessageCounts({
-        total: 0,
-        unread: 0,
       })
       setIsLoading(false)
       return
@@ -83,18 +64,11 @@ export function useNotifications(): UseNotificationsReturn {
       const notificationCountsData = {
         total: 0,
         unread: 0,
-        messages: 0,
         admin: 0,
         updates: 0,
       }
 
-      const messageCountsData = {
-        total: 0,
-        unread: 0,
-      }
-
       setNotificationCounts(notificationCountsData)
-      setMessageCounts(messageCountsData)
     } catch (error) {
       console.error('Failed to fetch notification counts:', error)
     } finally {
@@ -109,23 +83,6 @@ export function useNotifications(): UseNotificationsReturn {
     setNotificationCounts((prev) => ({
       ...prev,
       unread: Math.max(0, prev.unread - 1),
-    }))
-  }, [])
-
-  /**
-   * Mark a conversation/message as read
-   */
-  const markMessageAsRead = useCallback((_conversationId: number) => {
-    setMessageCounts((prev) => ({
-      ...prev,
-      unread: Math.max(0, prev.unread - 1),
-    }))
-
-    // Also reduce message notification count if it was a message notification
-    setNotificationCounts((prev) => ({
-      ...prev,
-      unread: Math.max(0, prev.unread - 1),
-      messages: Math.max(0, prev.messages - 1),
     }))
   }, [])
 
@@ -164,9 +121,7 @@ export function useNotifications(): UseNotificationsReturn {
 
   return {
     notificationCounts,
-    messageCounts,
     markNotificationAsRead,
-    markMessageAsRead,
     markAllNotificationsAsRead,
     refreshCounts,
     isLoading,

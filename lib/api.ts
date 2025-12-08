@@ -1264,6 +1264,62 @@ class ApiClient {
   }
 
   /**
+   * Fetches public seller profile by seller ID (user ID)
+   * Returns public profile information excluding sensitive data like email/phone
+   * @param sellerId - Seller's user ID
+   * @returns Promise resolving to seller profile data
+   */
+  async getSellerProfile(sellerId: number): Promise<{
+    userId: number
+    firstName: string
+    lastName: string
+    position?: string
+    aboutMe?: string
+    organization?: string
+    location?: string
+    profileImageUrl?: string
+    verificationStatus?: 'VERIFIED' | 'PENDING' | 'REJECTED'
+  }> {
+    // Try multiple possible endpoint variations
+    const endpointsToTry = [
+      `/api/v1/userManagement/user-details?userId=${sellerId}`,
+      `/api/v1/userManagement/users/${sellerId}`,
+      `/api/v1/userManagement/public-profile/${sellerId}`,
+      `/api/v1/users/${sellerId}/profile`,
+      `/api/v1/users/${sellerId}`,
+    ]
+
+    let lastError: Error | null = null
+
+    for (const endpoint of endpointsToTry) {
+      try {
+        console.log(`🔍 Trying endpoint: ${endpoint}`)
+        const response = await this.request(endpoint)
+        console.log(`✅ Success with endpoint: ${endpoint}`, response)
+        return response as unknown as {
+          userId: number
+          firstName: string
+          lastName: string
+          position?: string
+          aboutMe?: string
+          organization?: string
+          location?: string
+          profileImageUrl?: string
+          verificationStatus?: 'VERIFIED' | 'PENDING' | 'REJECTED'
+        }
+      } catch (error) {
+        console.log(`❌ Failed endpoint: ${endpoint}`)
+        lastError = error as Error
+        // Continue to next endpoint
+      }
+    }
+
+    // If all endpoints fail, throw the last error
+    console.warn('⚠️ All endpoints failed for fetching seller profile')
+    throw lastError || new Error('Could not fetch seller profile from any endpoint')
+  }
+
+  /**
    * Updates user profile information
    * @param id - User identifier
    * @param data - Updated user data
@@ -1561,52 +1617,6 @@ class ApiClient {
   // MESSAGING ENDPOINTS
   // ============================================================================
 
-  /**
-   * Fetches user's conversation list
-   * @returns Promise resolving to conversations
-   */
-  async getConversations(): Promise<ApiResponse<unknown>> {
-    return this.request('/api/v1/messages/conversations')
-  }
-
-  /**
-   * Fetches messages for a specific conversation
-   * @param conversationId - Conversation identifier
-   * @returns Promise resolving to messages
-   */
-  async getMessages(conversationId: string): Promise<ApiResponse<unknown>> {
-    return this.request(`/api/v1/messages/conversations/${conversationId}`)
-  }
-
-  /**
-   * Sends a message in a conversation
-   * @param conversationId - Conversation identifier
-   * @param message - Message content
-   * @returns Promise resolving to sent message
-   */
-  async sendMessage(conversationId: string, message: string): Promise<ApiResponse<unknown>> {
-    return this.request(`/api/v1/messages/conversations/${conversationId}`, {
-      method: 'POST',
-      body: JSON.stringify({ message }),
-    })
-  }
-
-  /**
-   * Creates a new conversation
-   * @param recipientId - ID of the message recipient
-   * @param initialMessage - First message content
-   * @returns Promise resolving to new conversation
-   */
-  async createConversation(
-    recipientId: string,
-    initialMessage: string
-  ): Promise<ApiResponse<unknown>> {
-    return this.request('/api/v1/messages/conversations', {
-      method: 'POST',
-      body: JSON.stringify({ recipientId, message: initialMessage }),
-    })
-  }
-
   // ============================================================================
   // ORDER ENDPOINTS
   // ============================================================================
@@ -1713,15 +1723,6 @@ export const api = {
     resetPasswordWithOtp: (email: string, newPassword: string) =>
       apiClient.resetPasswordWithOtp(email, newPassword),
     logout: () => apiClient.logout(),
-  },
-
-  /** Messaging operations */
-  messages: {
-    conversations: () => apiClient.getConversations(),
-    messages: (id: string) => apiClient.getMessages(id),
-    send: (id: string, message: string) => apiClient.sendMessage(id, message),
-    create: (recipientId: string, message: string) =>
-      apiClient.createConversation(recipientId, message),
   },
 
   /** Order management operations */

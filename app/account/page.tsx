@@ -3,15 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import {
-  Package,
-  Settings,
-  History,
-  Shield,
-  ChevronRight,
-  MessageCircle,
-  HelpCircle,
-} from 'lucide-react'
+import { Package, Settings, History, Shield, ChevronRight, HelpCircle, Star } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -75,7 +67,7 @@ const _accountStats = [
     label: 'Reviews Written',
     value: 0,
     href: '/expat/dashboard?tab=orders',
-    icon: MessageCircle,
+    icon: Star,
     color: 'text-green-600',
   },
 ]
@@ -101,7 +93,7 @@ export default function AccountDashboard() {
       label: 'Reviews Written',
       value: backendStats?.reviewsWritten ?? 0,
       href: '/expat/dashboard?tab=orders',
-      icon: MessageCircle,
+      icon: Star,
       color: 'text-green-600',
     },
   ]
@@ -164,20 +156,6 @@ export default function AccountDashboard() {
                       Verified Buyer
                     </Badge>
                   )}
-                </div>
-
-                {/* Quick Actions */}
-                <div className="flex justify-center mb-6">
-                  <Link href="/messages">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-full px-6 py-2 bg-neutral-50 hover:bg-neutral-100 border-neutral-300"
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Messages
-                    </Button>
-                  </Link>
                 </div>
 
                 {/* Navigation */}

@@ -38,6 +38,7 @@ import {
 import { FlagDisplay } from '@/components/ui/flag-display'
 import { useCart } from '@/hooks/use-cart'
 import { useAuth } from '@/hooks/use-auth'
+import { useUserProfile } from '@/hooks/use-user-profile'
 import { useVerification } from '@/hooks/use-verification'
 import PriceDisplay from '@/components/price-display'
 import { toast } from '@/components/ui/use-toast'
@@ -153,6 +154,7 @@ const majorCities = {
 export default function CheckoutPage() {
   const router = useRouter()
   const { user, isLoggedIn, isLoading: authLoading } = useAuth()
+  const { userProfile } = useUserProfile()
   const { items, subtotal, selectedItems, selectedItemsData, selectedSubtotal } = useCart()
   const { checkVerification } = useVerification()
 
@@ -171,6 +173,22 @@ export default function CheckoutPage() {
       }
     }
   }, [authLoading, isLoggedIn, checkVerification, router])
+
+  // Auto-fill phone number from user profile if available
+  useEffect(() => {
+    if (userProfile?.phoneNumber) {
+      setShippingAddress((prev) => {
+        // Only update if phone is empty
+        if (!prev.phone) {
+          return {
+            ...prev,
+            phone: userProfile.phoneNumber || '',
+          }
+        }
+        return prev
+      })
+    }
+  }, [userProfile])
 
   const [currentStep, setCurrentStep] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)

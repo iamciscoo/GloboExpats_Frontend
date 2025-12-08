@@ -11,10 +11,12 @@ import 'driver.js/dist/driver.css'
 import '@/styles/tutorial.css'
 import { useTutorial } from '@/providers/tutorial-provider'
 import { useUserProfile } from '@/hooks/use-user-profile'
+import { useAuth } from '@/hooks/use-auth'
 
 export function PlatformTutorial() {
   const { isOpen, startTutorial, closeTutorial } = useTutorial()
   const { userProfile, isLoading } = useUserProfile()
+  const { isLoggedIn } = useAuth()
   const driverObj = useRef<ReturnType<typeof driver> | null>(null)
   const router = useRouter()
   const pathname = usePathname()
@@ -56,8 +58,102 @@ export function PlatformTutorial() {
     }
   }, [])
 
-  // Tutorial steps that adapt based on user verification status
+  // Tutorial steps that adapt based on user authentication and verification status
   const getTutorialSteps = useCallback((): DriveStep[] => {
+    // For NON-LOGGED-IN users - encourage sign up and show platform overview
+    if (!isLoggedIn) {
+      return [
+        // Welcome Introduction
+        {
+          popover: {
+            title: 'Welcome to Globoexpats! 🌍',
+            description:
+              "The trusted marketplace for the expat community. Discover quality secondhand items from verified sellers, or list your own products to reach thousands of expats. Let's explore what you can do here!",
+            onNextClick: () => {
+              driverObj.current?.moveNext()
+            },
+          },
+        },
+
+        // Browse without login
+        {
+          element: '[data-tutorial="logo"]',
+          popover: {
+            title: 'Browse the Marketplace 🏪',
+            description:
+              'You can browse all available listings without an account - explore furniture, electronics, vehicles, and more from the expat community.',
+            side: 'bottom',
+            align: 'start',
+          },
+        },
+        {
+          element: '[data-tutorial="search"]',
+          popover: {
+            title: 'Search Products 🔍',
+            description:
+              'Use the search bar to find specific items. Try searching for "furniture", "laptop", or any product you need.',
+            side: 'bottom',
+            align: 'center',
+          },
+        },
+
+        // Sign up prompt
+        {
+          popover: {
+            title: 'Want to Buy or Sell? 🛍️',
+            description:
+              "To purchase items or list your own products, you'll need to create a free account. It only takes a minute!",
+            onNextClick: () => {
+              driverObj.current?.moveNext()
+            },
+          },
+        },
+
+        // Benefits of signing up
+        {
+          popover: {
+            title: 'What You Get with an Account ✨',
+            description:
+              '✅ Browse and purchase quality items\n✅ List your own products for sale\n✅ Track orders and manage listings\n✅ Build your reputation in the community\n\nReady to get started?',
+            onNextClick: () => {
+              showLoadingFeedback()
+              isNavigatingRef.current = true
+              sessionStorage.setItem('tutorial-step', '5')
+              sessionStorage.setItem('tutorial-navigating', 'true')
+              setTimeout(() => {
+                router.push('/register')
+              }, 150)
+            },
+          },
+        },
+
+        // Registration page
+        {
+          popover: {
+            title: 'Create Your Account 📝',
+            description:
+              "Sign up with your email or Google account to join the Globoexpats community. After registration, you'll verify your organization email to unlock buying features.",
+            onNextClick: () => {
+              driverObj.current?.moveNext()
+            },
+          },
+        },
+        {
+          element: 'form',
+          popover: {
+            title: 'Quick Registration Steps 🚀',
+            description:
+              '1️⃣ Enter your name and email\n2️⃣ Create a secure password\n3️⃣ Or use "Sign in with Google" for faster signup\n\nAfter registering, you\'ll verify your work email to start buying. Complete identity verification to start selling!',
+            side: 'top',
+            align: 'center',
+            onNextClick: () => {
+              closeTutorial()
+            },
+          },
+        },
+      ]
+    }
+
     // For UNVERIFIED users - prioritize email verification
     if (!isEmailVerified) {
       return [
@@ -66,7 +162,7 @@ export function PlatformTutorial() {
           popover: {
             title: 'Welcome to Globoexpats! 🌍',
             description:
-              "Welcome to Globoexpats! 🌍\n\nBefore exploring the full marketplace, let's complete your email verification. This unlocks all features including buying, selling, and messaging. We'll guide you through the quick verification process first!",
+              "Welcome to Globoexpats! 🌍\n\nBefore exploring the full marketplace, let's complete your email verification. This unlocks all features including buying and selling. We'll guide you through the quick verification process first!",
             onNextClick: () => {
               driverObj.current?.moveNext()
             },
@@ -84,7 +180,7 @@ export function PlatformTutorial() {
           },
         },
         {
-          element: '[data-tutorial="user-menu"]',
+          element: '[data-tutorial="profile-dropdown"]',
           popover: {
             title: 'Your Account Menu 👤',
             description:
@@ -108,7 +204,7 @@ export function PlatformTutorial() {
           popover: {
             title: 'Email Verification Page 📧',
             description:
-              "Here you can verify your organization email to unlock all platform features.\n\n✨ After verification, you'll be able to:\n• Browse and purchase items\n• List your own products\n• Message other users\n• Access all marketplace features\n\nLet's complete this now!",
+              "Here you can verify your organization email to unlock all platform features.\n\n✨ After verification, you'll be able to:\n• Browse and purchase items\n• List your own products\n• Access all marketplace features\n\nLet's complete this now!",
             onNextClick: () => {
               driverObj.current?.moveNext()
             },
@@ -137,7 +233,7 @@ export function PlatformTutorial() {
         popover: {
           title: 'Welcome to Globoexpats! 🌍',
           description:
-            "The trusted marketplace for the expat community in East Africa. This comprehensive tour will guide you through every feature of the platform - from browsing to buying, selling, and managing your account. Let's get started!",
+            "The trusted marketplace for the expat community. This comprehensive tour will guide you through every feature of the platform - from browsing to buying, selling, and managing your account. Let's get started!",
           onNextClick: () => {
             driverObj.current?.moveNext()
           },
@@ -175,16 +271,7 @@ export function PlatformTutorial() {
           align: 'end',
         },
       },
-      {
-        element: '[data-tutorial="messages"]',
-        popover: {
-          title: 'Messages 💬',
-          description:
-            'Communicate securely with sellers or buyers. Negotiate prices, ask questions, and coordinate pickups/deliveries all in one place.',
-          side: 'bottom',
-          align: 'end',
-        },
-      },
+
       {
         element: '[data-tutorial="notifications"]',
         popover: {
@@ -196,7 +283,7 @@ export function PlatformTutorial() {
         },
       },
       {
-        element: '[data-tutorial="user-menu"]',
+        element: '[data-tutorial="profile-dropdown"]',
         popover: {
           title: 'Account Menu 👤',
           description:
@@ -209,7 +296,7 @@ export function PlatformTutorial() {
 
             // Save current step and navigate
             isNavigatingRef.current = true
-            sessionStorage.setItem('tutorial-step', '7')
+            sessionStorage.setItem('tutorial-step', '6')
             sessionStorage.setItem('tutorial-navigating', 'true')
 
             // Small delay to show feedback before navigation starts
@@ -228,6 +315,15 @@ export function PlatformTutorial() {
             "Now we're on the Browse page where you can explore all available products. Let's see how to filter and find what you need.",
           onNextClick: () => {
             driverObj.current?.moveNext()
+          },
+          onPrevClick: () => {
+            showLoadingFeedback()
+            isNavigatingRef.current = true
+            sessionStorage.setItem('tutorial-step', '5')
+            sessionStorage.setItem('tutorial-navigating', 'true')
+            setTimeout(() => {
+              router.push('/')
+            }, 150)
           },
         },
       },
@@ -255,7 +351,7 @@ export function PlatformTutorial() {
 
             // Save current step and navigate
             isNavigatingRef.current = true
-            sessionStorage.setItem('tutorial-step', '10')
+            sessionStorage.setItem('tutorial-step', '9')
             sessionStorage.setItem('tutorial-navigating', 'true')
 
             setTimeout(() => {
@@ -274,6 +370,15 @@ export function PlatformTutorial() {
           onNextClick: () => {
             driverObj.current?.moveNext()
           },
+          onPrevClick: () => {
+            showLoadingFeedback()
+            isNavigatingRef.current = true
+            sessionStorage.setItem('tutorial-step', '8')
+            sessionStorage.setItem('tutorial-navigating', 'true')
+            setTimeout(() => {
+              router.push('/browse')
+            }, 150)
+          },
         },
       },
       {
@@ -290,7 +395,7 @@ export function PlatformTutorial() {
 
             // Save current step and navigate
             isNavigatingRef.current = true
-            sessionStorage.setItem('tutorial-step', '12')
+            sessionStorage.setItem('tutorial-step', '11')
             sessionStorage.setItem('tutorial-navigating', 'true')
 
             setTimeout(() => {
@@ -310,6 +415,15 @@ export function PlatformTutorial() {
           onNextClick: () => {
             driverObj.current?.moveNext()
           },
+          onPrevClick: () => {
+            showLoadingFeedback()
+            isNavigatingRef.current = true
+            sessionStorage.setItem('tutorial-step', '10')
+            sessionStorage.setItem('tutorial-navigating', 'true')
+            setTimeout(() => {
+              router.push('/sell')
+            }, 150)
+          },
         },
       },
       {
@@ -317,7 +431,7 @@ export function PlatformTutorial() {
         popover: {
           title: 'Dashboard Tools 🛠️',
           description:
-            'Switch between Overview, My Listings, Messages, Analytics, and Orders using these tabs.',
+            'Switch between Overview, My Listings, Analytics, and Orders using these tabs.',
           side: 'bottom',
           align: 'start',
         },
@@ -346,7 +460,7 @@ export function PlatformTutorial() {
 
             // Save current step and navigate
             isNavigatingRef.current = true
-            sessionStorage.setItem('tutorial-step', '16')
+            sessionStorage.setItem('tutorial-step', '15')
             sessionStorage.setItem('tutorial-navigating', 'true')
 
             setTimeout(() => {
@@ -366,13 +480,22 @@ export function PlatformTutorial() {
           onNextClick: () => {
             driverObj.current?.moveNext()
           },
+          onPrevClick: () => {
+            showLoadingFeedback()
+            isNavigatingRef.current = true
+            sessionStorage.setItem('tutorial-step', '14')
+            sessionStorage.setItem('tutorial-navigating', 'true')
+            setTimeout(() => {
+              router.push('/expat/dashboard')
+            }, 150)
+          },
         },
       },
       {
         element: 'a[href="/account/settings"]',
         popover: {
           title: 'Profile & Security 🔒',
-          description: 'Update your password, notification preferences, and personal details.',
+          description: 'Update your password and personal details.',
           side: 'right',
           align: 'start',
         },
@@ -391,7 +514,7 @@ export function PlatformTutorial() {
 
             // Save current step and navigate
             isNavigatingRef.current = true
-            sessionStorage.setItem('tutorial-step', '19')
+            sessionStorage.setItem('tutorial-step', '18')
             sessionStorage.setItem('tutorial-navigating', 'true')
 
             setTimeout(() => {
@@ -406,14 +529,23 @@ export function PlatformTutorial() {
         popover: {
           title: 'Welcome Back Home! 🏠',
           description:
-            "You're now back on the homepage and ready to explore! 🚀\n\nYou've mastered the essentials:\n✅ Finding products & deals\n✅ Selling your own items\n✅ Managing your Space\n✅ Messaging other members\n\nThe entire platform is now open for you. Happy exploring!",
+            "You're now back on the homepage and ready to explore! 🚀\n\nYou've mastered the essentials:\n✅ Finding products & deals\n✅ Selling your own items\n✅ Managing your Space\n\nThe entire platform is now open for you. Happy exploring!",
           onNextClick: () => {
             closeTutorial()
+          },
+          onPrevClick: () => {
+            showLoadingFeedback()
+            isNavigatingRef.current = true
+            sessionStorage.setItem('tutorial-step', '17')
+            sessionStorage.setItem('tutorial-navigating', 'true')
+            setTimeout(() => {
+              router.push('/account')
+            }, 150)
           },
         },
       },
     ]
-  }, [isEmailVerified, router, closeTutorial, showLoadingFeedback])
+  }, [isLoggedIn, isEmailVerified, router, closeTutorial, showLoadingFeedback])
 
   const createDriverConfig = useCallback((): Config => {
     const steps = getTutorialSteps()

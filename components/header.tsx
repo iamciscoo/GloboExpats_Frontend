@@ -52,7 +52,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { MessageCircle, Bell, ShoppingCart, Search, User, Shield, Settings } from 'lucide-react'
+import { Bell, ShoppingCart, Search, User, Shield, Settings, HelpCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 import { useCart } from '@/hooks/use-cart'
@@ -76,6 +76,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getInitials } from '@/lib/utils'
+import { useTutorial } from '@/providers/tutorial-provider'
 
 /**
  * =============================================================================
@@ -142,7 +143,8 @@ const UserNavigation = React.memo<{
   handleLogout: () => void
   cartItemCount: number
 }>(({ user, isVerifiedBuyer, isAdmin, handleLogout, cartItemCount }) => {
-  const { notificationCounts, messageCounts } = useNotifications()
+  const { notificationCounts } = useNotifications()
+  const { startTutorial } = useTutorial()
   const userInitials = React.useMemo(() => getInitials(user?.name || 'U'), [user?.name])
 
   return (
@@ -223,6 +225,21 @@ const UserNavigation = React.memo<{
 
             <DropdownMenuSeparator />
 
+            {/* Tutorial Link */}
+            <div className="py-1">
+              <DropdownMenuItem
+                onClick={() => setTimeout(() => startTutorial(), 100)}
+                className="cursor-pointer px-3 py-2"
+              >
+                <div className="flex items-center gap-2">
+                  <HelpCircle className="w-4 h-4" />
+                  <span>Platform Tutorial</span>
+                </div>
+              </DropdownMenuItem>
+            </div>
+
+            <DropdownMenuSeparator />
+
             {/* Logout */}
             <div className="py-1">
               <DropdownMenuItem
@@ -244,18 +261,6 @@ const UserNavigation = React.memo<{
           count={notificationCounts.unread}
           ariaLabel={`View notifications (${notificationCounts.unread} unread)`}
           testId="notifications-button"
-          className="hover:bg-brand-primary/80 transition-colors"
-        />
-      </div>
-
-      {/* Messages - Real-time messaging system - HIDDEN ON MOBILE */}
-      <div className="hidden md:block" data-tutorial="messages">
-        <NotificationBadge
-          href="/messages"
-          icon={MessageCircle}
-          count={messageCounts.unread}
-          ariaLabel={`View messages (${messageCounts.unread} unread)`}
-          testId="messages-button"
           className="hover:bg-brand-primary/80 transition-colors"
         />
       </div>

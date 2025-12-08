@@ -51,6 +51,7 @@
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -245,25 +246,56 @@
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .driver-popover.globoexpats-tour-popover {
-    max-width: calc(100vw - 40px);
-    margin: 20px;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: calc(100vw - 32px) !important;
+    max-width: 400px !important;
+    min-width: unset !important;
+    margin: 0 !important;
+    max-height: 85vh !important;
+    overflow-y: auto !important;
+    border-radius: 16px !important;
+    z-index: 100000 !important;
+    bottom: auto !important;
+    right: auto !important;
+  }
+
+  /* Hide arrow on mobile as we are positioning fixed in center */
+  .driver-popover.globoexpats-tour-popover .driver-popover-arrow {
+    display: none !important;
   }
 
   .driver-popover.globoexpats-tour-popover.driver-popover-loading {
-    min-width: calc(100vw - 60px) !important;
-    max-width: calc(100vw - 60px) !important;
+    width: calc(100vw - 40px) !important;
+    max-width: 300px !important;
   }
 
   .driver-popover.globoexpats-tour-popover .driver-popover-title {
-    font-size: 16px;
+    font-size: 18px;
+    text-align: center;
+    margin-top: 8px;
   }
 
   .driver-popover.globoexpats-tour-popover .driver-popover-description {
-    font-size: 13px;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .driver-popover.globoexpats-tour-popover .driver-popover-footer {
+    justify-content: center;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
   }
 
   .driver-popover.globoexpats-tour-popover .driver-popover-footer button {
-    padding: 8px 16px;
-    font-size: 13px;
+    padding: 10px 16px;
+    font-size: 14px;
+    flex: 1;
+    display: flex;
+    justify-content: center;
   }
 }

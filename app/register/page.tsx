@@ -29,7 +29,6 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Progress } from '@/components/ui/progress'
 import {
   AlertCircle,
   CheckCircle2,
@@ -38,7 +37,6 @@ import {
   Briefcase,
   Eye,
   EyeOff,
-  Check,
   X,
   Loader2,
 } from 'lucide-react'
@@ -57,6 +55,7 @@ export default function RegisterPage() {
     personalEmail: '',
     password: '',
     confirmPassword: '',
+    phoneNumber: '',
     organizationEmail: '',
     acceptTerms: false,
     acceptPrivacy: false,
@@ -68,7 +67,6 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [passwordStrength, setPasswordStrength] = useState(0)
   const [isFormValid, setIsFormValid] = useState(false)
 
   // Add redirect logic for already authenticated users
@@ -90,8 +88,8 @@ export default function RegisterPage() {
 
   // Form validation
   useEffect(() => {
-    const newStrength = calculatePasswordStrength(formData.password)
-    setPasswordStrength(newStrength)
+    // Calculate password strength but don't store it (not shown in UI)
+    const _newStrength = calculatePasswordStrength(formData.password)
 
     const isValid =
       formData.firstName.trim().length > 0 &&
@@ -147,8 +145,15 @@ export default function RegisterPage() {
     setError(null)
     setSuccess(null)
 
-    const { firstName, lastName, personalEmail, password, confirmPassword, organizationEmail } =
-      formData
+    const {
+      firstName,
+      lastName,
+      personalEmail,
+      password,
+      confirmPassword,
+      phoneNumber,
+      organizationEmail,
+    } = formData
 
     if (!firstName || !lastName || !personalEmail || !password || !confirmPassword) {
       setError('Please fill in all required fields.')
@@ -183,25 +188,47 @@ export default function RegisterPage() {
         agreeToPrivacyPolicy: formData.acceptPrivacy,
       })
 
+      // Auto-login after successful registration
+      await login({
+        email: formData.personalEmail,
+        password: formData.password,
+      })
+
+      // If phone number was provided, update user profile
+      if (phoneNumber && phoneNumber.trim()) {
+        try {
+          const token = localStorage.getItem('authToken')
+          if (token) {
+            const formDataToSend = new FormData()
+            const userDto = {
+              phoneNumber: phoneNumber.trim(),
+            }
+            formDataToSend.append('userDto', JSON.stringify(userDto))
+
+            await fetch('https://dev.globoexpats.com/api/v1/userManagement/editProfile', {
+              method: 'PATCH',
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              body: formDataToSend,
+            })
+          }
+        } catch (phoneError) {
+          console.error('Failed to update phone number:', phoneError)
+          // Don't block registration flow if phone update fails
+        }
+      }
+
       // Success toast
       toast({
         title: '🎉 Welcome to GloboExpat!',
-        description: 'Account created successfully! Redirecting you to sign in...',
+        description: 'Account created successfully! Redirecting you...',
         variant: 'default',
       })
 
-      // Auto-login after successful registration
-      setTimeout(async () => {
-        try {
-          await login({
-            email: formData.personalEmail,
-            password: formData.password,
-          })
-          router.push('/')
-        } catch {
-          // If auto-login fails, redirect to login page
-          router.push('/login')
-        }
+      // Redirect to home
+      setTimeout(() => {
+        router.push('/')
       }, 1200)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Registration failed'
@@ -258,7 +285,7 @@ export default function RegisterPage() {
                     Globo<span className="text-brand-secondary">expats</span>
                   </div>
                 </Link>
-                <p className="text-xl text-blue-100 leading-relaxed mb-6">
+                <p className="text-xl text-white leading-relaxed mb-6">
                   Join the world's most trusted expat marketplace community
                 </p>
               </div>
@@ -270,7 +297,7 @@ export default function RegisterPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Global Community</h3>
-                    <p className="text-blue-100 text-sm">Connect with verified expats worldwide</p>
+                    <p className="text-white text-sm">Connect with verified expats worldwide</p>
                   </div>
                 </div>
 
@@ -280,7 +307,7 @@ export default function RegisterPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Verified Expats</h3>
-                    <p className="text-blue-100 text-sm">
+                    <p className="text-white text-sm">
                       All expats are identity and organization verified
                     </p>
                   </div>
@@ -292,7 +319,7 @@ export default function RegisterPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Professional Network</h3>
-                    <p className="text-blue-100 text-sm">
+                    <p className="text-white text-sm">
                       Connect and trade within your professional expat community
                     </p>
                   </div>
@@ -301,8 +328,8 @@ export default function RegisterPage() {
 
               <div className="pt-6 border-t border-white/20">
                 <div className="text-center">
-                  <h4 className="text-lg font-semibold mb-3 text-brand-secondary">Be a Member</h4>
-                  <p className="text-sm text-blue-200">
+                  <h4 className="text-2xl font-semibold mb-3 text-brand-secondary">Be a Member</h4>
+                  <p className="text-sm text-white">
                     Join our growing community of verified expat professionals and help shape the
                     future of our marketplace
                   </p>
@@ -313,26 +340,26 @@ export default function RegisterPage() {
 
           {/* Right Panel - Registration Form */}
           <div className="lg:col-span-3 flex items-center justify-center">
-            <Card className="w-full max-w-xl bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl border border-white/20">
-              <CardHeader className="text-center pb-3 pt-4">
-                <Link href="/" className="inline-block mx-auto mb-3 lg:mb-4">
-                  <div className="text-2xl lg:text-3xl font-bold font-display text-brand-primary hover:opacity-80 transition-opacity cursor-pointer">
+            <Card className="w-full max-w-2xl bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl border border-white/20">
+              <CardHeader className="text-center pb-1 pt-2">
+                <Link href="/" className="inline-block mx-auto mb-1">
+                  <div className="text-xl font-bold font-display text-brand-primary hover:opacity-80 transition-opacity cursor-pointer">
                     Globo<span className="text-brand-secondary">expats</span>
                   </div>
                 </Link>
-                <CardTitle className="text-2xl font-bold text-neutral-800 mb-1">
+                <CardTitle className="text-lg font-bold text-neutral-800 mb-0.5">
                   Create Your Account
                 </CardTitle>
-                <p className="text-neutral-600 text-base">
+                <p className="text-neutral-600 text-xs">
                   Join our global community of professionals
                 </p>
               </CardHeader>
 
-              <CardContent className="px-6 pb-6">
+              <CardContent className="px-6 pb-3 pt-2">
                 {error && (
-                  <Alert className="mb-6 border-red-200 bg-red-50">
-                    <AlertCircle className="h-5 w-5 text-red-600" />
-                    <AlertDescription className="text-red-700 font-medium">
+                  <Alert className="mb-3 border-red-200 bg-red-50">
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <AlertDescription className="text-red-700 text-sm font-medium">
                       {error}
                     </AlertDescription>
                   </Alert>
@@ -346,15 +373,15 @@ export default function RegisterPage() {
                 )}
 
                 {/* Social Authentication Buttons */}
-                <div className="space-y-2 mb-4">
-                  <p className="text-center text-neutral-600 font-medium">
+                <div className="space-y-1.5 mb-2">
+                  <p className="text-center text-neutral-600 font-medium text-xs">
                     Quick registration with
                   </p>
                   <Button
                     variant="outline"
                     onClick={handleGoogleRegister}
                     disabled={isLoading || socialLoading !== null}
-                    className="w-full h-12 border-2 hover:bg-neutral-50 transition-all duration-200 rounded-full"
+                    className="w-full h-9 border-2 hover:bg-neutral-50 transition-all duration-200 rounded-full"
                   >
                     {socialLoading === 'google' ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
@@ -385,22 +412,22 @@ export default function RegisterPage() {
                   </Button>
                 </div>
 
-                <div className="relative mb-4">
+                <div className="relative mb-2">
                   <div className="absolute inset-0 flex items-center">
                     <Separator className="w-full" />
                   </div>
                   <div className="relative flex justify-center text-sm uppercase">
-                    <span className="bg-white px-4 text-neutral-500 font-medium">
+                    <span className="bg-white px-3 text-neutral-500 font-medium text-xs">
                       Or register with email
                     </span>
                   </div>
                 </div>
 
                 {/* Registration Form */}
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName" className="text-neutral-700 font-medium">
+                <form onSubmit={handleSubmit} className="space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label htmlFor="firstName" className="text-neutral-700 font-medium text-xs">
                         First Name
                       </Label>
                       <Input
@@ -416,8 +443,8 @@ export default function RegisterPage() {
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName" className="text-neutral-700 font-medium">
+                    <div className="space-y-1">
+                      <Label htmlFor="lastName" className="text-neutral-700 font-medium text-xs">
                         Last Name
                       </Label>
                       <Input
@@ -434,8 +461,8 @@ export default function RegisterPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="personalEmail" className="text-neutral-700 font-medium">
+                  <div className="space-y-1">
+                    <Label htmlFor="personalEmail" className="text-neutral-700 font-medium text-xs">
                       Email Address
                     </Label>
                     <Input
@@ -444,7 +471,7 @@ export default function RegisterPage() {
                       type="email"
                       placeholder="your.email@example.com"
                       autoComplete="email"
-                      className={`h-12 border-neutral-300 focus:border-brand-secondary focus:ring-brand-secondary/50 ${
+                      className={`h-9 border-neutral-300 focus:border-brand-secondary focus:ring-brand-secondary/50 text-sm ${
                         formData.personalEmail && !validateEmail(formData.personalEmail)
                           ? 'border-red-300 focus:border-red-500'
                           : formData.personalEmail && validateEmail(formData.personalEmail)
@@ -464,8 +491,29 @@ export default function RegisterPage() {
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="text-neutral-700 font-medium">
+                  <div className="space-y-1">
+                    <Label htmlFor="phoneNumber" className="text-neutral-700 font-medium text-xs">
+                      WhatsApp Number{' '}
+                      <span className="text-neutral-400 text-[10px]">(Optional)</span>
+                    </Label>
+                    <Input
+                      id="phoneNumber"
+                      name="phone"
+                      type="tel"
+                      placeholder="+255 712 345 678"
+                      autoComplete="tel"
+                      className="h-8 border-neutral-300 focus:border-brand-secondary focus:ring-brand-secondary/50 text-sm"
+                      value={formData.phoneNumber}
+                      onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                      disabled={isLoading || socialLoading !== null}
+                    />
+                    <p className="text-[10px] text-neutral-500">
+                      💬 We'll use this for order updates and communication (include country code)
+                    </p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label htmlFor="password" className="text-neutral-700 font-medium text-xs">
                       Password
                     </Label>
                     <div className="relative">
@@ -475,7 +523,7 @@ export default function RegisterPage() {
                         type={showPassword ? 'text' : 'password'}
                         placeholder="Create a secure password"
                         autoComplete="new-password"
-                        className="h-12 pr-12 border-neutral-300 focus:border-brand-secondary focus:ring-brand-secondary/50"
+                        className="h-8 pr-10 border-neutral-300 focus:border-brand-secondary focus:ring-brand-secondary/50 text-sm"
                         value={formData.password}
                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         disabled={isLoading || socialLoading !== null}
@@ -485,7 +533,7 @@ export default function RegisterPage() {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8"
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-7 w-7"
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? (
@@ -495,50 +543,13 @@ export default function RegisterPage() {
                         )}
                       </Button>
                     </div>
-
-                    {/* Password Strength Indicator */}
-                    {formData.password && (
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <Progress value={passwordStrength} className="flex-1 h-2" />
-                          <span className="text-sm font-medium text-neutral-600">
-                            {passwordStrength < 50
-                              ? 'Weak'
-                              : passwordStrength < 75
-                                ? 'Good'
-                                : 'Strong'}
-                          </span>
-                        </div>
-                        <div className="space-y-1 text-sm">
-                          <div className="flex items-center gap-2">
-                            <div
-                              className={`flex items-center gap-1 ${formData.password.length >= 8 ? 'text-green-600' : 'text-neutral-400'}`}
-                            >
-                              {formData.password.length >= 8 ? (
-                                <Check className="h-3 w-3" />
-                              ) : (
-                                <X className="h-3 w-3" />
-                              )}
-                              <span>At least 8 characters</span>
-                            </div>
-                            <div
-                              className={`flex items-center gap-1 ${/[A-Z]/.test(formData.password) ? 'text-green-600' : 'text-neutral-400'}`}
-                            >
-                              {/[A-Z]/.test(formData.password) ? (
-                                <Check className="h-3 w-3" />
-                              ) : (
-                                <X className="h-3 w-3" />
-                              )}
-                              <span>Uppercase letter</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-neutral-700 font-medium">
+                  <div className="space-y-1">
+                    <Label
+                      htmlFor="confirmPassword"
+                      className="text-neutral-700 font-medium text-xs"
+                    >
                       Confirm Password
                     </Label>
                     <div className="relative">
@@ -546,7 +557,7 @@ export default function RegisterPage() {
                         id="confirmPassword"
                         type={showConfirmPassword ? 'text' : 'password'}
                         placeholder="Confirm your password"
-                        className={`h-12 pr-12 border-neutral-300 focus:border-brand-secondary focus:ring-brand-secondary/50 ${
+                        className={`h-9 pr-10 border-neutral-300 focus:border-brand-secondary focus:ring-brand-secondary/50 text-sm ${
                           formData.confirmPassword && formData.password !== formData.confirmPassword
                             ? 'border-red-300 focus:border-red-500'
                             : formData.confirmPassword &&
@@ -583,8 +594,8 @@ export default function RegisterPage() {
                     )}
                   </div>
 
-                  <div className="space-y-3 pt-3 border-t border-neutral-200/80">
-                    <div className="space-y-3">
+                  <div className="space-y-2 pt-2 border-t border-neutral-200/80">
+                    <div className="space-y-2">
                       <div className="flex items-center space-x-3">
                         <Checkbox
                           id="terms"
@@ -595,7 +606,7 @@ export default function RegisterPage() {
                           disabled={isLoading || socialLoading !== null}
                           required
                         />
-                        <Label htmlFor="terms" className="text-sm text-neutral-700 leading-tight">
+                        <Label htmlFor="terms" className="text-xs text-neutral-700 leading-tight">
                           I agree to the{' '}
                           <Link
                             href="/terms"
@@ -616,7 +627,7 @@ export default function RegisterPage() {
                           disabled={isLoading || socialLoading !== null}
                           required
                         />
-                        <Label htmlFor="privacy" className="text-sm text-neutral-700 leading-tight">
+                        <Label htmlFor="privacy" className="text-xs text-neutral-700 leading-tight">
                           I agree to the{' '}
                           <Link
                             href="/privacy"
@@ -630,7 +641,7 @@ export default function RegisterPage() {
 
                     <Button
                       type="submit"
-                      className={`w-full h-11 text-base font-bold transition-all duration-200 ${
+                      className={`w-full h-9 text-sm font-bold transition-all duration-200 ${
                         isFormValid && !isLoading
                           ? 'bg-brand-primary hover:bg-brand-primary/90 transform hover:scale-105'
                           : 'bg-neutral-400'
@@ -651,7 +662,7 @@ export default function RegisterPage() {
                     {!isFormValid &&
                       (formData.firstName || formData.lastName || formData.personalEmail) && (
                         <div className="text-center">
-                          <Badge variant="outline" className="text-sm text-neutral-500">
+                          <Badge variant="outline" className="text-xs text-neutral-500">
                             Complete all required fields and accept terms
                           </Badge>
                         </div>
@@ -659,8 +670,8 @@ export default function RegisterPage() {
                   </div>
                 </form>
 
-                <div className="text-center pt-4 border-t border-neutral-200/80">
-                  <p className="text-sm text-neutral-600">
+                <div className="text-center pt-2 border-t border-neutral-200/80">
+                  <p className="text-xs text-neutral-600">
                     Already have an account?{' '}
                     <Link
                       href="/login"

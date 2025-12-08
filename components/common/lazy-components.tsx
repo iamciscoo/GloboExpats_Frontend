@@ -23,12 +23,6 @@ export const ExpatDashboard = dynamic(() => import('@/app/expat/dashboard/page')
 
 // Chart components can be lazy loaded when needed in the future
 
-// Messages interface (WebSocket heavy)
-export const MessagesInterface = dynamic(() => import('@/app/messages/page'), {
-  loading: () => <PageSkeleton sidebar={false} />,
-  ssr: false,
-})
-
 // Notification system (real-time features)
 export const NotificationCenter = dynamic(() => import('@/app/notifications/page'), {
   loading: () => <TableSkeleton />,
@@ -39,7 +33,7 @@ export const NotificationCenter = dynamic(() => import('@/app/notifications/page
 export const LazyComponents = {
   AdminDashboard,
   ExpatDashboard,
-  MessagesInterface,
+
   NotificationCenter,
 }
 
