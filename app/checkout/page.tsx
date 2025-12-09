@@ -218,7 +218,7 @@ export default function CheckoutPage() {
   } | null>(null)
   const [_loadingSeller, setLoadingSeller] = useState(false)
   const [agreeToTerms, setAgreeToTerms] = useState(false)
-  const [shippingMethod, setShippingMethod] = useState('delivery')
+  const [shippingMethod, setShippingMethod] = useState('pickup') // Default to Arrange with Seller since Arrange with Us is coming soon
 
   // Payment details state
   const [paymentDetails, setPaymentDetails] = useState({
@@ -241,7 +241,6 @@ export default function CheckoutPage() {
     [selectedCountry]
   )
 
-  // Delivery options with Global Expat branding - memoized for performance
   const shippingOptions = useMemo(
     () => [
       {
@@ -252,6 +251,7 @@ export default function CheckoutPage() {
         description: 'Within city delivery',
         isGloboExpat: true,
         priceDisplay: 'Varies',
+        comingSoon: true, // Disable this option
       },
       {
         id: 'pickup',
@@ -261,6 +261,7 @@ export default function CheckoutPage() {
         description: 'Meet at agreed location',
         isGloboExpat: false,
         priceDisplay: 'Free',
+        comingSoon: false,
       },
     ],
     []
@@ -478,6 +479,7 @@ export default function CheckoutPage() {
 
     try {
       const isMobilePayment = mobilePaymentMethodIds.includes(selectedPayment)
+      const isMeetupPayment = selectedPayment === 'meetup'
       const paymentLabel =
         paymentMethods.find((m) => m.id === selectedPayment)?.name || 'Cash on Delivery'
 
@@ -488,28 +490,29 @@ export default function CheckoutPage() {
       let mobileStatus: string | undefined
       let mobileMessage: string | undefined
 
-      if (isMobilePayment) {
-        checkoutItemsPayload = checkoutItems.reduce<{ productId: number; quantity: number }[]>(
-          (acc, item) => {
-            const rawId =
-              typeof item.productId === 'number' ? item.productId : Number(item.productId)
-            const fallbackId = Number(item.id)
-            const productIdValue = Number.isFinite(rawId) ? rawId : fallbackId
+      // Prepare checkout items payload for API calls
+      const prepareCheckoutItems = () => {
+        return checkoutItems.reduce<{ productId: number; quantity: number }[]>((acc, item) => {
+          const rawId = typeof item.productId === 'number' ? item.productId : Number(item.productId)
+          const fallbackId = Number(item.id)
+          const productIdValue = Number.isFinite(rawId) ? rawId : fallbackId
 
-            if (!Number.isFinite(productIdValue)) {
-              console.warn('[Checkout] Skipping item without numeric productId', item)
-              return acc
-            }
-
-            acc.push({
-              productId: productIdValue,
-              quantity: Math.max(1, item.quantity || 1),
-            })
-
+          if (!Number.isFinite(productIdValue)) {
+            console.warn('[Checkout] Skipping item without numeric productId', item)
             return acc
-          },
-          []
-        )
+          }
+
+          acc.push({
+            productId: productIdValue,
+            quantity: Math.max(1, item.quantity || 1),
+          })
+
+          return acc
+        }, [])
+      }
+
+      if (isMobilePayment) {
+        checkoutItemsPayload = prepareCheckoutItems()
 
         if (checkoutItemsPayload.length === 0) {
           throw new Error(
@@ -560,8 +563,57 @@ export default function CheckoutPage() {
           description:
             'We sent an STK push to your device. Approve the prompt to complete your payment.',
         })
+      } else if (isMeetupPayment) {
+        // Handle Meet in Person checkout via meet-seller API
+        checkoutItemsPayload = prepareCheckoutItems()
+
+        if (checkoutItemsPayload.length === 0) {
+          throw new Error(
+            'Unable to prepare checkout items. Please refresh your cart and try again.'
+          )
+        }
+
+        const meetSellerPayload: MobileCheckoutPayload = {
+          buyDetails: {
+            firstName: shippingAddress.firstName,
+            lastName: shippingAddress.lastName,
+            emailAddress: shippingAddress.email,
+            phoneNumber: shippingAddress.phone,
+            address: shippingAddress.address,
+            city: shippingAddress.city,
+            state: shippingAddress.state || '',
+            country: shippingAddress.country,
+            zipCode: shippingAddress.zip || '',
+            deliveryInstructions: shippingAddress.instructions || '',
+            deliveryMethod: 'MEET_SELLER',
+            paymentMethod: paymentLabel,
+            agreeToTerms,
+            totalAmount: Number(checkoutSubtotal.toFixed(2)),
+            currency: selectedCountryData?.currency || 'TZS',
+          },
+          items: checkoutItemsPayload,
+        }
+
+        const meetSellerResponse = await api.checkout.meetSeller(meetSellerPayload)
+
+        if (!meetSellerResponse.success) {
+          throw new Error(
+            meetSellerResponse.message || 'Unable to complete checkout. Please try again.'
+          )
+        }
+
+        orderId =
+          meetSellerResponse.data?.orderId ||
+          meetSellerResponse.data?.transactionId ||
+          `MS-${Date.now()}`
+
+        toast({
+          title: 'Order Submitted Successfully!',
+          description:
+            'The seller has been notified. You will receive contact details to arrange your meetup.',
+        })
       } else {
-        // Simulate API call delay for offline payment methods
+        // Handle Cash on Delivery (cod) - simulate API call
         await new Promise((resolve) => setTimeout(resolve, 2000))
         orderId = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`
       }
@@ -569,7 +621,11 @@ export default function CheckoutPage() {
       // Store order data in localStorage BEFORE clearing cart
       const orderData = {
         id: orderId,
-        status: isMobilePayment ? 'pending_payment' : 'confirmed',
+        status: isMobilePayment
+          ? 'pending_payment'
+          : isMeetupPayment
+            ? 'awaiting_meetup'
+            : 'confirmed',
         date: new Date().toISOString(),
         estimatedDelivery:
           shippingMethod === 'delivery'
@@ -578,7 +634,11 @@ export default function CheckoutPage() {
         total: checkoutSubtotal,
         currency: selectedCountryData?.currency || 'TZS',
         paymentMethod: paymentLabel,
-        paymentStatus: isMobilePayment ? 'Awaiting mobile confirmation' : 'Pay on delivery/pickup',
+        paymentStatus: isMobilePayment
+          ? 'Awaiting mobile confirmation'
+          : isMeetupPayment
+            ? 'Pay when you meet seller'
+            : 'Pay on delivery/pickup',
         items: checkoutItems.map((item) => ({
           id: item.id,
           title: item.title,
@@ -912,47 +972,92 @@ export default function CheckoutPage() {
                   {/* Shipping Options */}
                   <div className="space-y-4">
                     <Label className="text-base font-medium">Delivery Method</Label>
-                    <RadioGroup value={shippingMethod} onValueChange={setShippingMethod}>
+                    <RadioGroup
+                      value={shippingMethod}
+                      onValueChange={(value) => {
+                        // Only allow changing to non-coming-soon options
+                        const option = shippingOptions.find((opt) => opt.id === value)
+                        if (option && !option.comingSoon) {
+                          setShippingMethod(value)
+                        }
+                      }}
+                    >
                       {shippingOptions.map((option) => (
                         <label
                           key={option.id}
                           htmlFor={option.id}
-                          className={`flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer hover:bg-neutral-50 hover:border-brand-primary/50 transition-all duration-200 ${
-                            option.isGloboExpat
-                              ? 'bg-gradient-to-r from-brand-primary/5 to-brand-secondary/5 border-brand-primary/30'
-                              : ''
-                          } ${
-                            shippingMethod === option.id
-                              ? 'border-brand-primary bg-brand-primary/5'
-                              : 'border-neutral-200'
-                          }`}
+                          className={`flex items-start space-x-3 p-4 border-2 rounded-lg transition-all duration-200
+                            ${
+                              option.comingSoon
+                                ? `cursor-not-allowed border-dashed border-neutral-200 ${
+                                    option.isGloboExpat
+                                      ? 'bg-gradient-to-r from-brand-primary/[0.02] to-brand-secondary/[0.02]'
+                                      : 'bg-neutral-50'
+                                  }`
+                                : `cursor-pointer hover:bg-neutral-50 hover:border-brand-primary/50 ${
+                                    shippingMethod === option.id
+                                      ? 'border-brand-primary bg-brand-primary/5'
+                                      : option.isGloboExpat
+                                        ? 'bg-gradient-to-r from-brand-primary/5 to-brand-secondary/5 border-brand-primary/30'
+                                        : 'border-neutral-200'
+                                  }`
+                            }`}
                         >
-                          <RadioGroupItem value={option.id} id={option.id} className="mt-1" />
+                          <RadioGroupItem
+                            value={option.id}
+                            id={option.id}
+                            className="mt-1"
+                            disabled={option.comingSoon}
+                          />
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-2">
                               <div
                                 className={`font-medium flex items-center gap-2 ${
-                                  option.isGloboExpat ? 'text-brand-primary' : ''
+                                  option.isGloboExpat
+                                    ? 'text-brand-primary'
+                                    : option.comingSoon
+                                      ? 'text-neutral-400'
+                                      : ''
                                 }`}
                               >
                                 {option.isGloboExpat && (
-                                  <span className="inline-flex items-center text-xs font-bold bg-brand-primary text-white px-2 py-0.5 rounded">
-                                    Globo<span className="text-brand-secondary">expat</span>
+                                  <span className="inline-flex items-center text-xs font-bold px-2 py-0.5 rounded bg-brand-primary text-white">
+                                    Globo
+                                    <span className="text-brand-secondary">expat</span>
                                   </span>
                                 )}
                                 {option.name}
+                                {option.comingSoon && (
+                                  <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full ml-2">
+                                    Coming Soon
+                                  </span>
+                                )}
                               </div>
                               <div className="text-right">
                                 <span
-                                  className={`font-semibold text-lg ${option.isGloboExpat ? 'text-brand-primary' : 'text-neutral-600'}`}
+                                  className={`font-semibold text-lg ${
+                                    option.isGloboExpat
+                                      ? 'text-brand-primary'
+                                      : option.comingSoon
+                                        ? 'text-neutral-400'
+                                        : 'text-neutral-600'
+                                  }`}
                                 >
                                   {option.priceDisplay || 'Varies'}
                                 </span>
                               </div>
                             </div>
                             <div className="space-y-1">
-                              <p className="text-sm text-neutral-600 font-medium">{option.time}</p>
-                              <p className="text-sm text-neutral-600">{option.description}</p>
+                              <p
+                                className={`text-sm font-medium ${option.comingSoon ? 'text-neutral-500' : 'text-neutral-600'}`}
+                              >
+                                {option.time}
+                              </p>
+                              <p
+                                className={`text-sm ${option.comingSoon ? 'text-neutral-500' : 'text-neutral-600'}`}
+                              >
+                                {option.description}
+                              </p>
                             </div>
                           </div>
                         </label>

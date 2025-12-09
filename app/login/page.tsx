@@ -325,23 +325,6 @@ function LoginContent() {
                   </div>
                 </div>
               </div>
-
-              <div className="pt-6 border-t border-white/20">
-                <div className="text-center">
-                  <h4 className="text-xl font-semibold mb-3 text-white">New to GloboExpat?</h4>
-                  <p className="text-sm text-blue-100 mb-4">
-                    Join our growing community of verified expat professionals
-                  </p>
-                  <Link href="/register">
-                    <Button
-                      variant="outline"
-                      className="w-full rounded-full bg-white/10 border-2 border-white/40 text-white hover:bg-white/20 hover:border-white/60 font-semibold"
-                    >
-                      Create Account
-                    </Button>
-                  </Link>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -526,16 +509,22 @@ function LoginContent() {
                 </form>
 
                 {/* Registration Link - Desktop Only (mobile shows in left panel) */}
-                <div className="text-center pt-3 border-t border-neutral-200/80 lg:hidden">
-                  <p className="text-xs text-neutral-600">
-                    Don't have an account?{' '}
-                    <Link
-                      href="/register"
-                      className="font-semibold text-brand-primary hover:text-brand-secondary hover:underline"
-                    >
-                      Register Now
-                    </Link>
+                {/* Registration Link - Visible on all devices now */}
+                <div className="text-center pt-6 border-t border-neutral-200">
+                  <h4 className="text-lg font-semibold text-neutral-800 mb-2">
+                    New to GloboExpat?
+                  </h4>
+                  <p className="text-sm text-neutral-600 mb-4">
+                    Join our growing community of verified expat professionals
                   </p>
+                  <Link href="/register">
+                    <Button
+                      variant="outline"
+                      className="w-full h-12 rounded-full border-2 border-brand-primary text-brand-primary hover:bg-brand-primary/5 font-bold text-base transition-all duration-200 hover:scale-[1.02]"
+                    >
+                      Create Account
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>

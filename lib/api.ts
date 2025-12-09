@@ -94,6 +94,14 @@ interface MobileCheckoutResponse {
   reference?: string
 }
 
+/** Response returned by the meet-seller checkout endpoint */
+interface MeetSellerCheckoutResponse {
+  orderId?: string
+  transactionId?: string
+  status?: string
+  message?: string
+}
+
 // ============================================================================
 // API CLIENT CLASS
 // ============================================================================
@@ -1677,6 +1685,16 @@ class ApiClient {
     })
   }
 
+  /** Initiates the meet-seller checkout flow (Arrange with Seller) */
+  async initiateMeetSellerCheckout(
+    payload: MobileCheckoutPayload
+  ): Promise<ApiResponse<MeetSellerCheckoutResponse>> {
+    return this.request('/api/v1/checkout/meet-seller', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  }
+
   // ============================================================================
   // CART ENDPOINTS - DEPRECATED (Client-Side Cart Only)
   // ============================================================================
@@ -1736,6 +1754,7 @@ export const api = {
   /** Checkout flows */
   checkout: {
     mobilePay: (data: MobileCheckoutPayload) => apiClient.initiateMobileCheckout(data),
+    meetSeller: (data: MobileCheckoutPayload) => apiClient.initiateMeetSellerCheckout(data),
   },
 
   /** Cart management operations - DEPRECATED: Now client-side only */

@@ -243,52 +243,45 @@
   width: 100% !important;
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments for mobile */
 @media (max-width: 640px) {
   .driver-popover.globoexpats-tour-popover {
     position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    width: calc(100vw - 32px) !important;
-    max-width: 400px !important;
-    min-width: unset !important;
+    top: auto !important;
+    bottom: 20px !important;
+    left: 16px !important;
+    right: 16px !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
     margin: 0 !important;
-    max-height: 85vh !important;
-    overflow-y: auto !important;
-    border-radius: 16px !important;
-    z-index: 100000 !important;
-    bottom: auto !important;
-    right: auto !important;
   }
 
-  /* Hide arrow on mobile as we are positioning fixed in center */
+  /* Hide arrow on mobile as we are positioning fixed */
   .driver-popover.globoexpats-tour-popover .driver-popover-arrow {
     display: none !important;
   }
 
   .driver-popover.globoexpats-tour-popover.driver-popover-loading {
+    min-width: unset !important;
+    max-width: calc(100vw - 40px) !important;
     width: calc(100vw - 40px) !important;
-    max-width: 300px !important;
   }
 
   .driver-popover.globoexpats-tour-popover .driver-popover-title {
     font-size: 18px;
     text-align: center;
-    margin-top: 8px;
   }
 
   .driver-popover.globoexpats-tour-popover .driver-popover-description {
     font-size: 14px;
     text-align: center;
-    margin-bottom: 16px;
   }
 
   .driver-popover.globoexpats-tour-popover .driver-popover-footer {
     justify-content: center;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #f1f5f9;
+    margin-top: 15px;
   }
 
   .driver-popover.globoexpats-tour-popover .driver-popover-footer button {

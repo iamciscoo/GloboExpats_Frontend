@@ -377,8 +377,15 @@ export default function BrowsePage() {
     return transformBackendProduct(item)
   }
 
+  // Ref to prevent double-fetching in React Strict Mode
+  const hasFetchedProducts = useRef(false)
+
   // Fetch products from backend (client-side filtering only)
   useEffect(() => {
+    // Guard against double-fetch in Strict Mode
+    if (hasFetchedProducts.current) return
+    hasFetchedProducts.current = true
+
     const fetchProducts = async () => {
       try {
         setLoading(true)
@@ -405,11 +412,13 @@ export default function BrowsePage() {
         setCategoryCounts(getCategoryCounts(transformedProducts))
 
         // Debug: Log all unique categories found in products
-        const uniqueCategories = [
-          ...new Set(transformedProducts.map((p) => p.category).filter(Boolean)),
-        ]
-        console.log('All available categories:', uniqueCategories)
-        console.log('Category counts:', getCategoryCounts(transformedProducts))
+        if (process.env.NODE_ENV === 'development') {
+          const uniqueCategories = [
+            ...new Set(transformedProducts.map((p) => p.category).filter(Boolean)),
+          ]
+          console.log('All available categories:', uniqueCategories)
+          console.log('Category counts:', getCategoryCounts(transformedProducts))
+        }
       } catch (err) {
         // Check if this is an authentication error
         const error = err as Error & { isAuthError?: boolean; statusCode?: number }
@@ -709,12 +718,25 @@ export default function BrowsePage() {
   )
 
   // Fetch click counts for currently visible products in background
+  // Track which products we've already fetched to avoid re-fetching
+  const fetchedClickCountsRef = useRef<Set<string>>(new Set())
+
   useEffect(() => {
     if (currentProducts.length === 0) return
 
+    // Filter out products we've already fetched
+    const productsToFetch = currentProducts.filter(
+      (p) => !fetchedClickCountsRef.current.has(String(p.id))
+    )
+
+    if (productsToFetch.length === 0) return
+
+    // Mark these as being fetched
+    productsToFetch.forEach((p) => fetchedClickCountsRef.current.add(String(p.id)))
+
     // Fetch click counts for visible products and update them
     Promise.all(
-      currentProducts.map(async (product) => {
+      productsToFetch.map(async (product) => {
         try {
           const clickData = await apiClient.getProductClickCount(Number(product.id))
           return { id: product.id, views: clickData.clicks || 0 }
@@ -735,7 +757,8 @@ export default function BrowsePage() {
         return updated
       })
     })
-  }, [currentProductIds, currentProducts]) // Only re-run when visible product IDs change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentProductIds]) // Only re-run when visible product IDs change (currentProducts omitted to prevent infinite loop)
 
   // Reset to page 1 when filters change
   useEffect(() => {

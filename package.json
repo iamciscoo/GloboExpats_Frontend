@@ -4,7 +4,7 @@
   "private": true,
   "description": "Expat Marketplace Frontend - A Next.js application for global expat community marketplace",
   "scripts": {
-    "dev": "next dev",
+    "dev": "NODE_NO_WARNINGS=1 next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx --fix",
@@ -20,7 +20,7 @@
     "clean": "rm -rf .next out dist",
     "precommit": "npm run lint:check && npm run type-check",
     "postinstall": "echo 'Frontend dependencies installed successfully'",
-    "dev:turbo": "next dev --turbo"
+    "dev:turbo": "NODE_NO_WARNINGS=1 next dev --turbo"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -53,6 +53,7 @@
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
     "autoprefixer": "^10.4.20",
+    "caniuse-lite": "^1.0.30001760",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
