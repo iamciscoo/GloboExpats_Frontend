@@ -38,6 +38,7 @@ interface FormData {
   originalPrice: string
   currency: string
   warranty: string
+  quantity: string
   categoryFields: Record<string, string> // Dynamic fields based on category
 }
 
@@ -54,6 +55,7 @@ const INITIAL_FORM_DATA: FormData = {
   originalPrice: '',
   currency: 'TZS',
   warranty: '',
+  quantity: '1',
   categoryFields: {},
 }
 
@@ -413,6 +415,7 @@ function SellPageContent() {
         askingPrice: Math.round(askingPriceInTZS), // Round to nearest shilling
         originalPrice: Math.round(originalPriceInTZS),
         productWarranty: formData.warranty.trim() || 'No warranty', // Use form data or default
+        quantity: parseInt(formData.quantity) || 1,
       }
 
       // Call the backend API with reordered images (main image first)
@@ -1216,6 +1219,28 @@ function Step3Content({
         <p className="text-xs sm:text-sm text-neutral-500">
           {formData.warranty.length}/100 • Specify warranty details if applicable (e.g., remaining
           manufacturer warranty, seller guarantee)
+        </p>
+      </div>
+
+      {/* Quantity */}
+      <div className="space-y-3">
+        <Label htmlFor="quantity" className="text-base font-semibold text-neutral-800">
+          Available Quantity
+        </Label>
+        <div className="relative">
+          <Input
+            id="quantity"
+            type="number"
+            min="1"
+            max="1000"
+            placeholder="1"
+            className="h-12 sm:h-14 text-base border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 transition-all duration-200 bg-white"
+            value={formData.quantity}
+            onChange={(e) => updateFormData({ quantity: e.target.value })}
+          />
+        </div>
+        <p className="text-xs sm:text-sm text-neutral-500">
+          How many of these items do you have available for sale?
         </p>
       </div>
 

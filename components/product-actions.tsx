@@ -2,6 +2,7 @@
 
 import { useVerification } from '@/hooks/use-verification'
 import { VerificationPopup } from '@/components/verification-popup'
+import { Minus, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/hooks/use-cart'
 import { useRouter } from 'next/navigation'
@@ -44,6 +45,15 @@ export function ProductActions({
   const { toast } = useToast()
   const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
+  const [quantity, setQuantity] = useState(1)
+
+  const incrementQuantity = () => {
+    if (quantity < 10) setQuantity((prev) => prev + 1)
+  }
+
+  const decrementQuantity = () => {
+    if (quantity > 1) setQuantity((prev) => prev - 1)
+  }
 
   // Check if current user is the seller using multiple strategies
   const userFullName = user ? `${user.firstName} ${user.lastName}`.trim() : ''
@@ -111,7 +121,7 @@ export function ProductActions({
         currency: currency,
       })
 
-      await addToCart(cartItem)
+      await addToCart(cartItem, quantity)
 
       toast({
         title: 'Added to cart',
@@ -171,7 +181,7 @@ export function ProductActions({
         currency: currency,
       })
 
-      await addToCart(cartItem)
+      await addToCart(cartItem, quantity)
 
       toast({
         title: 'Proceeding to checkout',
@@ -192,27 +202,53 @@ export function ProductActions({
   // Removed Contact Seller in favor of dedicated Message button on product page
 
   return (
-    <div className="space-y-2 sm:space-y-3">
-      <Button
-        onClick={handleAddToCart}
-        disabled={isLoading}
-        className="w-full bg-brand-primary hover:bg-brand-primary/90 text-white rounded-full h-11 sm:h-12 text-sm sm:text-base font-medium"
-      >
-        {isLoading ? 'Adding...' : 'Add to Cart'}
-      </Button>
-      <Button
-        onClick={handleBuy}
-        disabled={isLoading}
-        variant="secondary"
-        className="w-full bg-amber-600 hover:bg-amber-700 text-black rounded-full h-11 sm:h-12 text-sm sm:text-base font-medium"
-      >
-        {isLoading ? 'Processing...' : 'Buy Now'}
-      </Button>
-      <VerificationPopup
-        isOpen={isVerificationPopupOpen}
-        onClose={closeVerificationPopup}
-        action={currentAction || 'buy'}
-      />
+    <div className="space-y-4">
+      <div className="flex items-center space-x-4">
+        <span className="text-sm font-medium text-gray-700">Quantity</span>
+        <div className="flex items-center border border-gray-300 rounded-lg">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 rounded-l-lg rounded-r-none hover:bg-gray-100"
+            onClick={decrementQuantity}
+            disabled={quantity <= 1 || isLoading}
+          >
+            <Minus className="h-4 w-4" />
+          </Button>
+          <div className="w-12 text-center text-sm font-semibold">{quantity}</div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 rounded-r-lg rounded-l-none hover:bg-gray-100"
+            onClick={incrementQuantity}
+            disabled={quantity >= 10 || isLoading}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      <div className="space-y-2 sm:space-y-3">
+        <Button
+          onClick={handleAddToCart}
+          disabled={isLoading}
+          className="w-full bg-brand-primary hover:bg-brand-primary/90 text-white rounded-full h-11 sm:h-12 text-sm sm:text-base font-medium"
+        >
+          {isLoading ? 'Adding...' : 'Add to Cart'}
+        </Button>
+        <Button
+          onClick={handleBuy}
+          disabled={isLoading}
+          variant="secondary"
+          className="w-full bg-amber-600 hover:bg-amber-700 text-black rounded-full h-11 sm:h-12 text-sm sm:text-base font-medium"
+        >
+          {isLoading ? 'Processing...' : 'Buy Now'}
+        </Button>
+        <VerificationPopup
+          isOpen={isVerificationPopupOpen}
+          onClose={closeVerificationPopup}
+          action={currentAction || 'buy'}
+        />
+      </div>
     </div>
   )
 }

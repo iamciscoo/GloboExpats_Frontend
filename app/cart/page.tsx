@@ -11,6 +11,8 @@ import {
   ShoppingBag,
   Star,
   MapPin,
+  Minus,
+  Plus,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -33,6 +35,7 @@ export default function CartPage() {
     toggleItemSelection,
     selectAllItems,
     deselectAllItems,
+    updateQuantity,
   } = useCart()
 
   // Final total is simply the selected subtotal (using asking price only)
@@ -230,6 +233,33 @@ export default function CartPage() {
                             Remove
                           </Button>
                         </div>
+
+                        {/* Quantity Control (Mobile) */}
+                        <div className="mt-2 pl-[30px] flex items-center gap-2">
+                          <div className="flex items-center border border-neutral-200 rounded-md bg-white">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 rounded-none"
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              disabled={item.quantity <= 1}
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                            <span className="w-8 text-center text-xs font-medium">
+                              {item.quantity}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 rounded-none"
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              disabled={item.quantity >= 10}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
 
                       {/* Tablet & Desktop Layout (>= md) */}
@@ -291,11 +321,40 @@ export default function CartPage() {
                             <div className="flex flex-col items-end gap-3">
                               <div className="text-lg lg:text-xl font-bold text-neutral-900">
                                 <PriceDisplay
-                                  price={item.price}
+                                  price={item.price * item.quantity}
                                   size="lg"
                                   weight="bold"
                                   showOriginal
                                 />
+                                {item.quantity > 1 && (
+                                  <div className="text-xs font-normal text-neutral-500 text-right mt-1">
+                                    <PriceDisplay price={item.price} size="sm" /> each
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="flex items-center border border-neutral-200 rounded-md bg-white">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 rounded-none"
+                                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                  disabled={item.quantity <= 1}
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                                <span className="w-10 text-center text-sm font-medium">
+                                  {item.quantity}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 rounded-none"
+                                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                  disabled={item.quantity >= 10}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
                               </div>
 
                               <Button

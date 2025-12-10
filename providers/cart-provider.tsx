@@ -168,7 +168,7 @@ interface CartContextType extends CartState {
 
   // Cart Operations
   /** Add a product to the cart (single item only) */
-  addToCart: (product: Omit<CartItem, 'quantity'>) => Promise<void>
+  addToCart: (product: Omit<CartItem, 'quantity'>, quantity?: number) => Promise<void>
   /** Remove an item completely from the cart */
   removeFromCart: (itemId: string) => Promise<void>
   /** Update quantity of an existing cart item */
@@ -463,7 +463,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   )
 
   const addItem = useCallback(
-    async (item: Omit<CartItem, 'quantity'>) => {
+    async (item: Omit<CartItem, 'quantity'>, quantity: number = 1) => {
       if (!isLoggedIn) {
         toast({
           title: 'Login Required',
@@ -506,8 +506,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setCart((prev) => {
           const updatedSelectedItems = [...prev.selectedItems]
 
-          // New item - add to cart with quantity 1
-          const updatedItems = [...prev.items, { ...item, quantity: 1 }]
+          // New item - add to cart with specified quantity
+          const updatedItems = [...prev.items, { ...item, quantity: quantity }]
 
           // Auto-select new item for checkout
           if (!updatedSelectedItems.includes(item.id)) {
