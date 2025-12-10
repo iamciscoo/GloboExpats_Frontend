@@ -11,6 +11,7 @@ import {
   Loader2,
   TrendingUp,
   ExternalLink,
+  Eye,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -763,9 +764,17 @@ export default function ProductPage() {
                         </div>
                       )}
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
-                    <TrendingUp className="h-4 w-4" />
-                    <span>Great value compared to market price</span>
+                  <div className="flex flex-col gap-2 mt-3">
+                    <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
+                      <TrendingUp className="h-4 w-4" />
+                      <span>Great value compared to market price</span>
+                    </div>
+                    {product.views !== undefined && product.views > 0 && (
+                      <div className="flex items-center gap-2 text-sm text-blue-600 font-medium">
+                        <Eye className="h-4 w-4" />
+                        <span>{product.views} people are looking at this</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
