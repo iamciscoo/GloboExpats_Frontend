@@ -396,9 +396,9 @@ export default function BrowsePage() {
         // and handle filtering client-side. totalElements gives us the total count for display
         const response = await apiClient.getAllProductsComplete(20) // Fetch up to 20 pages (200 products)
         const { content: productsData, totalElements } = response
-        const transformedProducts = productsData.map((item) =>
-          transformToFeaturedItem(item as Record<string, unknown>)
-        )
+        const transformedProducts = productsData
+          .map((item) => transformToFeaturedItem(item as Record<string, unknown>))
+          .filter((item) => (item.quantity ?? 0) > 0) // Exclude out-of-stock items
 
         // Randomize products for initial display using Fisher-Yates shuffle
         const shuffled = [...transformedProducts]

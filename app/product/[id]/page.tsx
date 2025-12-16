@@ -165,7 +165,8 @@ export default function ProductPage() {
                 return (
                   (product.productId || product.id) !== Number(id) &&
                   String(product.productId) !== id &&
-                  String(product.id) !== id
+                  String(product.id) !== id &&
+                  (product.productQuantity as number) > 0
                 )
               })
               .slice(0, 4)
@@ -803,7 +804,10 @@ export default function ProductPage() {
                     <span className="text-sm font-semibold text-gray-900">
                       {(() => {
                         const qty = product.quantity ?? rawProductData?.productQuantity
-                        if (qty === undefined || qty === null || qty === 0) {
+                        if (qty === 0) {
+                          return <span className="text-red-600">Out of Stock</span>
+                        }
+                        if (qty === undefined || qty === null) {
                           return 'In Stock'
                         }
                         return `${qty} ${qty === 1 ? 'unit' : 'units'} available`
@@ -835,7 +839,9 @@ export default function ProductPage() {
                     productLocation={product.location}
                     verifiedSeller={product.isVerified}
                     currency="TZS"
+                    category={product.category}
                     expatId={String(rawProductData?.sellerId || 'unknown')}
+                    maxQuantity={product.quantity ?? rawProductData?.productQuantity}
                   />
                 </div>
               </CardContent>

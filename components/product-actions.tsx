@@ -23,6 +23,7 @@ interface ProductActionsProps {
   currency?: string
   category?: string
   expatId?: string
+  maxQuantity?: number
 }
 
 export function ProductActions({
@@ -37,6 +38,7 @@ export function ProductActions({
   currency = 'TZS',
   category = 'general',
   expatId = 'unknown',
+  maxQuantity,
 }: ProductActionsProps) {
   const { checkVerification, isVerificationPopupOpen, currentAction, closeVerificationPopup } =
     useVerification()
@@ -47,8 +49,13 @@ export function ProductActions({
   const [isLoading, setIsLoading] = useState(false)
   const [quantity, setQuantity] = useState(1)
 
+  // Determine availability
+  const isOutOfStock = maxQuantity !== undefined && maxQuantity <= 0
+
   const incrementQuantity = () => {
-    if (quantity < 10) setQuantity((prev) => prev + 1)
+    // Limit to max quantity if available, otherwise default to 10
+    const limit = maxQuantity !== undefined ? Math.min(maxQuantity, 10) : 10
+    if (quantity < limit) setQuantity((prev) => prev + 1)
   }
 
   const decrementQuantity = () => {
@@ -69,6 +76,8 @@ export function ProductActions({
       isOwnProductByName: isOwnProductByName,
       isOwnProduct: isOwnProduct,
       willBlock: isOwnProduct ? 'YES - BLOCKING PURCHASE' : 'NO - allowing purchase',
+      maxQuantity,
+      isOutOfStock,
     })
   }
 
@@ -86,6 +95,15 @@ export function ProductActions({
         description:
           'You cannot add your own listed items to the cart. Please browse other products from the community!',
         variant: 'default',
+      })
+      return
+    }
+
+    if (isOutOfStock) {
+      toast({
+        title: 'Out of Stock',
+        description: 'This item is currently out of stock.',
+        variant: 'destructive',
       })
       return
     }
@@ -146,6 +164,15 @@ export function ProductActions({
         description:
           'You cannot buy your own listed items. Please browse other products from the community!',
         variant: 'default',
+      })
+      return
+    }
+
+    if (isOutOfStock) {
+      toast({
+        title: 'Out of Stock',
+        description: 'This item is currently out of stock.',
+        variant: 'destructive',
       })
       return
     }
@@ -211,17 +238,23 @@ export function ProductActions({
             size="icon"
             className="h-9 w-9 rounded-l-lg rounded-r-none hover:bg-gray-100"
             onClick={decrementQuantity}
-            disabled={quantity <= 1 || isLoading}
+            disabled={quantity <= 1 || isLoading || isOutOfStock}
           >
             <Minus className="h-4 w-4" />
           </Button>
-          <div className="w-12 text-center text-sm font-semibold">{quantity}</div>
+          <div className="w-12 text-center text-sm font-semibold">
+            {isOutOfStock ? 0 : quantity}
+          </div>
           <Button
             variant="ghost"
             size="icon"
             className="h-9 w-9 rounded-r-lg rounded-l-none hover:bg-gray-100"
             onClick={incrementQuantity}
-            disabled={quantity >= 10 || isLoading}
+            disabled={
+              quantity >= (maxQuantity !== undefined ? Math.min(maxQuantity, 10) : 10) ||
+              isLoading ||
+              isOutOfStock
+            }
           >
             <Plus className="h-4 w-4" />
           </Button>
@@ -230,18 +263,18 @@ export function ProductActions({
       <div className="space-y-2 sm:space-y-3">
         <Button
           onClick={handleAddToCart}
-          disabled={isLoading}
-          className="w-full bg-brand-primary hover:bg-brand-primary/90 text-white rounded-full h-11 sm:h-12 text-sm sm:text-base font-medium"
+          disabled={isLoading || isOutOfStock}
+          className="w-full bg-brand-primary hover:bg-brand-primary/90 text-white rounded-full h-11 sm:h-12 text-sm sm:text-base font-medium disabled:bg-neutral-300"
         >
-          {isLoading ? 'Adding...' : 'Add to Cart'}
+          {isLoading ? 'Adding...' : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
         </Button>
         <Button
           onClick={handleBuy}
-          disabled={isLoading}
+          disabled={isLoading || isOutOfStock}
           variant="secondary"
-          className="w-full bg-amber-600 hover:bg-amber-700 text-black rounded-full h-11 sm:h-12 text-sm sm:text-base font-medium"
+          className="w-full bg-amber-600 hover:bg-amber-700 text-black rounded-full h-11 sm:h-12 text-sm sm:text-base font-medium disabled:bg-neutral-300 disabled:text-neutral-500"
         >
-          {isLoading ? 'Processing...' : 'Buy Now'}
+          {isLoading ? 'Processing...' : isOutOfStock ? 'Out of Stock' : 'Buy Now'}
         </Button>
         <VerificationPopup
           isOpen={isVerificationPopupOpen}

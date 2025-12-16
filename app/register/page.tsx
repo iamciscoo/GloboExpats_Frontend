@@ -55,7 +55,6 @@ export default function RegisterPage() {
     personalEmail: '',
     password: '',
     confirmPassword: '',
-    phoneNumber: '',
     organizationEmail: '',
     acceptTerms: false,
     acceptPrivacy: false,
@@ -145,15 +144,8 @@ export default function RegisterPage() {
     setError(null)
     setSuccess(null)
 
-    const {
-      firstName,
-      lastName,
-      personalEmail,
-      password,
-      confirmPassword,
-      phoneNumber,
-      organizationEmail,
-    } = formData
+    const { firstName, lastName, personalEmail, password, confirmPassword, organizationEmail } =
+      formData
 
     if (!firstName || !lastName || !personalEmail || !password || !confirmPassword) {
       setError('Please fill in all required fields.')
@@ -184,7 +176,6 @@ export default function RegisterPage() {
         lastName: formData.lastName,
         password: formData.password,
         emailAddress: formData.personalEmail,
-        phoneNumber: formData.phoneNumber || undefined,
         agreeToTerms: formData.acceptTerms,
         agreeToPrivacyPolicy: formData.acceptPrivacy,
       })
@@ -194,31 +185,6 @@ export default function RegisterPage() {
         email: formData.personalEmail,
         password: formData.password,
       })
-
-      // If phone number was provided, update user profile
-      if (phoneNumber && phoneNumber.trim()) {
-        try {
-          const token = localStorage.getItem('authToken')
-          if (token) {
-            const formDataToSend = new FormData()
-            const userDto = {
-              phoneNumber: phoneNumber.trim(),
-            }
-            formDataToSend.append('userDto', JSON.stringify(userDto))
-
-            await fetch('https://dev.globoexpats.com/api/v1/userManagement/editProfile', {
-              method: 'PATCH',
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              body: formDataToSend,
-            })
-          }
-        } catch (phoneError) {
-          console.error('Failed to update phone number:', phoneError)
-          // Don't block registration flow if phone update fails
-        }
-      }
 
       // Success toast
       toast({
@@ -382,7 +348,7 @@ export default function RegisterPage() {
                     variant="outline"
                     onClick={handleGoogleRegister}
                     disabled={isLoading || socialLoading !== null}
-                    className="w-full h-9 border-2 hover:bg-neutral-50 transition-all duration-200 rounded-full"
+                    className="w-full h-14 text-lg border-2 hover:bg-neutral-50 transition-all duration-200 rounded-full"
                   >
                     {socialLoading === 'google' ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
@@ -407,7 +373,7 @@ export default function RegisterPage() {
                             d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                           />
                         </svg>
-                        <span className="font-medium">Google</span>
+                        <span className="font-bold text-lg">Sign up with Google</span>
                       </div>
                     )}
                   </Button>
@@ -490,27 +456,6 @@ export default function RegisterPage() {
                         Please enter a valid email address
                       </p>
                     )}
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label htmlFor="phoneNumber" className="text-neutral-700 font-medium text-xs">
-                      WhatsApp Number{' '}
-                      <span className="text-neutral-400 text-[10px]">(Optional)</span>
-                    </Label>
-                    <Input
-                      id="phoneNumber"
-                      name="phone"
-                      type="tel"
-                      placeholder="+255 712 345 678"
-                      autoComplete="tel"
-                      className="h-8 border-neutral-300 focus:border-brand-secondary focus:ring-brand-secondary/50 text-sm"
-                      value={formData.phoneNumber}
-                      onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                      disabled={isLoading || socialLoading !== null}
-                    />
-                    <p className="text-[10px] text-neutral-500">
-                      💬 We'll use this for order updates and communication (include country code)
-                    </p>
                   </div>
 
                   <div className="space-y-1">

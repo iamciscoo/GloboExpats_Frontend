@@ -42,7 +42,12 @@ import { useUserProfile } from '@/hooks/use-user-profile'
 import { useVerification } from '@/hooks/use-verification'
 import PriceDisplay from '@/components/price-display'
 import { toast } from '@/components/ui/use-toast'
-import { api, type MobileCheckoutPayload } from '@/lib/api'
+import {
+  api,
+  type MobileCheckoutPayload,
+  type MobileCheckoutResponse,
+  type MeetSellerCheckoutResponse,
+} from '@/lib/api'
 import { attemptBuyerProfileFix, isBuyerProfileError } from '@/lib/buyer-profile-fixer'
 
 interface ShippingAddress {
@@ -491,6 +496,17 @@ export default function CheckoutPage() {
       let mobileStatus: string | undefined
       let mobileMessage: string | undefined
 
+      // To store multi-seller details if available
+      let orderSellers:
+        | Array<{
+            name: string
+            email: string
+            phone: string
+            address?: string
+            orderId?: string
+          }>
+        | undefined = undefined
+
       // Prepare checkout items payload for API calls
       const prepareCheckoutItems = () => {
         return checkoutItems.reduce<{ productId: number; quantity: number }[]>((acc, item) => {
@@ -544,20 +560,33 @@ export default function CheckoutPage() {
 
         const mobileResponse = await api.checkout.mobilePay(mobilePayload)
 
-        if (!mobileResponse.success) {
-          throw new Error(mobileResponse.message || 'Unable to initiate mobile payment.')
+        const mr = mobileResponse as unknown as {
+          success?: boolean
+          data?: MobileCheckoutResponse
+        } & MobileCheckoutResponse
+        const mrData = mr?.data ?? mr
+
+        const mobileOk =
+          mr?.success === true ||
+          !!mrData?.checkoutRequestId ||
+          !!mrData?.transactionId ||
+          !!mrData?.orderId ||
+          !!mrData?.status ||
+          typeof mrData?.message === 'string'
+
+        if (!mobileOk) {
+          throw new Error(mrData?.message || 'Unable to initiate mobile payment.')
         }
 
         orderId =
-          mobileResponse.data?.orderId ||
-          mobileResponse.data?.transactionId ||
-          mobileResponse.data?.checkoutRequestId ||
+          mrData?.orderId ||
+          mrData?.transactionId ||
+          mrData?.checkoutRequestId ||
           `MP-${Date.now()}`
 
-        mobileReference =
-          mobileResponse.data?.checkoutRequestId || mobileResponse.data?.transactionId
-        mobileStatus = mobileResponse.data?.status
-        mobileMessage = mobileResponse.data?.message
+        mobileReference = mrData?.checkoutRequestId || mrData?.transactionId
+        mobileStatus = mrData?.status
+        mobileMessage = mrData?.message
 
         toast({
           title: 'Confirm payment on your phone',
@@ -597,16 +626,52 @@ export default function CheckoutPage() {
 
         const meetSellerResponse = await api.checkout.meetSeller(meetSellerPayload)
 
-        if (!meetSellerResponse.success) {
+        // Handle possible response structures (wrapped or unwrapped)
+        const rawResponse = meetSellerResponse as unknown as {
+          success?: boolean
+          data?: MeetSellerCheckoutResponse
+        } & MeetSellerCheckoutResponse
+        const msData = meetSellerResponse.data || rawResponse
+        const success =
+          meetSellerResponse.success === true ||
+          rawResponse.success === true ||
+          // If no explicit success flag but we have valid data, assume success
+          (Array.isArray(msData?.sellers) && msData.sellers.length > 0) ||
+          !!msData?.orderId
+
+        const hasSellers = Array.isArray(msData?.sellers) && (msData.sellers?.length || 0) > 0
+
+        const meetSellerOk = success || hasSellers || !!msData?.orderId
+
+        if (!meetSellerOk) {
           throw new Error(
-            meetSellerResponse.message || 'We could not process your order. Please try again.'
+            meetSellerResponse.message ||
+              rawResponse.message ||
+              msData?.message ||
+              'We could not process your order. Please try again.'
           )
         }
 
-        orderId = meetSellerResponse.data?.orderId || `MS-${Date.now()}`
-        mobileReference = meetSellerResponse.data?.transactionId || undefined
-        mobileStatus = meetSellerResponse.data?.status
-        mobileMessage = meetSellerResponse.data?.message
+        // Prefer explicit orderId, fall back to first seller's orderId if present
+        orderId =
+          msData?.orderId ||
+          (hasSellers && msData.sellers ? msData.sellers[0].orderId : undefined) ||
+          `MS-${Date.now()}`
+        mobileReference = msData?.transactionId
+        mobileStatus = msData?.status
+        mobileMessage = msData?.message
+
+        // Populate orderSellers for usage in orderData construction later
+        if (msData?.sellers && Array.isArray(msData.sellers)) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          orderSellers = msData.sellers.map((s: any) => ({
+            name: s.sellerName || 'Verified Seller',
+            email: s.sellerEmail || 'Not Listed',
+            phone: s.sellerPhoneNumber || 'Not Listed',
+            address: s.sellerAddress || 'Not Listed',
+            orderId: s.orderId,
+          }))
+        }
       } else {
         // Handle Cash on Delivery (cod) - simulate API call
         await new Promise((resolve) => setTimeout(resolve, 2000))
@@ -678,6 +743,8 @@ export default function CheckoutPage() {
                   message: 'Seller has been notified. Our team will coordinate directly.',
                 }
               : undefined,
+        // Multi-seller details from API response
+        sellers: orderSellers,
         mobilePayment: isMobilePayment
           ? {
               reference: mobileReference,

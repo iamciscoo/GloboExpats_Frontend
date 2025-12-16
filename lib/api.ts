@@ -100,6 +100,14 @@ interface MeetSellerCheckoutResponse {
   transactionId?: string
   status?: string
   message?: string
+  sellers?: Array<{
+    sellerName: string
+    sellerEmail: string
+    sellerPhoneNumber: string
+    sellerAddress: string
+    orderId: string
+    orderDate: string
+  }>
 }
 
 // ============================================================================
@@ -1825,7 +1833,7 @@ export const api = {
   },
 }
 
-export type { MobileCheckoutPayload, MobileCheckoutResponse }
+export type { MobileCheckoutPayload, MobileCheckoutResponse, MeetSellerCheckoutResponse }
 
 /** Default export for backward compatibility */
 export default apiClient

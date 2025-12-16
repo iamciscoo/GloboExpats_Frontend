@@ -35,14 +35,17 @@ export default function NewListingsSlider() {
       }
 
       // Show products immediately with default counts
-      const initialProducts = content.slice(0, 8).map((it) => {
-        const product = it as Record<string, unknown>
-        const transformed = transformBackendProduct(product)
-        return {
-          ...transformed,
-          views: 0, // Initialize to 0 to prevent flashing "1" from backend list API
-        }
-      })
+      const initialProducts = content
+        .map((it) => {
+          const product = it as Record<string, unknown>
+          const transformed = transformBackendProduct(product)
+          return {
+            ...transformed,
+            views: 0, // Initialize to 0 to prevent flashing "1" from backend list API
+          }
+        })
+        .filter((item) => item.quantity > 0)
+        .slice(0, 8)
 
       setItems(initialProducts)
       setLoading(false)

@@ -73,6 +73,7 @@ interface UserListing {
   categoryId?: number
   categoryName?: string
   createdAt?: string
+  productQuantity?: number
 }
 
 interface DashboardStats {
@@ -761,11 +762,17 @@ function DashboardContent() {
                             <Package className="w-12 h-12 text-[#CBD5E1]" />
                           </div>
                         )}
-                        <Badge
-                          className={`absolute top-2 right-2 ${getStatusBadge(listing.productStatus || 'active')}`}
-                        >
-                          {listing.productStatus || 'active'}
-                        </Badge>
+                        {listing.productQuantity === 0 ? (
+                          <Badge className="absolute top-2 right-2 bg-neutral-800 text-white hover:bg-neutral-800">
+                            Out of Stock
+                          </Badge>
+                        ) : (
+                          <Badge
+                            className={`absolute top-2 right-2 ${getStatusBadge(listing.productStatus || 'active')}`}
+                          >
+                            {listing.productStatus || 'active'}
+                          </Badge>
+                        )}
                       </div>
                       <CardContent className="p-4">
                         <h3 className="font-semibold text-[#0F172A] mb-2 truncate">

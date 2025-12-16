@@ -61,6 +61,13 @@ interface OrderData {
     notified?: boolean
     message?: string
   }
+  sellers?: Array<{
+    name: string
+    email: string
+    phone: string
+    address?: string
+    orderId?: string
+  }>
 }
 
 function CheckoutSuccessContent() {
@@ -264,7 +271,64 @@ function CheckoutSuccessContent() {
                       payment.
                     </p>
                   </div>
-                  {orderData.sellerDetails && (
+                  {/* Multi-seller display */}
+                  {orderData.sellers && orderData.sellers.length > 0 && (
+                    <div className="space-y-4">
+                      {orderData.sellers.map((seller, idx) => (
+                        <div
+                          key={idx}
+                          className="rounded-lg border-2 border-neutral-200 border-l-4 border-l-blue-600 bg-white p-4 shadow-sm"
+                        >
+                          <h3 className="text-sm font-semibold text-neutral-900 mb-3">
+                            Seller Contact Information{' '}
+                            {orderData.sellers!.length > 1 ? `#${idx + 1}` : ''}
+                          </h3>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                            <div>
+                              <div className="text-[11px] font-semibold text-neutral-500 uppercase mb-1 tracking-wide">
+                                Name
+                              </div>
+                              <div className="font-semibold text-neutral-900">{seller.name}</div>
+                            </div>
+                            {seller.email && (
+                              <div>
+                                <div className="text-[11px] font-semibold text-neutral-500 uppercase mb-1 tracking-wide">
+                                  Email
+                                </div>
+                                <div className="text-sm font-medium text-blue-600 break-all">
+                                  {seller.email}
+                                </div>
+                              </div>
+                            )}
+                            {seller.phone && (
+                              <div>
+                                <div className="text-[11px] font-semibold text-neutral-500 uppercase mb-1 tracking-wide">
+                                  Phone
+                                </div>
+                                <div className="text-sm font-semibold text-green-700">
+                                  {seller.phone}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          {seller.address && seller.address !== 'Not Listed' && (
+                            <div className="mt-3 pt-2 border-t border-neutral-100">
+                              <span className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wide">
+                                Meeting Location:
+                              </span>{' '}
+                              <span className="text-sm text-neutral-800">{seller.address}</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      <p className="text-xs text-neutral-600 mt-2 italic">
+                        Tip: Contact each seller to arrange convenient meeting times and locations.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Fallback to single sellerDetails if no sellers array */}
+                  {!orderData.sellers && orderData.sellerDetails && (
                     <div className="rounded-lg border-2 border-neutral-200 border-l-4 border-l-blue-600 bg-white p-4 shadow-sm">
                       <h3 className="text-sm font-semibold text-neutral-900 mb-3">
                         Seller Contact Information
