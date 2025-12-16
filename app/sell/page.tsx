@@ -545,15 +545,29 @@ function SellPageContent() {
         // Always update quantity to ensure it's correct
         if (!isNaN(quantity)) {
           try {
+            // Add a small delay to ensure backend database transaction for creation is fully committed
+            // This helps mitigate "Query did not return a unique result" race conditions on the backend
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+
             console.log(`[Sell] Updating quantity to ${quantity} for product ${result.productId}`)
+
             // Send only productQuantity field as expected by backend DTO
             await apiClient.updateProduct(result.productId.toString(), {
               productQuantity: quantity,
             })
             console.log('[Sell] ✅ Quantity updated successfully')
           } catch (updateError) {
-            console.error('[Sell] Failed to update initial quantity:', updateError)
-            // Don't fail the whole process, just log it. The product exists.
+            console.error('[Sell] Warning: Failed to update initial quantity:', updateError)
+
+            // Do NOT fail the listing process. The product exists.
+            // Just warn the user they might need to check the stock.
+            toast({
+              title: '⚠️ Check Stock Level',
+              description:
+                'Your listing is live, but we couldn\'t verify the stock quantity. Please check it in "My Listings".',
+              variant: 'default', // not destructive, just warning
+              duration: 6000,
+            })
           }
         }
 
