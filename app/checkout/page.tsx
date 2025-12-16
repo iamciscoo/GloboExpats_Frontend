@@ -23,19 +23,13 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { FlagDisplay } from '@/components/ui/flag-display'
+import { EnhancedLocationSelect } from '@/components/ui/enhanced-location-select'
+import { EXPAT_LOCATIONS } from '@/lib/constants'
 import { useCart } from '@/hooks/use-cart'
 import { useAuth } from '@/hooks/use-auth'
 import { useUserProfile } from '@/hooks/use-user-profile'
@@ -131,32 +125,6 @@ const eastAfricanCountries = [
   { code: 'RW', name: 'Rwanda', flag: '🇷🇼', currency: 'RWF', phoneCode: '+250' },
 ]
 
-// Major cities for simplified selection with flags
-const majorCities = {
-  TZ: [
-    { name: 'Dar es Salaam', flag: '🇹🇿' },
-    { name: 'Dodoma', flag: '🇹🇿' },
-    { name: 'Mwanza', flag: '🇹🇿' },
-    { name: 'Arusha', flag: '🇹🇿' },
-    { name: 'Zanzibar', flag: '🇹🇿' },
-    { name: 'Stone Town', flag: '🇹🇿' },
-  ],
-  KE: [
-    { name: 'Nairobi', flag: '🇰🇪' },
-    { name: 'Mombasa', flag: '🇰🇪' },
-    { name: 'Kisumu', flag: '🇰🇪' },
-    { name: 'Nakuru', flag: '🇰🇪' },
-  ],
-  UG: [
-    { name: 'Kampala', flag: '🇺🇬' },
-    { name: 'Gulu', flag: '🇺🇬' },
-    { name: 'Mbarara', flag: '🇺🇬' },
-    { name: 'Jinja', flag: '🇺🇬' },
-    { name: 'Entebbe', flag: '🇺🇬' },
-  ],
-  RW: [{ name: 'Kigali', flag: '🇷🇼' }],
-}
-
 export default function CheckoutPage() {
   const router = useRouter()
   const { user, isLoggedIn, isLoading: authLoading } = useAuth()
@@ -240,10 +208,6 @@ export default function CheckoutPage() {
   const checkoutSubtotal = selectedItemsData.length > 0 ? selectedSubtotal : subtotal
   const selectedCountryData = useMemo(
     () => eastAfricanCountries.find((c) => c.code === selectedCountry),
-    [selectedCountry]
-  )
-  const availableCities = useMemo(
-    () => majorCities[selectedCountry as keyof typeof majorCities] || [],
     [selectedCountry]
   )
 
@@ -963,75 +927,102 @@ export default function CheckoutPage() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="country">Country *</Label>
-                      <Select value={selectedCountry} onValueChange={handleCountryChange}>
-                        <SelectTrigger className="w-full h-11 border-2 border-neutral-200 rounded-md focus:border-brand-primary">
-                          <SelectValue>
-                            {selectedCountry && (
-                              <span className="flex items-center gap-2">
-                                {(() => {
-                                  const country = eastAfricanCountries.find(
-                                    (c) => c.code === selectedCountry
-                                  )
-                                  if (!country) return selectedCountry
-                                  return (
-                                    <>
-                                      <FlagDisplay
-                                        emoji={country.flag}
-                                        fallback={country.code}
-                                        countryName={country.name}
-                                        variant="minimal"
-                                      />
-                                      <span>{country.name}</span>
-                                    </>
-                                  )
-                                })()}
-                              </span>
-                            )}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {eastAfricanCountries.map((country) => (
-                            <SelectItem key={country.code} value={country.code}>
-                              <span className="flex items-center gap-2">
-                                <FlagDisplay
-                                  emoji={country.flag}
-                                  fallback={country.code}
-                                  countryName={country.name}
-                                  variant="dropdown"
-                                />
-                                <span>{country.name}</span>
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="city">City *</Label>
-                      <Select value={shippingAddress.city} onValueChange={handleCityChange}>
-                        <SelectTrigger className="w-full h-11 border-2 border-neutral-200 rounded-md focus:border-brand-primary">
-                          <SelectValue placeholder="Choose city" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableCities.map((city) => (
-                            <SelectItem key={city.name} value={city.name}>
-                              <span className="flex items-center gap-2">
-                                <FlagDisplay
-                                  emoji={city.flag}
-                                  fallback={selectedCountry}
-                                  countryName={shippingAddress.country || 'City'}
-                                  variant="dropdown"
-                                />
-                                <span>{city.name}</span>
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Location (Country & City) *</Label>
+                    <EnhancedLocationSelect
+                      value={
+                        // Try to reconstruct the value from current state for the component
+                        (() => {
+                          if (!shippingAddress.city && !shippingAddress.country) return ''
+
+                          // 1. Try to find a match in EXPAT_LOCATIONS
+                          // Normalize logic: check if known location label contains our city and country matches
+                          const match = EXPAT_LOCATIONS.find(
+                            (l) =>
+                              l.country === shippingAddress.country &&
+                              l.label.includes(shippingAddress.city)
+                          )
+                          if (match) return match.label
+
+                          // 2. If no match, return custom format "City, Country"
+                          if (shippingAddress.city && shippingAddress.country) {
+                            return `${shippingAddress.city}, ${shippingAddress.country}`
+                          }
+                          return shippingAddress.city || shippingAddress.country
+                        })()
+                      }
+                      onValueChange={(val) => {
+                        // 1. Check if it matches a known location from the list
+                        const match = EXPAT_LOCATIONS.find(
+                          (l) => l.label === val || l.value === val
+                        )
+
+                        if (match) {
+                          // Known location selected
+                          // Find corresponding country code for our logic (currency, etc.)
+                          const countryCode = eastAfricanCountries.find(
+                            (c) => c.name.toLowerCase() === match.country?.toLowerCase()
+                          )?.code
+
+                          if (countryCode) {
+                            handleCountryChange(countryCode)
+                          } else {
+                            // Fallback if country not found in our list
+                            setShippingAddress((prev) => ({
+                              ...prev,
+                              country: match.country || prev.country,
+                            }))
+                          }
+
+                          // Extract clean city name from label (e.g. "🇹🇿 Dar es Salaam, TZ" -> "Dar es Salaam")
+                          // Remove emoji prefix and ", TZ" suffix
+                          const cleanCity = match.label
+                            .replace(/^.*? /, '') // Remove leading emoji/text
+                            .replace(/, [A-Z]{2}$/, '') // Remove comma and country code suffix
+
+                          handleCityChange(cleanCity)
+                        } else {
+                          // Custom location typed/entered
+                          if (val.includes(',')) {
+                            // Assumed format: "City, Country"
+                            const parts = val.split(',')
+                            const city = parts[0].trim()
+                            const country = parts.slice(1).join(',').trim()
+
+                            // Try to detect country code from entered country name
+                            const countryCode = eastAfricanCountries.find(
+                              (c) =>
+                                c.name.toLowerCase() === country.toLowerCase() ||
+                                country.toLowerCase().includes(c.name.toLowerCase())
+                            )?.code
+
+                            if (countryCode) {
+                              // If we detect a known country, use the handler to set currency etc.
+                              handleCountryChange(countryCode)
+                              // Override city since handleCountryChange clears it
+                              setTimeout(() => handleCityChange(city), 0)
+                            } else {
+                              // Unknown/Other country
+                              setShippingAddress((prev) => ({
+                                ...prev,
+                                city,
+                                country,
+                              }))
+                              // Reset selected country code if it doesn't match custom country
+                              setSelectedCountry('')
+                            }
+                          } else {
+                            // Just one string entered - assume it's city if we have a country, or just set city
+                            handleCityChange(val)
+                          }
+                        }
+                      }}
+                      placeholder="Select country and city"
+                      showLabels={false}
+                    />
+                    <p className="text-xs text-neutral-500">
+                      Search for your city or type "City, Country" if not listed
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

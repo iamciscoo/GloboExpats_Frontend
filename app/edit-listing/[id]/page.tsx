@@ -190,7 +190,7 @@ function EditListingContent() {
           originalPrice: String(product.productOriginalPrice || ''),
           productWarranty: String(product.productWarranty || '1 year manufacturer warranty'),
           categoryFields: parsedDescription.specifications,
-          quantity: String(product.productQuantity || '1'),
+          quantity: String(product.productQuantity ?? '0'),
         })
 
         console.log('📋 Form data loaded:', {
@@ -437,7 +437,7 @@ function EditListingContent() {
         askingPrice: Math.round(askingPriceInTZS),
         originalPrice: Math.round(originalPriceInTZS),
         productWarranty: formData.productWarranty.substring(0, MAX_LENGTHS.productWarranty),
-        productQuantity: parseInt(formData.quantity) || 1,
+        productQuantity: parseInt(formData.quantity) || 0,
       }
 
       // Check if image order has changed (main image selection)
@@ -1065,7 +1065,7 @@ function EditListingContent() {
                   value={formData.quantity}
                   onChange={(e) => {
                     const val = e.target.value
-                    if (val === '' || (parseInt(val) >= 1 && parseInt(val) <= 1000)) {
+                    if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 1000)) {
                       setFormData({ ...formData, quantity: val })
                     }
                   }}
@@ -1073,7 +1073,7 @@ function EditListingContent() {
                   placeholder="Enter quantity (e.g., 1, 5, 10)"
                 />
                 <p className="text-xs text-neutral-500 mt-1">
-                  How many identical items do you have? Minimum: 1
+                  How many identical items do you have? Minimum: 0
                 </p>
               </div>
 
