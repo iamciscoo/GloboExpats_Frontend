@@ -539,15 +539,22 @@ function SellPageContent() {
       // Store the product ID for verification
       if (result.productId) {
         // Feature Parity: Update quantity if user specified it
-        // The create endpoint doesn't support quantity, so we patch it immediately after
-        const quantity = formData.quantity !== '' ? parseInt(formData.quantity) : 1
+        // The create endpoint defaults to quantity 1. We only need to patch if it's different.
+        const quantityInput = formData.quantity
+        const quantity = quantityInput !== '' ? parseInt(quantityInput) : 1
 
-        // Always update quantity to ensure it's correct
-        if (!isNaN(quantity)) {
+        // Only update if:
+        // 1. User explicitly entered 0 (out of stock)
+        // 2. User entered a number != 1 (since 1 is default)
+        // 3. User entered '1' explicitly (just to be safe, though redundant if default is 1)
+        const shouldUpdateQuantity = quantityInput !== '' && !isNaN(quantity)
+
+        if (shouldUpdateQuantity) {
           try {
-            // Add a small delay to ensure backend database transaction for creation is fully committed
-            // This helps mitigate "Query did not return a unique result" race conditions on the backend
-            await new Promise((resolve) => setTimeout(resolve, 1000))
+            // Add a substantial delay to ensure backend database transaction for creation is fully committed
+            // The "Query did not return a unique result" error suggests backend race conditions where
+            // the product or inventory record is duplicated or not fully settled.
+            await new Promise((resolve) => setTimeout(resolve, 3000))
 
             console.log(`[Sell] Updating quantity to ${quantity} for product ${result.productId}`)
 
@@ -557,7 +564,10 @@ function SellPageContent() {
             })
             console.log('[Sell] ✅ Quantity updated successfully')
           } catch (updateError) {
-            console.error('[Sell] Warning: Failed to update initial quantity:', updateError)
+            console.warn(
+              '[Sell] Warning: Failed to update initial quantity (likely backend race condition). Product created successfully.',
+              updateError
+            )
 
             // Do NOT fail the listing process. The product exists.
             // Just warn the user they might need to check the stock.
