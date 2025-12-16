@@ -33,6 +33,11 @@ function mapLabelsToFieldKeys(
     labelToKeyMap[field.label.toLowerCase()] = field.key
   })
 
+  // Add common legacy/variation mappings to prevent duplicates
+  labelToKeyMap['dimensions lwh'] = 'dimensions'
+  labelToKeyMap['dimensions ( l x w x h )'] = 'dimensions'
+  labelToKeyMap['dimensions (l x w x h)'] = 'dimensions'
+
   // Map specifications using the reverse mapping
   Object.entries(specifications).forEach(([label, value]) => {
     const normalizedLabel = label.toLowerCase().trim()

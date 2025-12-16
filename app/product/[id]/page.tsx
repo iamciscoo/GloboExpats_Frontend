@@ -12,6 +12,7 @@ import {
   TrendingUp,
   ExternalLink,
   Eye,
+  ShieldCheck,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -880,13 +881,20 @@ export default function ProductPage() {
                   </div>
 
                   {product.isVerified && (
-                    <div className="bg-green-50 rounded-xl p-4 border border-green-200 mb-4">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-green-700">Verified Seller</span>
+                    <div className="flex items-center gap-3 p-3 bg-emerald-50/50 border border-emerald-100/50 rounded-xl mb-4 group transition-colors hover:bg-emerald-50 hover:border-emerald-100">
+                      <div className="bg-emerald-100 p-2 rounded-full shrink-0 group-hover:bg-emerald-200/50 transition-colors">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
                       </div>
-                      <p className="text-sm text-green-600">
-                        This seller has been verified by our security team
-                      </p>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm font-semibold text-gray-900 leading-none">
+                            Verified Seller
+                          </p>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5 group-hover:text-gray-600 transition-colors">
+                          Identity & payment verified
+                        </p>
+                      </div>
                     </div>
                   )}
 
