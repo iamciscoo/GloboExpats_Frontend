@@ -535,9 +535,9 @@ export default function CheckoutPage() {
         }
 
         orderId =
-          mrData?.orderId ||
-          mrData?.transactionId ||
-          mrData?.checkoutRequestId ||
+          mobileResponse.data?.orderId ||
+          mobileResponse.data?.transactionId ||
+          mobileResponse.data?.checkoutRequestId ||
           `MP-${Date.now()}`
 
         mobileReference =
