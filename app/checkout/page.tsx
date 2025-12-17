@@ -540,7 +540,14 @@ export default function CheckoutPage() {
 
         const mobileResponse = await api.checkout.mobilePay(mobilePayload)
 
-        if (!mobileResponse.success) {
+        // Check if the response indicates a pending/in-progress payment request
+        const isPendingPayment =
+          mobileResponse.message?.toLowerCase().includes('in progress') ||
+          mobileResponse.message?.toLowerCase().includes('callback') ||
+          mobileResponse.data?.status?.toLowerCase().includes('pending')
+
+        // Treat pending as success for mobile payments (STK push initiated)
+        if (!mobileResponse.success && !isPendingPayment) {
           throw new Error(mobileResponse.message || 'Unable to initiate mobile payment.')
         }
 
@@ -553,11 +560,12 @@ export default function CheckoutPage() {
         mobileReference =
           mobileResponse.data?.checkoutRequestId || mobileResponse.data?.transactionId
         mobileStatus = mobileResponse.data?.status
-        mobileMessage = mobileResponse.data?.message
+        mobileMessage = mobileResponse.data?.message || mobileResponse.message
 
         toast({
           title: 'Confirm payment on your phone',
           description:
+            mobileMessage ||
             'We sent an STK push to your device. Approve the prompt to complete your payment.',
         })
       } else {
