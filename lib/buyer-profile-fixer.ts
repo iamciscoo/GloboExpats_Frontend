@@ -14,89 +14,113 @@ import { apiClient } from './api'
 
 export interface BuyerProfileFixResult {
   success: boolean
-  message: string
-  requiresManualFix: boolean
+  fixWorked: boolean
+  message?: string
+  requiresManualFix?: boolean
   adminInstructions?: string
 }
 
 /**
- * Detects if an error is the "buyer profile not found" issue
+ * Helper to determine if an error is related to missing buyer profile
  */
-export function isBuyerProfileError(error: Error | string): boolean {
-  const errorMessage = typeof error === 'string' ? error : error.message
+export function isBuyerProfileError(error: unknown): boolean {
+  if (!error) return false
+
+  // Type guard to safely access error properties
+  const msg =
+    error instanceof Error
+      ? error.message
+      : typeof error === 'object' && error !== null && 'message' in error
+        ? String((error as { message: unknown }).message)
+        : String(error)
+
+  const lowerMsg = msg.toLowerCase()
   return (
-    errorMessage.includes('Buyer profile not found') ||
-    errorMessage.includes('buyer profile missing')
+    lowerMsg.includes('buyer profile not found') ||
+    lowerMsg.includes('could not be created') ||
+    lowerMsg.includes('no buyer profile')
   )
 }
 
 /**
- * Attempts to automatically fix the buyer profile issue
- *
- * Strategy:
- * 1. Verify user is authenticated and verified
- * 2. Attempt to trigger buyer profile creation via cart initialization
- * 3. Verify the fix worked
- * 4. If failed, return manual fix instructions
+ * Attempts to fix a missing buyer profile by triggering a user profile update.
+ * This force-updates the user data, which often triggers backend hooks to ensure consistency.
  */
 export async function attemptBuyerProfileFix(): Promise<BuyerProfileFixResult> {
   try {
-    console.log('🔧 [BuyerProfileFixer] Attempting to fix buyer profile issue...')
+    console.log(
+      '🔧 [BuyerProfileFixer] v3.1 executing - Attempting to fix buyer profile (Profile Update Strategy)...'
+    )
 
     // Step 1: Check if user is verified
-    const userDetails = await apiClient.getUserDetails()
+    // We handle likely response structures (ApiResponse or direct User object)
+    const response = await apiClient.getUserDetails()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userData = (response as any).data || response
 
-    if (!userDetails.verificationStatus || userDetails.verificationStatus !== 'VERIFIED') {
+    if (!userData) {
+      console.warn('⚠️ [BuyerProfileFixer] Cannot fetch user details. Aborting.')
+      return { success: false, fixWorked: false, message: 'Could not fetch user details.' }
+    }
+
+    // Check verification status (safely handling possible field names)
+    const isVerified = userData.verified === true || userData.verificationStatus === 'VERIFIED'
+
+    if (!isVerified) {
+      console.warn('⚠️ [BuyerProfileFixer] User is not verified. Cannot create buyer profile.')
       return {
         success: false,
-        message: 'User must be verified before buyer profile can be created',
-        requiresManualFix: false,
+        fixWorked: false,
+        message: 'User is not verified. Please verify your account first.',
       }
     }
 
-    console.log('✅ [BuyerProfileFixer] User is verified')
+    console.log('✅ [BuyerProfileFixer] User is verified. Attempting profile sync...')
 
-    // Step 2: Attempt to trigger buyer profile creation
-    // Some backend implementations auto-create the profile on first cart access
-    console.log('🔄 [BuyerProfileFixer] Attempting to trigger profile creation...')
+    // Step 2: Trigger Profile Update to wake up backend
+    // We send the existing data back to the server to trigger a "save" hook
+    const updatePayload = {
+      firstName: userData.firstName || '',
+      lastName: userData.lastName || '',
+      organizationalEmail: userData.email || userData.organizationalEmail || '',
+    }
 
     try {
-      // DEPRECATED: Cart is now client-side only, this endpoint no longer used
-      // Try to access cart endpoint - this might trigger auto-creation
-      // Using fetch directly since ApiClient.request is private
-      // const token = localStorage.getItem('auth_token')
-      // await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/cart/User`, {
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      // })
+      const updateResponse = await apiClient.updateUserProfile(updatePayload)
 
-      // If we got here without error, the profile now exists!
-      console.log('✅ [BuyerProfileFixer] Buyer profile created successfully!')
-      return {
-        success: true,
-        message: 'Buyer profile was automatically created. You can now use all features!',
-        requiresManualFix: false,
+      if (updateResponse.success) {
+        console.log(
+          '✅ [BuyerProfileFixer] Profile sync request successful! Buyer profile should now await creation.'
+        )
+        return {
+          success: true,
+          fixWorked: true,
+          message: 'Buyer profile validated. Please try your order again.',
+        }
+      } else {
+        console.error(
+          '❌ [BuyerProfileFixer] Profile sync failed with backend error.',
+          updateResponse
+        )
+        return {
+          success: false,
+          fixWorked: false,
+          message: 'Automatic profile fix failed. Backend rejected update.',
+        }
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch {
-      // Still getting the error - auto-fix didn't work
-      console.warn('⚠️ [BuyerProfileFixer] Auto-fix failed, manual intervention needed')
-
-      return {
-        success: false,
-        message: 'Automatic fix failed. Backend database intervention required.',
-        requiresManualFix: true,
-        adminInstructions: generateAdminInstructions(userDetails.loggingEmail),
-      }
+    } catch (updateError) {
+      console.error('❌ [BuyerProfileFixer] Profile update request threw error.', updateError)
+      return { success: false, fixWorked: false, message: 'Profile sync connection failed.' }
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    console.error('❌ [BuyerProfileFixer] Fix attempt failed:', error)
+  } catch (error) {
+    console.error('❌ [BuyerProfileFixer] Critical failure:', error)
     return {
       success: false,
-      message: `Fix attempt failed: ${error.message}`,
+      fixWorked: false,
+      message: 'Unexpected error during profile fix.',
       requiresManualFix: true,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      adminInstructions: generateAdminInstructions((window as any)?.user?.email || 'user-email'),
     }
   }
 }

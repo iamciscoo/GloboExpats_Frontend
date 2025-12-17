@@ -58,14 +58,17 @@ export default function FeaturedGrid() {
 
       // Transform products immediately with default click counts
       // This prevents flickering by showing products right away
-      const initialProducts = shuffled.slice(0, 25).map((it) => {
-        const product = it as Record<string, unknown>
-        const transformed = transformBackendProduct(product)
-        return {
-          ...transformed,
-          views: (product.clickCount as number) || 0,
-        }
-      })
+      const initialProducts = shuffled
+        .slice(0, 25)
+        .map((it) => {
+          const product = it as Record<string, unknown>
+          const transformed = transformBackendProduct(product)
+          return {
+            ...transformed,
+            views: 0, // Initialize to 0 to prevent flashing "1" from backend list API
+          }
+        })
+        .filter((item) => item.quantity > 0)
 
       // Show products immediately
       setItems(initialProducts)

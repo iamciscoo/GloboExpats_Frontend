@@ -11,6 +11,8 @@ import {
   Loader2,
   TrendingUp,
   ExternalLink,
+  Eye,
+  ShieldCheck,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -164,7 +166,8 @@ export default function ProductPage() {
                 return (
                   (product.productId || product.id) !== Number(id) &&
                   String(product.productId) !== id &&
-                  String(product.id) !== id
+                  String(product.id) !== id &&
+                  (product.productQuantity as number) > 0
                 )
               })
               .slice(0, 4)
@@ -763,9 +766,17 @@ export default function ProductPage() {
                         </div>
                       )}
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
-                    <TrendingUp className="h-4 w-4" />
-                    <span>Great value compared to market price</span>
+                  <div className="flex flex-col gap-2 mt-3">
+                    <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
+                      <TrendingUp className="h-4 w-4" />
+                      <span>Great value compared to market price</span>
+                    </div>
+                    {product.views !== undefined && product.views > 0 && (
+                      <div className="flex items-center gap-2 text-sm text-blue-600 font-medium">
+                        <Eye className="h-4 w-4" />
+                        <span>{product.views} people are looking at this</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -787,6 +798,21 @@ export default function ProductPage() {
                     <span className="text-sm font-medium text-gray-600">Warranty</span>
                     <span className="text-sm font-semibold text-gray-900">
                       {rawProductData?.productWarranty || 'No warranty'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                    <span className="text-sm font-medium text-gray-600">Available Quantity</span>
+                    <span className="text-sm font-semibold text-gray-900">
+                      {(() => {
+                        const qty = product.quantity ?? rawProductData?.productQuantity
+                        if (qty === 0) {
+                          return <span className="text-red-600">Out of Stock</span>
+                        }
+                        if (qty === undefined || qty === null) {
+                          return 'In Stock'
+                        }
+                        return `${qty} ${qty === 1 ? 'unit' : 'units'} available`
+                      })()}
                     </span>
                   </div>
                 </div>
@@ -814,7 +840,9 @@ export default function ProductPage() {
                     productLocation={product.location}
                     verifiedSeller={product.isVerified}
                     currency="TZS"
+                    category={product.category}
                     expatId={String(rawProductData?.sellerId || 'unknown')}
+                    maxQuantity={product.quantity ?? rawProductData?.productQuantity}
                   />
                 </div>
               </CardContent>
@@ -853,13 +881,20 @@ export default function ProductPage() {
                   </div>
 
                   {product.isVerified && (
-                    <div className="bg-green-50 rounded-xl p-4 border border-green-200 mb-4">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-green-700">Verified Seller</span>
+                    <div className="flex items-center gap-3 p-3 bg-emerald-50/50 border border-emerald-100/50 rounded-xl mb-4 group transition-colors hover:bg-emerald-50 hover:border-emerald-100">
+                      <div className="bg-emerald-100 p-2 rounded-full shrink-0 group-hover:bg-emerald-200/50 transition-colors">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
                       </div>
-                      <p className="text-sm text-green-600">
-                        This seller has been verified by our security team
-                      </p>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm font-semibold text-gray-900 leading-none">
+                            Verified Seller
+                          </p>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5 group-hover:text-gray-600 transition-colors">
+                          Identity & payment verified
+                        </p>
+                      </div>
                     </div>
                   )}
 

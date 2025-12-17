@@ -210,6 +210,7 @@ export interface FeaturedItem {
   category?: string
   condition?: string
   views?: number // View count (from backend clickCount field)
+  quantity?: number
 }
 
 /**

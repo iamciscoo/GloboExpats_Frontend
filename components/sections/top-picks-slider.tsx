@@ -35,14 +35,17 @@ export default function TopPicksSlider() {
       }
 
       // Show products immediately with default counts to prevent blocking
-      const initialProducts = content.slice(0, 8).map((it) => {
-        const product = it as Record<string, unknown>
-        const transformed = transformBackendProduct(product)
-        return {
-          ...transformed,
-          views: (product.clickCount as number) || 0,
-        }
-      })
+      const initialProducts = content
+        .slice(0, 8)
+        .map((it) => {
+          const product = it as Record<string, unknown>
+          const transformed = transformBackendProduct(product)
+          return {
+            ...transformed,
+            views: 0, // Initialize to 0 to prevent flashing "1" from backend list API
+          }
+        })
+        .filter((item) => item.quantity > 0)
 
       setItems(initialProducts)
       setLoading(false)
@@ -92,6 +95,7 @@ export default function TopPicksSlider() {
               views: it.views || 0,
             }
           })
+          .filter((item) => item.quantity > 0)
 
         if (process.env.NODE_ENV === 'development') {
           console.log(`[TopPicks] Final sorted products:`, sortedProducts.length)

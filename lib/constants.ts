@@ -16,6 +16,8 @@ import {
   Star,
   DollarSign,
   Package,
+  Palette,
+  Sprout,
 } from 'lucide-react'
 import type {
   CategoryWithRequirements,
@@ -197,6 +199,20 @@ export const CATEGORIES = [
     count: '892 items',
     slug: 'beauty-health',
   },
+  {
+    id: 10,
+    name: 'Garden & Outdoors',
+    icon: Sprout,
+    count: '432 items',
+    slug: 'garden-outdoors',
+  },
+  {
+    id: 11,
+    name: 'Art & Crafts',
+    icon: Palette,
+    count: '321 items',
+    slug: 'art-crafts',
+  },
 ] as const
 
 /**
@@ -249,6 +265,16 @@ export const SELLING_CATEGORIES: CategoryWithRequirements[] = [
     value: 'beauty-health',
     label: 'Beauty & Health',
     imageRequirements: ['main'],
+  },
+  {
+    value: 'garden-outdoors',
+    label: 'Garden & Outdoors',
+    imageRequirements: ['main', 'detail'],
+  },
+  {
+    value: 'art-crafts',
+    label: 'Art & Crafts',
+    imageRequirements: ['main', 'detail'],
   },
 ]
 

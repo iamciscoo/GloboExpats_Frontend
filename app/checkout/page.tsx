@@ -23,26 +23,26 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion'
-import { FlagDisplay } from '@/components/ui/flag-display'
+import { EnhancedLocationSelect } from '@/components/ui/enhanced-location-select'
+import { EXPAT_LOCATIONS } from '@/lib/constants'
 import { useCart } from '@/hooks/use-cart'
 import { useAuth } from '@/hooks/use-auth'
 import { useUserProfile } from '@/hooks/use-user-profile'
 import { useVerification } from '@/hooks/use-verification'
 import PriceDisplay from '@/components/price-display'
 import { toast } from '@/components/ui/use-toast'
-import { api, type MobileCheckoutPayload } from '@/lib/api'
+import {
+  api,
+  type MobileCheckoutPayload,
+  type MobileCheckoutResponse,
+  type MeetSellerCheckoutResponse,
+} from '@/lib/api'
+import { attemptBuyerProfileFix, isBuyerProfileError } from '@/lib/buyer-profile-fixer'
 
 interface ShippingAddress {
   firstName: string
@@ -125,32 +125,6 @@ const eastAfricanCountries = [
   { code: 'RW', name: 'Rwanda', flag: '🇷🇼', currency: 'RWF', phoneCode: '+250' },
 ]
 
-// Major cities for simplified selection with flags
-const majorCities = {
-  TZ: [
-    { name: 'Dar es Salaam', flag: '🇹🇿' },
-    { name: 'Dodoma', flag: '🇹🇿' },
-    { name: 'Mwanza', flag: '🇹🇿' },
-    { name: 'Arusha', flag: '🇹🇿' },
-    { name: 'Zanzibar', flag: '🇹🇿' },
-    { name: 'Stone Town', flag: '🇹🇿' },
-  ],
-  KE: [
-    { name: 'Nairobi', flag: '🇰🇪' },
-    { name: 'Mombasa', flag: '🇰🇪' },
-    { name: 'Kisumu', flag: '🇰🇪' },
-    { name: 'Nakuru', flag: '🇰🇪' },
-  ],
-  UG: [
-    { name: 'Kampala', flag: '🇺🇬' },
-    { name: 'Gulu', flag: '🇺🇬' },
-    { name: 'Mbarara', flag: '🇺🇬' },
-    { name: 'Jinja', flag: '🇺🇬' },
-    { name: 'Entebbe', flag: '🇺🇬' },
-  ],
-  RW: [{ name: 'Kigali', flag: '🇷🇼' }],
-}
-
 export default function CheckoutPage() {
   const router = useRouter()
   const { user, isLoggedIn, isLoading: authLoading } = useAuth()
@@ -193,8 +167,7 @@ export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isProcessing, setIsProcessing] = useState(false)
   const [orderError, setOrderError] = useState<string | null>(null)
-  const [selectedCountry, setSelectedCountry] = useState('TZ') // Default to Tanzania
-
+  const [selectedCountry, setSelectedCountry] = useState('') // Default to empty
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     firstName: user?.name.split(' ')[0] || '',
     lastName: user?.name.split(' ').slice(1).join(' ') || '',
@@ -202,7 +175,7 @@ export default function CheckoutPage() {
     phone: '',
     address: '',
     city: '',
-    country: 'Tanzania',
+    country: '',
     state: '',
     zip: '',
     instructions: '',
@@ -218,7 +191,7 @@ export default function CheckoutPage() {
   } | null>(null)
   const [_loadingSeller, setLoadingSeller] = useState(false)
   const [agreeToTerms, setAgreeToTerms] = useState(false)
-  const [shippingMethod, setShippingMethod] = useState('delivery')
+  const [shippingMethod, setShippingMethod] = useState('pickup') // Default to Arrange with Seller since Arrange with Us is coming soon
 
   // Payment details state
   const [paymentDetails, setPaymentDetails] = useState({
@@ -236,12 +209,7 @@ export default function CheckoutPage() {
     () => eastAfricanCountries.find((c) => c.code === selectedCountry),
     [selectedCountry]
   )
-  const availableCities = useMemo(
-    () => majorCities[selectedCountry as keyof typeof majorCities] || [],
-    [selectedCountry]
-  )
 
-  // Delivery options with Global Expat branding - memoized for performance
   const shippingOptions = useMemo(
     () => [
       {
@@ -252,6 +220,7 @@ export default function CheckoutPage() {
         description: 'Within city delivery',
         isGloboExpat: true,
         priceDisplay: 'Varies',
+        comingSoon: true, // Disable this option
       },
       {
         id: 'pickup',
@@ -261,6 +230,7 @@ export default function CheckoutPage() {
         description: 'Meet at agreed location',
         isGloboExpat: false,
         priceDisplay: 'Free',
+        comingSoon: false,
       },
     ],
     []
@@ -478,6 +448,7 @@ export default function CheckoutPage() {
 
     try {
       const isMobilePayment = mobilePaymentMethodIds.includes(selectedPayment)
+      const isMeetupPayment = selectedPayment === 'meetup'
       const paymentLabel =
         paymentMethods.find((m) => m.id === selectedPayment)?.name || 'Cash on Delivery'
 
@@ -488,28 +459,40 @@ export default function CheckoutPage() {
       let mobileStatus: string | undefined
       let mobileMessage: string | undefined
 
-      if (isMobilePayment) {
-        checkoutItemsPayload = checkoutItems.reduce<{ productId: number; quantity: number }[]>(
-          (acc, item) => {
-            const rawId =
-              typeof item.productId === 'number' ? item.productId : Number(item.productId)
-            const fallbackId = Number(item.id)
-            const productIdValue = Number.isFinite(rawId) ? rawId : fallbackId
+      // To store multi-seller details if available
+      let orderSellers:
+        | Array<{
+            name: string
+            email: string
+            phone: string
+            address?: string
+            orderId?: string
+          }>
+        | undefined = undefined
 
-            if (!Number.isFinite(productIdValue)) {
-              console.warn('[Checkout] Skipping item without numeric productId', item)
-              return acc
-            }
+      // Prepare checkout items payload for API calls
+      const prepareCheckoutItems = () => {
+        return checkoutItems.reduce<{ productId: number; quantity: number }[]>((acc, item) => {
+          const rawId = typeof item.productId === 'number' ? item.productId : Number(item.productId)
+          const fallbackId = Number(item.id)
+          const productIdValue = Number.isFinite(rawId) ? rawId : fallbackId
 
-            acc.push({
-              productId: productIdValue,
-              quantity: Math.max(1, item.quantity || 1),
-            })
-
+          if (!Number.isFinite(productIdValue)) {
+            console.warn('[Checkout] Skipping item without numeric productId', item)
             return acc
-          },
-          []
-        )
+          }
+
+          acc.push({
+            productId: productIdValue,
+            quantity: Math.max(1, item.quantity || 1),
+          })
+
+          return acc
+        }, [])
+      }
+
+      if (isMobilePayment) {
+        checkoutItemsPayload = prepareCheckoutItems()
 
         if (checkoutItemsPayload.length === 0) {
           throw new Error(
@@ -552,9 +535,9 @@ export default function CheckoutPage() {
         }
 
         orderId =
-          mobileResponse.data?.orderId ||
-          mobileResponse.data?.transactionId ||
-          mobileResponse.data?.checkoutRequestId ||
+          mrData?.orderId ||
+          mrData?.transactionId ||
+          mrData?.checkoutRequestId ||
           `MP-${Date.now()}`
 
         mobileReference =
@@ -568,8 +551,87 @@ export default function CheckoutPage() {
             mobileMessage ||
             'We sent an STK push to your device. Approve the prompt to complete your payment.',
         })
+      } else if (isMeetupPayment) {
+        // Handle Meet in Person checkout via meet-seller API
+        checkoutItemsPayload = prepareCheckoutItems()
+
+        if (checkoutItemsPayload.length === 0) {
+          throw new Error(
+            'Unable to prepare checkout items. Please refresh your cart and try again.'
+          )
+        }
+
+        const meetSellerPayload: MobileCheckoutPayload = {
+          buyDetails: {
+            firstName: shippingAddress.firstName,
+            lastName: shippingAddress.lastName,
+            emailAddress: shippingAddress.email,
+            phoneNumber: shippingAddress.phone,
+            address: shippingAddress.address,
+            city: shippingAddress.city,
+            state: shippingAddress.state || '',
+            country: shippingAddress.country,
+            zipCode: shippingAddress.zip || '',
+            deliveryInstructions: shippingAddress.instructions || '',
+            deliveryMethod: 'MEET_SELLER',
+            paymentMethod: paymentLabel,
+            agreeToTerms,
+            totalAmount: Number(checkoutSubtotal.toFixed(2)),
+            currency: selectedCountryData?.currency || 'TZS',
+          },
+          items: checkoutItemsPayload,
+        }
+
+        const meetSellerResponse = await api.checkout.meetSeller(meetSellerPayload)
+
+        // Handle possible response structures (wrapped or unwrapped)
+        const rawResponse = meetSellerResponse as unknown as {
+          success?: boolean
+          data?: MeetSellerCheckoutResponse
+        } & MeetSellerCheckoutResponse
+        const msData = meetSellerResponse.data || rawResponse
+        const success =
+          meetSellerResponse.success === true ||
+          rawResponse.success === true ||
+          // If no explicit success flag but we have valid data, assume success
+          (Array.isArray(msData?.sellers) && msData.sellers.length > 0) ||
+          !!msData?.orderId
+
+        const hasSellers = Array.isArray(msData?.sellers) && (msData.sellers?.length || 0) > 0
+
+        const meetSellerOk = success || hasSellers || !!msData?.orderId
+
+        if (!meetSellerOk) {
+          throw new Error(
+            meetSellerResponse.message ||
+              rawResponse.message ||
+              msData?.message ||
+              'We could not process your order. Please try again.'
+          )
+        }
+
+        // Prefer explicit orderId, fall back to first seller's orderId if present
+        orderId =
+          msData?.orderId ||
+          (hasSellers && msData.sellers ? msData.sellers[0].orderId : undefined) ||
+          `MS-${Date.now()}`
+        mobileReference = msData?.transactionId
+        mobileStatus = msData?.status
+        mobileMessage = msData?.message
+
+        // Populate orderSellers for usage in orderData construction later
+        if (msData?.sellers && Array.isArray(msData.sellers)) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          orderSellers = msData.sellers.map((s: any) => ({
+            name: s.sellerName || 'Verified Seller',
+            email: s.sellerEmail || 'Not Listed',
+            phone: s.sellerPhoneNumber || 'Not Listed',
+            address: s.sellerAddress || 'Not Listed',
+            orderId: s.orderId,
+          }))
+        }
       } else {
-        // Simulate API call delay for offline payment methods
+        // Handle Cash on Delivery (cod) - simulate API call
         await new Promise((resolve) => setTimeout(resolve, 2000))
         orderId = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`
       }
@@ -577,7 +639,11 @@ export default function CheckoutPage() {
       // Store order data in localStorage BEFORE clearing cart
       const orderData = {
         id: orderId,
-        status: isMobilePayment ? 'pending_payment' : 'confirmed',
+        status: isMobilePayment
+          ? 'pending_payment'
+          : isMeetupPayment
+            ? 'awaiting_meetup'
+            : 'confirmed',
         date: new Date().toISOString(),
         estimatedDelivery:
           shippingMethod === 'delivery'
@@ -586,14 +652,18 @@ export default function CheckoutPage() {
         total: checkoutSubtotal,
         currency: selectedCountryData?.currency || 'TZS',
         paymentMethod: paymentLabel,
-        paymentStatus: isMobilePayment ? 'Awaiting mobile confirmation' : 'Pay on delivery/pickup',
+        paymentStatus: isMobilePayment
+          ? 'Awaiting mobile confirmation'
+          : isMeetupPayment
+            ? 'Pay when you meet seller'
+            : 'Pay on delivery/pickup',
         items: checkoutItems.map((item) => ({
           id: item.id,
           title: item.title,
           price: item.price,
           quantity: item.quantity,
           image: item.image,
-          seller: 'Verified Seller', // This would come from backend
+          seller: item.expatName || 'Verified Seller', // This ensures correct grouping in success page
           sellerVerified: true,
         })),
         shippingAddress: {
@@ -631,6 +701,8 @@ export default function CheckoutPage() {
                   message: 'Seller has been notified. Our team will coordinate directly.',
                 }
               : undefined,
+        // Multi-seller details from API response
+        sellers: orderSellers,
         mobilePayment: isMobilePayment
           ? {
               reference: mobileReference,
@@ -650,14 +722,64 @@ export default function CheckoutPage() {
       localStorage.setItem('clearCartAfterOrder', 'true')
 
       // Seamless SPA navigation to success page; cart clears after success loads
+      // Seamless SPA navigation to success page; cart clears after success loads
       router.push(`/checkout/success?orderId=${orderId}`)
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Order failed:', error)
-      setOrderError(
-        error instanceof Error ? error.message : 'Failed to process order. Please try again.'
-      )
-    } finally {
-      setIsProcessing(false)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Something went wrong. Please try again.'
+      setIsProcessing(false) // Reset processing state if error occurs (initially)
+
+      // Handle duplicate profile error (backend 500)
+      if (errorMessage.includes('unique result') || errorMessage.includes('Server error 500')) {
+        const friendlyMsg =
+          'We encountered a technical issue with your account profile (duplicate records). Please contact support for assistance.'
+        setOrderError(friendlyMsg)
+        toast({
+          variant: 'destructive',
+          title: 'Account System Error',
+          description: friendlyMsg,
+        })
+        return
+      }
+
+      // Handle Buyer Profile Missing Error (Auto-fix attempt)
+      if (isBuyerProfileError(error)) {
+        toast({
+          title: 'Setting up your profile...',
+          description: 'We are finalizing your buyer account. Please wait a moment...',
+        })
+
+        setIsProcessing(true) // Set back to true while fixing
+        const fixResult = await attemptBuyerProfileFix()
+
+        if (fixResult.success) {
+          toast({
+            title: 'Profile ready!',
+            description: 'Retrying your order now...',
+          })
+
+          // Retry the order immediately
+          setTimeout(() => {
+            handlePlaceOrder()
+          }, 1000)
+          return
+        } else {
+          // Fix failed
+          setOrderError(
+            'We encountered an account setup issue. Please contact support or try verifying your account again.'
+          )
+          setIsProcessing(false)
+          return
+        }
+      }
+
+      setOrderError(errorMessage)
+      toast({
+        variant: 'destructive',
+        title: 'Order Failed',
+        description: errorMessage,
+      })
     }
   }
 
@@ -812,75 +934,102 @@ export default function CheckoutPage() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="country">Country *</Label>
-                      <Select value={selectedCountry} onValueChange={handleCountryChange}>
-                        <SelectTrigger className="w-full h-11 border-2 border-neutral-200 rounded-md focus:border-brand-primary">
-                          <SelectValue>
-                            {selectedCountry && (
-                              <span className="flex items-center gap-2">
-                                {(() => {
-                                  const country = eastAfricanCountries.find(
-                                    (c) => c.code === selectedCountry
-                                  )
-                                  if (!country) return selectedCountry
-                                  return (
-                                    <>
-                                      <FlagDisplay
-                                        emoji={country.flag}
-                                        fallback={country.code}
-                                        countryName={country.name}
-                                        variant="minimal"
-                                      />
-                                      <span>{country.name}</span>
-                                    </>
-                                  )
-                                })()}
-                              </span>
-                            )}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {eastAfricanCountries.map((country) => (
-                            <SelectItem key={country.code} value={country.code}>
-                              <span className="flex items-center gap-2">
-                                <FlagDisplay
-                                  emoji={country.flag}
-                                  fallback={country.code}
-                                  countryName={country.name}
-                                  variant="dropdown"
-                                />
-                                <span>{country.name}</span>
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="city">City *</Label>
-                      <Select value={shippingAddress.city} onValueChange={handleCityChange}>
-                        <SelectTrigger className="w-full h-11 border-2 border-neutral-200 rounded-md focus:border-brand-primary">
-                          <SelectValue placeholder="Choose city" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableCities.map((city) => (
-                            <SelectItem key={city.name} value={city.name}>
-                              <span className="flex items-center gap-2">
-                                <FlagDisplay
-                                  emoji={city.flag}
-                                  fallback={selectedCountry}
-                                  countryName={shippingAddress.country || 'City'}
-                                  variant="dropdown"
-                                />
-                                <span>{city.name}</span>
-                              </span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Location (Country & City) *</Label>
+                    <EnhancedLocationSelect
+                      value={
+                        // Try to reconstruct the value from current state for the component
+                        (() => {
+                          if (!shippingAddress.city && !shippingAddress.country) return ''
+
+                          // 1. Try to find a match in EXPAT_LOCATIONS
+                          // Normalize logic: check if known location label contains our city and country matches
+                          const match = EXPAT_LOCATIONS.find(
+                            (l) =>
+                              l.country === shippingAddress.country &&
+                              l.label.includes(shippingAddress.city)
+                          )
+                          if (match) return match.label
+
+                          // 2. If no match, return custom format "City, Country"
+                          if (shippingAddress.city && shippingAddress.country) {
+                            return `${shippingAddress.city}, ${shippingAddress.country}`
+                          }
+                          return shippingAddress.city || shippingAddress.country
+                        })()
+                      }
+                      onValueChange={(val) => {
+                        // 1. Check if it matches a known location from the list
+                        const match = EXPAT_LOCATIONS.find(
+                          (l) => l.label === val || l.value === val
+                        )
+
+                        if (match) {
+                          // Known location selected
+                          // Find corresponding country code for our logic (currency, etc.)
+                          const countryCode = eastAfricanCountries.find(
+                            (c) => c.name.toLowerCase() === match.country?.toLowerCase()
+                          )?.code
+
+                          if (countryCode) {
+                            handleCountryChange(countryCode)
+                          } else {
+                            // Fallback if country not found in our list
+                            setShippingAddress((prev) => ({
+                              ...prev,
+                              country: match.country || prev.country,
+                            }))
+                          }
+
+                          // Extract clean city name from label (e.g. "🇹🇿 Dar es Salaam, TZ" -> "Dar es Salaam")
+                          // Remove emoji prefix and ", TZ" suffix
+                          const cleanCity = match.label
+                            .replace(/^.*? /, '') // Remove leading emoji/text
+                            .replace(/, [A-Z]{2}$/, '') // Remove comma and country code suffix
+
+                          handleCityChange(cleanCity)
+                        } else {
+                          // Custom location typed/entered
+                          if (val.includes(',')) {
+                            // Assumed format: "City, Country"
+                            const parts = val.split(',')
+                            const city = parts[0].trim()
+                            const country = parts.slice(1).join(',').trim()
+
+                            // Try to detect country code from entered country name
+                            const countryCode = eastAfricanCountries.find(
+                              (c) =>
+                                c.name.toLowerCase() === country.toLowerCase() ||
+                                country.toLowerCase().includes(c.name.toLowerCase())
+                            )?.code
+
+                            if (countryCode) {
+                              // If we detect a known country, use the handler to set currency etc.
+                              handleCountryChange(countryCode)
+                              // Override city since handleCountryChange clears it
+                              setTimeout(() => handleCityChange(city), 0)
+                            } else {
+                              // Unknown/Other country
+                              setShippingAddress((prev) => ({
+                                ...prev,
+                                city,
+                                country,
+                              }))
+                              // Reset selected country code if it doesn't match custom country
+                              setSelectedCountry('')
+                            }
+                          } else {
+                            // Just one string entered - assume it's city if we have a country, or just set city
+                            handleCityChange(val)
+                          }
+                        }
+                      }}
+                      placeholder="Select country and city"
+                      showLabels={false}
+                    />
+                    <p className="text-xs text-neutral-500">
+                      Search for your city or type "City, Country" if not listed
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -920,47 +1069,92 @@ export default function CheckoutPage() {
                   {/* Shipping Options */}
                   <div className="space-y-4">
                     <Label className="text-base font-medium">Delivery Method</Label>
-                    <RadioGroup value={shippingMethod} onValueChange={setShippingMethod}>
+                    <RadioGroup
+                      value={shippingMethod}
+                      onValueChange={(value) => {
+                        // Only allow changing to non-coming-soon options
+                        const option = shippingOptions.find((opt) => opt.id === value)
+                        if (option && !option.comingSoon) {
+                          setShippingMethod(value)
+                        }
+                      }}
+                    >
                       {shippingOptions.map((option) => (
                         <label
                           key={option.id}
                           htmlFor={option.id}
-                          className={`flex items-start space-x-3 p-4 border-2 rounded-lg cursor-pointer hover:bg-neutral-50 hover:border-brand-primary/50 transition-all duration-200 ${
-                            option.isGloboExpat
-                              ? 'bg-gradient-to-r from-brand-primary/5 to-brand-secondary/5 border-brand-primary/30'
-                              : ''
-                          } ${
-                            shippingMethod === option.id
-                              ? 'border-brand-primary bg-brand-primary/5'
-                              : 'border-neutral-200'
-                          }`}
+                          className={`flex items-start space-x-3 p-4 border-2 rounded-lg transition-all duration-200
+                            ${
+                              option.comingSoon
+                                ? `cursor-not-allowed border-dashed border-neutral-200 ${
+                                    option.isGloboExpat
+                                      ? 'bg-gradient-to-r from-brand-primary/[0.02] to-brand-secondary/[0.02]'
+                                      : 'bg-neutral-50'
+                                  }`
+                                : `cursor-pointer hover:bg-neutral-50 hover:border-brand-primary/50 ${
+                                    shippingMethod === option.id
+                                      ? 'border-brand-primary bg-brand-primary/5'
+                                      : option.isGloboExpat
+                                        ? 'bg-gradient-to-r from-brand-primary/5 to-brand-secondary/5 border-brand-primary/30'
+                                        : 'border-neutral-200'
+                                  }`
+                            }`}
                         >
-                          <RadioGroupItem value={option.id} id={option.id} className="mt-1" />
+                          <RadioGroupItem
+                            value={option.id}
+                            id={option.id}
+                            className="mt-1"
+                            disabled={option.comingSoon}
+                          />
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-2">
                               <div
                                 className={`font-medium flex items-center gap-2 ${
-                                  option.isGloboExpat ? 'text-brand-primary' : ''
+                                  option.isGloboExpat
+                                    ? 'text-brand-primary'
+                                    : option.comingSoon
+                                      ? 'text-neutral-400'
+                                      : ''
                                 }`}
                               >
                                 {option.isGloboExpat && (
-                                  <span className="inline-flex items-center text-xs font-bold bg-brand-primary text-white px-2 py-0.5 rounded">
-                                    Globo<span className="text-brand-secondary">expat</span>
+                                  <span className="inline-flex items-center text-xs font-bold px-2 py-0.5 rounded bg-brand-primary text-white">
+                                    Globo
+                                    <span className="text-brand-secondary">expat</span>
                                   </span>
                                 )}
                                 {option.name}
+                                {option.comingSoon && (
+                                  <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full ml-2">
+                                    Coming Soon
+                                  </span>
+                                )}
                               </div>
                               <div className="text-right">
                                 <span
-                                  className={`font-semibold text-lg ${option.isGloboExpat ? 'text-brand-primary' : 'text-neutral-600'}`}
+                                  className={`font-semibold text-lg ${
+                                    option.isGloboExpat
+                                      ? 'text-brand-primary'
+                                      : option.comingSoon
+                                        ? 'text-neutral-400'
+                                        : 'text-neutral-600'
+                                  }`}
                                 >
                                   {option.priceDisplay || 'Varies'}
                                 </span>
                               </div>
                             </div>
                             <div className="space-y-1">
-                              <p className="text-sm text-neutral-600 font-medium">{option.time}</p>
-                              <p className="text-sm text-neutral-600">{option.description}</p>
+                              <p
+                                className={`text-sm font-medium ${option.comingSoon ? 'text-neutral-500' : 'text-neutral-600'}`}
+                              >
+                                {option.time}
+                              </p>
+                              <p
+                                className={`text-sm ${option.comingSoon ? 'text-neutral-500' : 'text-neutral-600'}`}
+                              >
+                                {option.description}
+                              </p>
                             </div>
                           </div>
                         </label>
@@ -1181,7 +1375,9 @@ export default function CheckoutPage() {
                                 mobileNumber: e.target.value,
                               }))
                             }
-                            placeholder={selectedCountryData?.phoneCode + ' 700 123 456'}
+                            placeholder={
+                              (selectedCountryData?.phoneCode || '+255') + ' 700 123 456'
+                            }
                             className="h-10 border-2 border-neutral-300 rounded-lg focus:border-brand-primary mt-2"
                           />
                           <p className="text-sm text-neutral-700 mt-2">
@@ -1423,7 +1619,7 @@ export default function CheckoutPage() {
               <Button
                 variant="outline"
                 onClick={handlePrevStep}
-                disabled={currentStep === 1}
+                disabled={currentStep === 1 || isProcessing}
                 className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold border-2 border-gray-300 hover:border-gray-400 hover:bg-gray-100 disabled:opacity-50 rounded-full order-2 sm:order-1"
               >
                 <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />

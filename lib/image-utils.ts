@@ -148,7 +148,8 @@ export const transformBackendProduct = (item: Record<string, unknown>) => {
     category: String(category?.categoryName || item.categoryName || ''),
     condition: String(item.productCondition || item.condition || 'used'),
     // Preserve view count (clickCount from backend) if available
-    views: (item.views as number) || (item.clickCount as number) || 0,
+    views: (item.clickCount as number) || 0,
+    quantity: (item.productQuantity as number) || 0,
   }
 
   return transformed

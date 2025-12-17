@@ -171,6 +171,7 @@ const UserNavigation = React.memo<{
               size="icon"
               className="relative p-2 rounded-md text-white hover:bg-brand-primary/80 transition-colors h-auto"
               aria-label="Open account menu"
+              data-tutorial="mobile-account-menu"
             >
               <User className="h-5 w-5" />
             </Button>
@@ -463,6 +464,7 @@ const Header = React.memo(() => {
                   size="icon"
                   className="text-white hover:bg-white/10 h-8 w-8 rounded-full"
                   aria-label="Toggle search"
+                  data-tutorial="mobile-search-toggle"
                   onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
                 >
                   <Search className="h-5 w-5" />

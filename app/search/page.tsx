@@ -135,6 +135,7 @@ function SearchPageContent() {
               src={product.images[0]}
               alt={product.title}
               fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover group-hover:scale-105 transition-transform duration-300"
             />
             {product.isPromoted && (
@@ -227,7 +228,13 @@ function SearchPageContent() {
           <div className="flex gap-4">
             {/* Product Image */}
             <div className="relative w-24 h-24 flex-shrink-0 bg-neutral-100 rounded-lg overflow-hidden">
-              <Image src={product.images[0]} alt={product.title} fill className="object-cover" />
+              <Image
+                src={product.images[0]}
+                alt={product.title}
+                fill
+                sizes="96px"
+                className="object-cover"
+              />
               {product.isPromoted && (
                 <Badge className="absolute top-1 left-1 bg-brand-secondary text-brand-primary text-xs">
                   Promoted

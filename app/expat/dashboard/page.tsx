@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -72,6 +73,7 @@ interface UserListing {
   categoryId?: number
   categoryName?: string
   createdAt?: string
+  productQuantity?: number
 }
 
 interface DashboardStats {
@@ -91,9 +93,16 @@ export default function ExpatDashboard() {
 
 function DashboardContent() {
   const { user } = useAuth()
+  const searchParams = useSearchParams()
+  const initialTab = searchParams.get('tab')
+
   const [listings, setListings] = useState<UserListing[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState(
+    initialTab && ['overview', 'listings', 'messages', 'analytics', 'orders'].includes(initialTab)
+      ? initialTab
+      : 'overview'
+  )
   const [deleteDialog, setDeleteDialog] = useState<{
     isOpen: boolean
     productId: string | null
@@ -120,7 +129,9 @@ function DashboardContent() {
   )
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
-  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest')
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'most-views' | 'least-views'>(
+    'newest'
+  )
 
   // Apply filtering and sorting
   const filteredAndSortedListings = listings
@@ -141,6 +152,13 @@ function DashboardContent() {
       return true
     })
     .sort((a, b) => {
+      // View-based sorting
+      if (sortOrder === 'most-views') {
+        return (b.views || 0) - (a.views || 0)
+      } else if (sortOrder === 'least-views') {
+        return (a.views || 0) - (b.views || 0)
+      }
+
       // Time-based sorting
       const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
       const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
@@ -188,15 +206,6 @@ function DashboardContent() {
       }
     }
     fetchCategories()
-  }, [])
-
-  // Check for tab parameter in URL
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const tabParam = urlParams.get('tab')
-    if (tabParam && ['overview', 'listings', 'messages', 'analytics'].includes(tabParam)) {
-      setActiveTab(tabParam)
-    }
   }, [])
 
   // Fetch dashboard data
@@ -610,39 +619,106 @@ function DashboardContent() {
                 </Select>
               </div>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <Filter className="w-5 h-5 text-[#64748B]" />
-                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                  <SelectTrigger className="w-full sm:w-[200px]">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="sold">Sold</SelectItem>
-                    <SelectItem value="archived">Archived</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <ArrowUpDown className="w-5 h-5 text-[#64748B]" />
-                <Select
-                  value={sortOrder}
-                  onValueChange={(val) => setSortOrder(val as 'newest' | 'oldest')}
+              {/* Status Filter Buttons */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  variant={selectedStatus === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedStatus('all')}
+                  className={cn(
+                    'h-9',
+                    selectedStatus === 'all' && 'bg-[#1E3A8A] hover:bg-[#1E3A8A]/90'
+                  )}
                 >
-                  <SelectTrigger className="w-full sm:w-[200px]">
-                    <SelectValue placeholder="Sort by time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Newest First</SelectItem>
-                    <SelectItem value="oldest">Oldest First</SelectItem>
-                  </SelectContent>
-                </Select>
+                  All
+                </Button>
+                <Button
+                  variant={selectedStatus === 'active' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedStatus('active')}
+                  className={cn(
+                    'h-9',
+                    selectedStatus === 'active' && 'bg-[#10B981] hover:bg-[#10B981]/90'
+                  )}
+                >
+                  Active
+                </Button>
+                <Button
+                  variant={selectedStatus === 'sold' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedStatus('sold')}
+                  className={cn(
+                    'h-9',
+                    selectedStatus === 'sold' && 'bg-[#6B7280] hover:bg-[#6B7280]/90'
+                  )}
+                >
+                  Sold
+                </Button>
+                <Button
+                  variant={selectedStatus === 'archived' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedStatus('archived')}
+                  className={cn(
+                    'h-9',
+                    selectedStatus === 'archived' && 'bg-[#F59E0B] hover:bg-[#F59E0B]/90 text-white'
+                  )}
+                >
+                  Archived
+                </Button>
               </div>
 
-              {/* eslint-disable-next-line prettier/prettier */}
-              {(selectedCategory !== 'all' || selectedStatus !== 'all' || sortOrder !== 'newest') && (
+              {/* Sort Order Buttons */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <ArrowUpDown className="w-5 h-5 text-[#64748B]" />
+                <Button
+                  variant={sortOrder === 'newest' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSortOrder('newest')}
+                  className={cn(
+                    'h-9',
+                    sortOrder === 'newest' && 'bg-[#1E3A8A] hover:bg-[#1E3A8A]/90'
+                  )}
+                >
+                  Newest
+                </Button>
+                <Button
+                  variant={sortOrder === 'oldest' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSortOrder('oldest')}
+                  className={cn(
+                    'h-9',
+                    sortOrder === 'oldest' && 'bg-[#1E3A8A] hover:bg-[#1E3A8A]/90'
+                  )}
+                >
+                  Oldest
+                </Button>
+                <Button
+                  variant={sortOrder === 'most-views' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSortOrder('most-views')}
+                  className={cn(
+                    'h-9',
+                    sortOrder === 'most-views' && 'bg-[#10B981] hover:bg-[#10B981]/90'
+                  )}
+                >
+                  Most Views
+                </Button>
+                <Button
+                  variant={sortOrder === 'least-views' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSortOrder('least-views')}
+                  className={cn(
+                    'h-9',
+                    sortOrder === 'least-views' && 'bg-[#64748B] hover:bg-[#64748B]/90'
+                  )}
+                >
+                  Least Views
+                </Button>
+              </div>
+
+              {(selectedCategory !== 'all' ||
+                selectedStatus !== 'all' ||
+                sortOrder !== 'newest') && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -686,11 +762,17 @@ function DashboardContent() {
                             <Package className="w-12 h-12 text-[#CBD5E1]" />
                           </div>
                         )}
-                        <Badge
-                          className={`absolute top-2 right-2 ${getStatusBadge(listing.productStatus || 'active')}`}
-                        >
-                          {listing.productStatus || 'active'}
-                        </Badge>
+                        {listing.productQuantity === 0 ? (
+                          <Badge className="absolute top-2 right-2 bg-neutral-800 text-white hover:bg-neutral-800">
+                            Out of Stock
+                          </Badge>
+                        ) : (
+                          <Badge
+                            className={`absolute top-2 right-2 ${getStatusBadge(listing.productStatus || 'active')}`}
+                          >
+                            {listing.productStatus || 'active'}
+                          </Badge>
+                        )}
                       </div>
                       <CardContent className="p-4">
                         <h3 className="font-semibold text-[#0F172A] mb-2 truncate">

@@ -4,6 +4,13 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCircle2, Mail, AlertTriangle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -25,6 +32,7 @@ export default function VerificationPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [organizationEmail, setOrganizationEmail] = useState('')
+  const [userRole, setUserRole] = useState<'BUYER' | 'SELLER'>('BUYER')
   const [, setOtpSent] = useState(false)
   const [otp, setOtp] = useState('')
   const [error, setError] = useState('')
@@ -65,7 +73,7 @@ export default function VerificationPage() {
     setError('')
     setSuccess('')
     try {
-      await verifyOrganizationEmail(organizationEmail, otp, 'SELLER')
+      await verifyOrganizationEmail(organizationEmail, otp, userRole)
       setSuccess('Email verified successfully')
       setOtpSent(false)
       setOtp('')
@@ -277,6 +285,26 @@ export default function VerificationPage() {
                     disabled={isSubmitting}
                     className="mt-1 h-11 border border-[#E2E8F0] focus:border-[#1E3A8A]"
                   />
+                </div>
+
+                {/* Role Selection */}
+                <div>
+                  <Label className="text-sm font-medium text-[#0F172A]">
+                    I want to primarily be a
+                  </Label>
+                  <Select
+                    value={userRole}
+                    onValueChange={(value: 'BUYER' | 'SELLER') => setUserRole(value)}
+                    disabled={isSubmitting}
+                  >
+                    <SelectTrigger className="mt-1 h-11 border border-[#E2E8F0] focus:border-[#1E3A8A]">
+                      <SelectValue placeholder="Select your role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="BUYER">Buyer</SelectItem>
+                      <SelectItem value="SELLER">Seller</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Step 1: Send OTP */}

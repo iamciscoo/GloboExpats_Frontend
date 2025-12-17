@@ -94,6 +94,22 @@ interface MobileCheckoutResponse {
   reference?: string
 }
 
+/** Response returned by the meet-seller checkout endpoint */
+interface MeetSellerCheckoutResponse {
+  orderId?: string
+  transactionId?: string
+  status?: string
+  message?: string
+  sellers?: Array<{
+    sellerName: string
+    sellerEmail: string
+    sellerPhoneNumber: string
+    sellerAddress: string
+    orderId: string
+    orderDate: string
+  }>
+}
+
 // ============================================================================
 // API CLIENT CLASS
 // ============================================================================
@@ -807,7 +823,9 @@ class ApiClient {
   async getProductDetails(productId: number): Promise<unknown> {
     try {
       // Try the dedicated detail endpoint first (best case - includes reviews, ratings, etc.)
-      return await this.request(`/api/v1/displayItem/itemDetails/${productId}`)
+      return await this.request(`/api/v1/displayItem/itemDetails/${productId}`, {
+        cache: 'no-store',
+      })
     } catch (error) {
       // Check if this is a 404 error
       const apiError = error as Error & { statusCode?: number }
@@ -1386,6 +1404,31 @@ class ApiClient {
     })
   }
 
+  // ============================================================================
+  // USER MANAGEMENT ENDPOINTS
+  // ============================================================================
+
+  /**
+   * Updates user profile information
+   * @param data - User profile data to update
+   * @returns Promise resolving to update confirmation
+   */
+  async updateUserProfile(data: {
+    firstName: string
+    lastName: string
+    organizationalEmail: string
+  }): Promise<ApiResponse<unknown>> {
+    const formData = new FormData()
+    if (data.firstName) formData.append('firstName', data.firstName)
+    if (data.lastName) formData.append('lastName', data.lastName)
+    if (data.organizationalEmail) formData.append('organizationalEmail', data.organizationalEmail)
+
+    return this.request('/api/v1/userManagement/editProfile', {
+      method: 'PATCH',
+      body: formData,
+    })
+  }
+
   /**
    * Uploads verification documents
    * @param files - Document files to upload
@@ -1532,10 +1575,14 @@ class ApiClient {
     otp: string,
     userRoles: 'SELLER' | 'USER' | string
   ): Promise<ApiResponse<unknown>> {
-    const qs = `?organizationalEmail=${encodeURIComponent(
-      organizationalEmail
-    )}&otp=${encodeURIComponent(otp)}&userRoles=${encodeURIComponent(userRoles)}`
-    return this.request(`/api/v1/email/verifyOTP${qs}`, { method: 'POST' })
+    return this.request('/api/v1/email/verifyOTP', {
+      method: 'POST',
+      body: JSON.stringify({
+        organizationalEmail,
+        otp,
+        userRoles,
+      }),
+    })
   }
 
   /**
@@ -1677,6 +1724,16 @@ class ApiClient {
     })
   }
 
+  /** Initiates the meet-seller checkout flow (Arrange with Seller) */
+  async initiateMeetSellerCheckout(
+    payload: MobileCheckoutPayload
+  ): Promise<ApiResponse<MeetSellerCheckoutResponse>> {
+    return this.request('/api/v1/checkout/meet-seller', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+  }
+
   // ============================================================================
   // CART ENDPOINTS - DEPRECATED (Client-Side Cart Only)
   // ============================================================================
@@ -1736,6 +1793,7 @@ export const api = {
   /** Checkout flows */
   checkout: {
     mobilePay: (data: MobileCheckoutPayload) => apiClient.initiateMobileCheckout(data),
+    meetSeller: (data: MobileCheckoutPayload) => apiClient.initiateMeetSellerCheckout(data),
   },
 
   /** Cart management operations - DEPRECATED: Now client-side only */
@@ -1775,7 +1833,7 @@ export const api = {
   },
 }
 
-export type { MobileCheckoutPayload, MobileCheckoutResponse }
+export type { MobileCheckoutPayload, MobileCheckoutResponse, MeetSellerCheckoutResponse }
 
 /** Default export for backward compatibility */
 export default apiClient

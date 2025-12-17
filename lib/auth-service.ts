@@ -103,6 +103,7 @@ export async function registerUser(payload: {
   lastName: string
   password: string
   emailAddress: string
+  phoneNumber?: string
   agreeToTerms: boolean
   agreeToPrivacyPolicy: boolean
 }) {

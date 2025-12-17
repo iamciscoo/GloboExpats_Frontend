@@ -218,7 +218,7 @@ export default function SearchBar({ autoExpand = false, onClose }: SearchBarProp
             setSearchQuery(e.target.value)
             setActiveIndex(-1)
           }}
-          className="w-full sm:w-96 h-10 sm:h-9 pl-4 pr-4 bg-white border-slate-300 rounded-full text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-neutral-900 placeholder-neutral-500"
+          className="w-full sm:w-96 h-10 sm:h-9 pl-4 pr-10 bg-white border-slate-300 rounded-full text-sm focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-neutral-900 placeholder-neutral-500"
           autoComplete="off"
           role="combobox"
           aria-expanded={suggestions.length > 0}
@@ -252,14 +252,14 @@ export default function SearchBar({ autoExpand = false, onClose }: SearchBarProp
           }}
         />
         {searchQuery && (
-          <div className="absolute right-0 md:-right-2 lg:-right-3 top-1/2 -translate-y-1/2 z-10">
+          <div className="absolute right-1.5 top-1/2 -translate-y-1/2 z-10">
             <Button
               type="submit"
               size="icon"
-              className="h-7 w-7 sm:h-7 sm:w-7 bg-cyan-500 hover:bg-cyan-600 rounded-full flex items-center justify-center"
+              className="h-7 w-7 sm:h-7 sm:w-7 bg-cyan-500 hover:bg-cyan-600 rounded-full flex items-center justify-center p-0 transition-all shadow-sm"
               aria-label="Search"
             >
-              <Search className="h-4 w-4" />
+              <Search className="h-4 w-4 text-white" />
             </Button>
           </div>
         )}

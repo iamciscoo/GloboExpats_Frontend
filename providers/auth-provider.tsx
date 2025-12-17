@@ -109,6 +109,7 @@ interface AuthContextType extends AuthState {
     emailAddress: string
     agreeToTerms: boolean
     agreeToPrivacyPolicy: boolean
+    phoneNumber?: string
   }) => Promise<void>
 
   /** End user session and clear all data */
@@ -586,6 +587,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       emailAddress: string
       agreeToTerms: boolean
       agreeToPrivacyPolicy: boolean
+      phoneNumber?: string
     }): Promise<void> => {
       setAuthState((prev) => ({ ...prev, isLoading: true, error: null }))
       try {

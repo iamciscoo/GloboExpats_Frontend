@@ -14,6 +14,12 @@ import {
   Copy,
   AlertCircle,
 } from 'lucide-react'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -61,6 +67,13 @@ interface OrderData {
     notified?: boolean
     message?: string
   }
+  sellers?: Array<{
+    name: string
+    email: string
+    phone: string
+    address?: string
+    orderId?: string
+  }>
 }
 
 function CheckoutSuccessContent() {
@@ -129,6 +142,10 @@ function CheckoutSuccessContent() {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
+  }
+
+  const formatPrice = (price: number, currency = 'TZS') => {
+    return `${currency} ${price.toLocaleString()}`
   }
 
   if (isLoading) {
@@ -257,61 +274,17 @@ function CheckoutSuccessContent() {
                   </p>
                 </div>
               ) : (
-                <>
-                  <div className="rounded-lg border-2 border-neutral-200 border-l-4 border-l-blue-600 bg-white p-4 shadow-sm">
-                    <p className="text-sm sm:text-base font-medium text-neutral-900">
-                      Order created. Seller notified. Contact the seller to arrange meeting and
-                      payment.
-                    </p>
-                  </div>
-                  {orderData.sellerDetails && (
-                    <div className="rounded-lg border-2 border-neutral-200 border-l-4 border-l-blue-600 bg-white p-4 shadow-sm">
-                      <h3 className="text-sm font-semibold text-neutral-900 mb-3">
-                        Seller Contact Information
-                      </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-                        <div>
-                          <div className="text-[11px] font-semibold text-neutral-500 uppercase mb-1 tracking-wide">
-                            Name
-                          </div>
-                          <div className="font-semibold text-neutral-900">
-                            {orderData.sellerDetails.name}
-                          </div>
-                        </div>
-                        {orderData.sellerDetails.email && (
-                          <div>
-                            <div className="text-[11px] font-semibold text-neutral-500 uppercase mb-1 tracking-wide">
-                              Email
-                            </div>
-                            <a
-                              href={`mailto:${orderData.sellerDetails.email}`}
-                              className="text-sm font-medium text-blue-600 hover:text-blue-800 underline break-all"
-                            >
-                              {orderData.sellerDetails.email}
-                            </a>
-                          </div>
-                        )}
-                        {orderData.sellerDetails.phone && (
-                          <div>
-                            <div className="text-[11px] font-semibold text-neutral-500 uppercase mb-1 tracking-wide">
-                              Phone
-                            </div>
-                            <a
-                              href={`tel:${orderData.sellerDetails.phone}`}
-                              className="text-sm font-semibold text-green-700 hover:text-green-900"
-                            >
-                              {orderData.sellerDetails.phone}
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-xs text-neutral-600 mt-3 italic">
-                        Tip: Call or email the seller to arrange a convenient meeting time and
-                        location.
-                      </p>
-                    </div>
-                  )}
-                </>
+                <div className="rounded-lg border-2 border-neutral-200 border-l-4 border-l-blue-600 bg-white p-4 shadow-sm">
+                  <p className="text-sm sm:text-base font-medium text-neutral-900">
+                    Order created. Seller notified. Contact the seller to arrange meeting and
+                    payment.
+                  </p>
+                  <p className="text-sm text-neutral-700 mt-2 font-medium">
+                    <span className="mr-2">👇</span>
+                    Please scroll down to the <span className="font-bold">Order Details</span>{' '}
+                    section below to see the seller's phone number and email.
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -380,43 +353,166 @@ function CheckoutSuccessContent() {
               <Separator className="my-6" />
 
               {/* Order Items (compact, scrollable) */}
-              <div className="space-y-3">
+              {/* Order Items Grouped by Seller */}
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-lg">Items Ordered</h3>
                   <span className="text-xs text-neutral-500">{orderData.items.length} items</span>
                 </div>
-                <div className="space-y-4 max-h-72 overflow-y-auto pr-2">
-                  {orderData.items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-4 p-4 bg-neutral-50 rounded-lg"
-                    >
-                      <div className="w-16 h-16 bg-neutral-200 rounded-lg flex-shrink-0 relative">
-                        <Image
-                          src={item.image}
-                          alt={item.title}
-                          fill
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium line-clamp-1">{item.title}</h4>
-                        <div className="flex items-center gap-2 mt-1">
-                          <p className="text-sm text-neutral-600">Sold by: {item.seller}</p>
-                          {item.sellerVerified && (
-                            <Badge className="bg-green-100 text-green-800 text-xs">Verified</Badge>
-                          )}
+
+                {/* Strategy: Filter items for each seller if we have seller info */}
+                {orderData.sellers && orderData.sellers.length > 0 ? (
+                  <div className="space-y-8">
+                    {orderData.sellers.map((seller, idx) => {
+                      // Find items belonging to this seller
+                      const sellerItems = orderData.items.filter(
+                        (item) => item.seller === seller.name || item.seller === 'Verified Seller'
+                      )
+
+                      return (
+                        <Card key={idx} className="border-2 border-neutral-200 overflow-hidden">
+                          <div className="bg-neutral-100 px-4 py-3 border-b border-neutral-200 flex flex-wrap gap-2 justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-neutral-800 text-base">
+                                {seller.name}
+                              </span>
+                              <Badge
+                                variant="secondary"
+                                className="bg-white text-neutral-600 border-neutral-300"
+                              >
+                                Seller #{idx + 1}
+                              </Badge>
+                            </div>
+                            <span className="text-sm text-neutral-500">
+                              {sellerItems.length} {sellerItems.length === 1 ? 'item' : 'items'}
+                            </span>
+                          </div>
+
+                          <div className="p-0">
+                            {/* Seller Contact Info Panel */}
+                            <div className="bg-blue-50/50 p-4 border-b border-blue-100">
+                              <h4 className="text-xs font-bold text-blue-700 uppercase tracking-wide mb-3">
+                                Contact Information
+                              </h4>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <span className="text-xs text-neutral-500 block mb-1">
+                                    Phone / WhatsApp
+                                  </span>
+                                  <a
+                                    href={`tel:${seller.phone}`}
+                                    className="text-lg font-bold text-green-600 border-b border-dashed border-green-300 hover:text-green-800 hover:border-green-800 transition-colors"
+                                  >
+                                    {seller.phone || 'Not Listed'}
+                                  </a>
+                                </div>
+                                <div>
+                                  <span className="text-xs text-neutral-500 block mb-1">Email</span>
+                                  <a
+                                    href={`mailto:${seller.email}`}
+                                    className="text-lg font-bold text-blue-600 overflow-hidden text-ellipsis block hover:text-blue-800 transition-colors"
+                                  >
+                                    {seller.email || 'N/A'}
+                                  </a>
+                                </div>
+                                {seller.address && seller.address !== 'Not Listed' && (
+                                  <div className="col-span-full mt-2 pt-2 border-t border-blue-100">
+                                    <span className="text-xs text-neutral-500 block mb-1">
+                                      Meeting Location
+                                    </span>
+                                    <span className="text-neutral-900 font-medium">
+                                      {seller.address}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Items for this seller */}
+                            <div className="divide-y divide-neutral-100">
+                              {sellerItems.map((item) => (
+                                <div
+                                  key={item.id}
+                                  className="flex items-start sm:items-center gap-4 p-4 hover:bg-neutral-50 transition-colors"
+                                >
+                                  <div className="w-16 h-16 bg-neutral-100 rounded-lg flex-shrink-0 relative border border-neutral-200">
+                                    <Image
+                                      src={item.image}
+                                      alt={item.title}
+                                      fill
+                                      className="w-full h-full object-cover rounded-lg"
+                                    />
+                                  </div>
+                                  <div className="flex-1 min-w-0 py-1">
+                                    <h4 className="font-medium text-neutral-900 line-clamp-1 text-base">
+                                      {item.title}
+                                    </h4>
+                                    <p className="text-sm text-neutral-500 mt-1">
+                                      Quantity: {item.quantity}
+                                    </p>
+                                  </div>
+                                  <div className="text-right py-1">
+                                    <p className="font-bold text-neutral-900">
+                                      {formatPrice(item.price, orderData.currency)}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                              {sellerItems.length === 0 && (
+                                <div className="p-6 text-center text-neutral-400 text-sm italic">
+                                  No items matched to this seller.
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Footer Call to Action */}
+                            <div className="bg-neutral-50 p-3 text-center border-t border-neutral-100">
+                              <p className="text-xs text-neutral-500">
+                                Please contact {seller.name} to arrange payment and collection.
+                              </p>
+                            </div>
+                          </div>
+                        </Card>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  /* Fallback for Single Seller or No Seller Info */
+                  <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                    {orderData.items.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-4 p-4 bg-neutral-50 rounded-lg"
+                      >
+                        <div className="w-16 h-16 bg-neutral-200 rounded-lg flex-shrink-0 relative">
+                          <Image
+                            src={item.image}
+                            alt={item.title}
+                            fill
+                            className="w-full h-full object-cover rounded-lg"
+                          />
                         </div>
-                        <p className="text-sm text-neutral-500">Qty: {item.quantity}</p>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium line-clamp-1">{item.title}</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <p className="text-sm text-neutral-600">Sold by: {item.seller}</p>
+                            {item.sellerVerified && (
+                              <Badge className="bg-green-100 text-green-800 text-xs">
+                                Verified
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-neutral-500">Qty: {item.quantity}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-base">
+                            {formatPrice(item.price, orderData.currency)}
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-base">
-                          {orderData.currency} {item.price.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <Separator className="my-6" />

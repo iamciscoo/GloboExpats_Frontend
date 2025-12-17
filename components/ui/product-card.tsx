@@ -273,24 +273,27 @@ export function ProductCard({
               </div>
 
               {/* Views Count */}
-              <div className="flex items-center gap-1 flex-shrink-0">
-                <Eye
-                  className={cn(
-                    'text-neutral-400',
-                    compact ? 'w-3 h-3 sm:w-3.5 sm:h-3.5' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'
-                  )}
-                  aria-hidden="true"
-                />
-                <span
-                  className={cn(
-                    'text-neutral-500 font-medium',
-                    compact ? 'text-xs sm:text-sm' : 'text-sm'
-                  )}
-                  aria-label={`${product.views || 0} views`}
-                >
-                  {product.views || 0}
-                </span>
-              </div>
+              {/* Views Count */}
+              {product.views !== undefined && product.views > 0 && (
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <Eye
+                    className={cn(
+                      'text-neutral-400',
+                      compact ? 'w-3 h-3 sm:w-3.5 sm:h-3.5' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'
+                    )}
+                    aria-hidden="true"
+                  />
+                  <span
+                    className={cn(
+                      'text-neutral-500 font-medium',
+                      compact ? 'text-xs sm:text-sm' : 'text-sm'
+                    )}
+                    aria-label={`${product.views} views`}
+                  >
+                    {product.views}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Seller Info - Only show in non-compact mode */}

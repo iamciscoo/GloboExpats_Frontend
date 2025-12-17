@@ -26,6 +26,7 @@ import { getFullImageUrl } from '@/lib/image-utils'
 import { getCategoryFields } from '@/lib/category-fields'
 import { Badge } from '@/components/ui/badge'
 import { parseProductDescription } from '@/lib/description-parser'
+import { EnhancedLocationSelect } from '@/components/ui/enhanced-location-select'
 import { ArrowLeft, AlertCircle, Loader2, Upload, X, Star, Trash2 } from 'lucide-react'
 
 interface FormData {
@@ -39,6 +40,7 @@ interface FormData {
   originalPrice: string
   productWarranty: string
   categoryFields: Record<string, string>
+  quantity: string
 }
 
 interface ProductImage {
@@ -85,6 +87,7 @@ function EditListingContent() {
     originalPrice: '',
     productWarranty: '',
     categoryFields: {},
+    quantity: '1',
   })
 
   // Fetch product data and categories
@@ -187,6 +190,7 @@ function EditListingContent() {
           originalPrice: String(product.productOriginalPrice || ''),
           productWarranty: String(product.productWarranty || '1 year manufacturer warranty'),
           categoryFields: parsedDescription.specifications,
+          quantity: String(product.productQuantity ?? '0'),
         })
 
         console.log('📋 Form data loaded:', {
@@ -433,6 +437,7 @@ function EditListingContent() {
         askingPrice: Math.round(askingPriceInTZS),
         originalPrice: Math.round(originalPriceInTZS),
         productWarranty: formData.productWarranty.substring(0, MAX_LENGTHS.productWarranty),
+        productQuantity: parseInt(formData.quantity) || 0,
       }
 
       // Check if image order has changed (main image selection)
@@ -915,23 +920,16 @@ function EditListingContent() {
                 </Select>
               </div>
 
-              <div>
+              <div className="md:col-span-2">
                 <Label htmlFor="location">Location</Label>
-                <Select
-                  value={formData.location}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, location: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {EXPAT_LOCATIONS.map((location) => (
-                      <SelectItem key={location.value} value={location.value}>
-                        {location.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="mt-1">
+                  <EnhancedLocationSelect
+                    value={formData.location}
+                    onValueChange={(value) => setFormData((prev) => ({ ...prev, location: value }))}
+                    placeholder="Select country first"
+                    showLabels={false}
+                  />
+                </div>
               </div>
 
               <div>
@@ -1054,6 +1052,29 @@ function EditListingContent() {
                     className="pl-14"
                   />
                 </div>
+              </div>
+
+              <div className="md:col-span-2">
+                <Label htmlFor="quantity">Available Quantity *</Label>
+                <Input
+                  id="quantity"
+                  name="quantity"
+                  type="number"
+                  min="1"
+                  max="1000"
+                  value={formData.quantity}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 1000)) {
+                      setFormData({ ...formData, quantity: val })
+                    }
+                  }}
+                  className="mt-1"
+                  placeholder="Enter quantity (e.g., 1, 5, 10)"
+                />
+                <p className="text-xs text-neutral-500 mt-1">
+                  How many identical items do you have? Minimum: 0
+                </p>
               </div>
 
               <div>

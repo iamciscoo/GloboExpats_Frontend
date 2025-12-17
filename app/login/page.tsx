@@ -325,23 +325,6 @@ function LoginContent() {
                   </div>
                 </div>
               </div>
-
-              <div className="pt-6 border-t border-white/20">
-                <div className="text-center">
-                  <h4 className="text-xl font-semibold mb-3 text-white">New to GloboExpat?</h4>
-                  <p className="text-sm text-blue-100 mb-4">
-                    Join our growing community of verified expat professionals
-                  </p>
-                  <Link href="/register">
-                    <Button
-                      variant="outline"
-                      className="w-full rounded-full bg-white/10 border-2 border-white/40 text-white hover:bg-white/20 hover:border-white/60 font-semibold"
-                    >
-                      Create Account
-                    </Button>
-                  </Link>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -370,7 +353,7 @@ function LoginContent() {
                     variant="outline"
                     onClick={handleGoogleLogin}
                     disabled={isSubmitting || socialLoading !== null}
-                    className="w-full h-12 border-2 hover:bg-neutral-50 transition-all duration-200 rounded-full"
+                    className="w-full h-14 text-lg border-2 hover:bg-neutral-50 transition-all duration-200 rounded-full"
                   >
                     {socialLoading === 'google' ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
@@ -394,7 +377,7 @@ function LoginContent() {
                             d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                           />
                         </svg>
-                        <span className="font-medium">Google</span>
+                        <span className="font-bold text-lg">Sign in with Google</span>
                       </div>
                     )}
                   </Button>
@@ -526,16 +509,22 @@ function LoginContent() {
                 </form>
 
                 {/* Registration Link - Desktop Only (mobile shows in left panel) */}
-                <div className="text-center pt-3 border-t border-neutral-200/80 lg:hidden">
-                  <p className="text-xs text-neutral-600">
-                    Don't have an account?{' '}
-                    <Link
-                      href="/register"
-                      className="font-semibold text-brand-primary hover:text-brand-secondary hover:underline"
-                    >
-                      Register Now
-                    </Link>
+                {/* Registration Link - Visible on all devices now */}
+                <div className="text-center pt-6 border-t border-neutral-200">
+                  <h4 className="text-lg font-semibold text-neutral-800 mb-2">
+                    New to GloboExpat?
+                  </h4>
+                  <p className="text-sm text-neutral-600 mb-4">
+                    Join our growing community of verified expat professionals
                   </p>
+                  <Link href="/register">
+                    <Button
+                      variant="outline"
+                      className="w-full h-12 rounded-full border border-brand-primary text-brand-primary hover:bg-brand-primary/5 font-bold text-base transition-all duration-200 hover:scale-[1.02]"
+                    >
+                      Create Account
+                    </Button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>

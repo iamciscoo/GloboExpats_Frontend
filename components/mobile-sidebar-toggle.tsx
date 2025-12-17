@@ -31,6 +31,7 @@ export default function MobileSidebarToggle() {
             variant="ghost"
             size="icon"
             className="fixed top-[76px] left-2 sm:left-4 z-40 bg-transparent hover:bg-white/80 shadow-lg border border-slate-200 text-slate-700 rounded-full w-9 h-9 backdrop-blur-sm"
+            data-tutorial="mobile-category-toggle"
           >
             <Menu className="h-4 w-4" />
             <span className="sr-only">Toggle categories menu</span>
@@ -173,21 +174,21 @@ export default function MobileSidebarToggle() {
                 })}
               </div>
             </div>
-          </div>
 
-          {/* Platform Tutorial Button - Fixed at bottom */}
-          <div className="p-4 border-t border-slate-100 mt-auto flex-shrink-0 bg-white">
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-2 text-slate-600 border-slate-200 hover:bg-slate-50"
-              onClick={() => {
-                setIsOpen(false)
-                setTimeout(() => startTutorial(), 100)
-              }}
-            >
-              <HelpCircle className="w-4 h-4" />
-              Platform Tutorial
-            </Button>
+            {/* Platform Tutorial Button */}
+            <div className="p-4 border-t border-slate-100 mt-auto">
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2 text-slate-600 border-slate-200 hover:bg-slate-50"
+                onClick={() => {
+                  setIsOpen(false)
+                  setTimeout(() => startTutorial(), 100)
+                }}
+              >
+                <HelpCircle className="w-4 h-4" />
+                Platform Tutorial
+              </Button>
+            </div>
           </div>
         </SheetContent>
       </Sheet>

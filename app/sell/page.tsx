@@ -16,9 +16,9 @@ import {
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { RouteGuard } from '@/components/route-guard'
-import { LocationSelect } from '@/components/ui/location-select'
+import { EnhancedLocationSelect } from '@/components/ui/enhanced-location-select'
 import { apiClient } from '@/lib/api'
-import { ITEM_CONDITIONS, EXPAT_LOCATIONS, CURRENCIES } from '@/lib/constants'
+import { ITEM_CONDITIONS, CURRENCIES } from '@/lib/constants'
 import { CURRENCIES as CURRENCY_CONFIG } from '@/lib/currency-converter'
 import { getCategoryFields } from '@/lib/category-fields'
 import { getStepTips, getCategoryTips, getStepName } from '@/lib/step-tips'
@@ -38,6 +38,7 @@ interface FormData {
   originalPrice: string
   currency: string
   warranty: string
+  quantity: string
   categoryFields: Record<string, string> // Dynamic fields based on category
 }
 
@@ -54,6 +55,7 @@ const INITIAL_FORM_DATA: FormData = {
   originalPrice: '',
   currency: 'TZS',
   warranty: '',
+  quantity: '',
   categoryFields: {},
 }
 
@@ -386,8 +388,19 @@ function SellPageContent() {
         ? parseFloat(String(formData.originalPrice).replace(/[^0-9.]/g, ''))
         : 0
 
-      const askingPriceInTZS = (isNaN(parsedAsking) ? 0 : parsedAsking) / conversionRate
-      const originalPriceInTZS = (isNaN(parsedOriginal) ? 0 : parsedOriginal) / conversionRate
+      const askingPriceInTZS =
+        enteredCurrency === 'TZS'
+          ? isNaN(parsedAsking)
+            ? 0
+            : parsedAsking
+          : (isNaN(parsedAsking) ? 0 : parsedAsking) / conversionRate
+
+      const originalPriceInTZS =
+        enteredCurrency === 'TZS'
+          ? isNaN(parsedOriginal)
+            ? 0
+            : parsedOriginal
+          : (isNaN(parsedOriginal) ? 0 : parsedOriginal) / conversionRate
 
       // Transform form data to match backend expectations
       // Always store in TZS (base currency)
@@ -413,7 +426,10 @@ function SellPageContent() {
         askingPrice: Math.round(askingPriceInTZS), // Round to nearest shilling
         originalPrice: Math.round(originalPriceInTZS),
         productWarranty: formData.warranty.trim() || 'No warranty', // Use form data or default
+        productQuantity: 1, // Initialize with 1 to avoid 500 error, update later
       }
+
+      const actualQuantity = formData.quantity !== '' ? parseInt(formData.quantity) : 1
 
       // Call the backend API with reordered images (main image first)
       interface ProductCreationResult {
@@ -535,6 +551,24 @@ function SellPageContent() {
 
       // Store the product ID for verification
       if (result.productId) {
+        // Step 2: Update quantity if needed (doing this separately to avoid backend 500 errors)
+        if (actualQuantity !== 1) {
+          try {
+            console.log(`[Sell] Updating quantity to ${actualQuantity}...`)
+            await apiClient.updateProduct(result.productId.toString(), {
+              productQuantity: actualQuantity,
+            })
+            console.log('[Sell] Quantity updated successfully')
+          } catch (updateError) {
+            console.error('[Sell] Failed to update quantity:', updateError)
+            toast({
+              title: '⚠️ Quantity Check Needed',
+              description: `Listing created but couldn't set quantity to ${actualQuantity}. Please check "My Listings".`,
+              variant: 'default',
+            })
+          }
+        }
+
         // Show success toast
         toast({
           title: '✅ Listing Published!',
@@ -558,7 +592,8 @@ function SellPageContent() {
       }
 
       // Redirect to dashboard with My Listings tab
-      window.location.href = '/expat/dashboard?tab=listings'
+      // Using replace to prevent back button from returning to form
+      window.location.replace('/expat/dashboard?tab=listings')
 
       // Reset form
       setFormData(INITIAL_FORM_DATA)
@@ -815,15 +850,34 @@ function Step1Content({
             <SelectTrigger className="h-12 sm:h-14 border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 bg-white">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-[400px]">
               {backendCategories.length > 0 ? (
-                backendCategories
-                  .filter((cat) => cat.categoryName.toLowerCase() !== 'jobs')
-                  .map((cat) => (
-                    <SelectItem key={cat.categoryId} value={cat.categoryName}>
-                      {cat.categoryName}
-                    </SelectItem>
-                  ))
+                (() => {
+                  // Debug: Check for duplicates
+                  const uniqueCategories = backendCategories.filter(
+                    (cat, index, self) =>
+                      index ===
+                      self.findIndex(
+                        (t) =>
+                          t.categoryName === cat.categoryName && t.categoryId === cat.categoryId
+                      )
+                  )
+
+                  if (uniqueCategories.length !== backendCategories.length) {
+                    console.warn(
+                      '[Sell] ⚠️ Warning: Duplicate categories found in backend response!',
+                      backendCategories
+                    )
+                  }
+
+                  return uniqueCategories
+                    .filter((cat) => cat.categoryName.toLowerCase() !== 'jobs')
+                    .map((cat) => (
+                      <SelectItem key={cat.categoryId} value={cat.categoryName}>
+                        {cat.categoryName}
+                      </SelectItem>
+                    ))
+                })()
               ) : (
                 <SelectItem disabled value="loading">
                   Loading categories...
@@ -855,12 +909,11 @@ function Step1Content({
 
       <div className="space-y-3">
         <Label className="text-base font-semibold text-neutral-800">Location *</Label>
-        <LocationSelect
-          locations={EXPAT_LOCATIONS}
+        <EnhancedLocationSelect
           value={formData.location}
           onValueChange={(value) => updateFormData({ location: value })}
-          placeholder="Select your location"
-          className="h-12 sm:h-14 border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 bg-white"
+          placeholder="Select country first"
+          showLabels={false}
         />
       </div>
     </>
@@ -1083,6 +1136,34 @@ function Step2Content({
           maxLength={500}
         />
         <p className="text-sm text-neutral-500">{formData.description.length}/500 characters</p>
+      </div>
+
+      {/* Quantity */}
+      <div className="space-y-3">
+        <Label htmlFor="quantity" className="text-base font-semibold text-neutral-800">
+          Available Quantity *
+        </Label>
+        <div className="relative">
+          <Input
+            id="quantity"
+            type="number"
+            min="0"
+            max="1000"
+            placeholder="Enter quantity (e.g., 0, 1, 5)"
+            className="h-12 text-base border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 transition-all duration-200 bg-white"
+            value={formData.quantity}
+            onChange={(e) => {
+              const val = e.target.value
+              // Allow empty or valid positive numbers (including 0)
+              if (val === '' || (parseInt(val) >= 0 && parseInt(val) <= 1000)) {
+                updateFormData({ quantity: val })
+              }
+            }}
+          />
+        </div>
+        <p className="text-sm text-neutral-500">
+          How many identical items do you have for sale? Minimum: 0
+        </p>
       </div>
 
       {/* Dynamic Category-Specific Fields */}
