@@ -545,12 +545,90 @@ export default function CheckoutPage() {
         mobileStatus = mobileResponse.data?.status
         mobileMessage = mobileResponse.data?.message || mobileResponse.message
 
+        // Show waiting message to user
         toast({
-          title: 'Confirm payment on your phone',
+          title: 'Waiting for payment confirmation',
           description:
             mobileMessage ||
-            'We sent an STK push to your device. Approve the prompt to complete your payment.',
+            'Please check your phone and approve the STK push. Do not close this page.',
         })
+
+        // Store pending order info
+        const pendingOrderKey = `pending_order_${orderId}`
+        localStorage.setItem(
+          pendingOrderKey,
+          JSON.stringify({
+            orderId,
+            reference: mobileReference,
+            timestamp: Date.now(),
+            status: 'pending',
+          })
+        )
+
+        // Poll for payment status (max 3 minutes)
+        const pollInterval = 3000 // 3 seconds
+        const maxPolls = 60 // 3 minutes
+        let pollCount = 0
+
+        const checkPaymentStatus = async (): Promise<boolean> => {
+          try {
+            // Check if order has been updated via webhook
+            const storedOrder = localStorage.getItem(`order_${orderId}`)
+            if (storedOrder) {
+              const order = JSON.parse(storedOrder)
+              if (
+                order.mobilePayment?.status?.toUpperCase() === 'COMPLETED' ||
+                order.status === 'confirmed'
+              ) {
+                return true
+              }
+            }
+
+            // TODO: Add actual API call to check payment status
+            // const statusResponse = await api.checkout.checkPaymentStatus(orderId)
+            // if (statusResponse.success && statusResponse.data?.status === 'COMPLETED') {
+            //   return true
+            // }
+
+            return false
+          } catch (error) {
+            console.error('Error checking payment status:', error)
+            return false
+          }
+        }
+
+        const pollPaymentStatus = async (): Promise<void> => {
+          return new Promise((resolve) => {
+            const intervalId = setInterval(async () => {
+              pollCount++
+
+              const isComplete = await checkPaymentStatus()
+
+              if (isComplete) {
+                clearInterval(intervalId)
+                localStorage.removeItem(pendingOrderKey)
+                toast({
+                  title: 'Payment confirmed!',
+                  description: 'Your order has been successfully processed.',
+                })
+                resolve()
+              } else if (pollCount >= maxPolls) {
+                clearInterval(intervalId)
+                localStorage.removeItem(pendingOrderKey)
+                toast({
+                  title: 'Payment pending',
+                  description:
+                    'Payment verification is taking longer than expected. Check your order status in your account.',
+                  variant: 'default',
+                })
+                resolve()
+              }
+            }, pollInterval)
+          })
+        }
+
+        // Wait for payment confirmation
+        await pollPaymentStatus()
       } else if (isMeetupPayment) {
         // Handle Meet in Person checkout via meet-seller API
         checkoutItemsPayload = prepareCheckoutItems()

@@ -63,7 +63,7 @@ interface FilterState {
 
 interface FilterProps {
   filters: FilterState
-  setFilters: (filters: FilterState) => void
+  setFilters: React.Dispatch<React.SetStateAction<FilterState>>
   clearAllFilters: () => void
   categoryCounts: Record<string, number>
   onFilterChange?: () => void // Add callback for when filters change
