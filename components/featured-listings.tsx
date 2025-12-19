@@ -159,8 +159,8 @@ export default function FeaturedListings() {
                   className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 text-xs sm:text-sm font-medium rounded-lg sm:rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-300 hover:bg-green-50"
                 >
                   <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">New Listings</span>
-                  <span className="sm:hidden">New</span>
+                  <span className="hidden sm:inline">Sell</span>
+                  <span className="sm:hidden">Sell</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="featured"

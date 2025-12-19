@@ -157,8 +157,39 @@ export default function RegisterPage() {
       return
     }
 
+    const ALLOWED_PROVIDERS = [
+      'gmail.com',
+      'googlemail.com',
+      'yahoo.',
+      'hotmail.',
+      'icloud.com',
+      'outlook.',
+      'live.',
+      'msn.',
+      'tutamail.',
+      'tutanota.',
+      'tuta.',
+    ]
+
     if (!validateEmail(personalEmail)) {
       setError('Please enter a valid personal email address.')
+      return
+    }
+
+    const emailDomain = personalEmail.toLowerCase().split('@')[1]
+    const isAllowed = ALLOWED_PROVIDERS.some(
+      (provider) => emailDomain.startsWith(provider) || emailDomain.includes(provider)
+    )
+
+    if (!isAllowed) {
+      const errorMsg =
+        'We currently only accept personal email addresses from Google, Yahoo, Hotmail, iCloud, Outlook, or Tutamail. Please use one of these providers to register.'
+      setError(errorMsg)
+      toast({
+        title: 'Personal Email Required',
+        description: errorMsg,
+        variant: 'warning',
+      })
       return
     }
 
@@ -188,8 +219,9 @@ export default function RegisterPage() {
 
       // Success toast
       toast({
-        title: '🎉 Welcome to GloboExpat!',
-        description: 'Account created successfully! Redirecting you...',
+        title: 'Welcome to GloboExpat!',
+        description:
+          'Your account has been created successfully! Please check your inbox and spam folder for a verification email. Redirecting you now...',
         variant: 'default',
       })
 
@@ -203,33 +235,33 @@ export default function RegisterPage() {
       // Handle "User already exists" error with enthusiastic toast
       if (errorMessage.toLowerCase().includes('already exists')) {
         toast({
-          title: '👋 Hey There, Familiar Face!',
+          title: 'Welcome Back!',
           description:
-            "Looks like you're already part of our awesome community! Let's get you signed in instead. Click 'Sign In' below to access your account! 🚀",
+            'Great news - you already have an account with us! Click Sign In below to access your account and continue where you left off.',
           variant: 'warning',
         })
         setError('This email is already registered. Please sign in instead.')
       } else if (errorMessage.toLowerCase().includes('invalid email')) {
         toast({
-          title: '📧 Email Check Required',
+          title: 'Email Check Required',
           description:
-            "Please double-check your email address and try again! Make sure it's a valid format. 😊",
+            'Please double-check your email address and try again. Make sure it is in a valid format.',
           variant: 'warning',
         })
         setError(errorMessage)
       } else if (errorMessage.toLowerCase().includes('password')) {
         toast({
-          title: '🔐 Password Needs a Boost',
+          title: 'Stronger Password Needed',
           description:
-            'Your password needs to be stronger! Try adding uppercase letters, numbers, and special characters. 💪',
+            'Your password needs to be stronger. Try adding uppercase letters, numbers, and special characters for better security.',
           variant: 'warning',
         })
         setError(errorMessage)
       } else {
         // Generic error with enthusiastic message
         toast({
-          title: '😅 Oops! Something Went Wrong',
-          description: `An error occurred: ${errorMessage}. Please try again! If the issue persists, our support team is ready to help! 🙌`,
+          title: 'Something Went Wrong',
+          description: `An error occurred: ${errorMessage}. Please try again. If the issue persists, our support team is ready to help!`,
           variant: 'warning',
         })
         setError(errorMessage)
@@ -430,13 +462,13 @@ export default function RegisterPage() {
 
                   <div className="space-y-1">
                     <Label htmlFor="personalEmail" className="text-neutral-700 font-medium text-xs">
-                      Email Address
+                      Personal Email Address
                     </Label>
                     <Input
                       id="personalEmail"
                       name="email"
                       type="email"
-                      placeholder="your.email@example.com"
+                      placeholder="e.g. yourname@gmail.com, outlook.com, etc."
                       autoComplete="email"
                       className={`h-9 border-neutral-300 focus:border-brand-secondary focus:ring-brand-secondary/50 text-sm ${
                         formData.personalEmail && !validateEmail(formData.personalEmail)
@@ -450,6 +482,10 @@ export default function RegisterPage() {
                       disabled={isLoading || socialLoading !== null}
                       required
                     />
+                    <p className="text-[10px] text-neutral-500 mt-1 uppercase font-semibold tracking-wider">
+                      Use personal email addresses: Google, Yahoo, Hotmail, iCloud, Outlook, or
+                      Tutamail
+                    </p>
                     {formData.personalEmail && !validateEmail(formData.personalEmail) && (
                       <p className="text-red-600 text-sm flex items-center gap-1">
                         <X className="h-4 w-4" />

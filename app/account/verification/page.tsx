@@ -125,33 +125,53 @@ export default function VerificationPage() {
 
   const handleCompleteVerificationForTesting = async () => {
     if (!organizationEmail) {
-      setError('Please enter your email address')
+      setError('Please enter your work email address')
       return
     }
 
-    // Validate email domain - block personal email providers
-    const personalEmailDomains = [
+    // Validate email format first
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(organizationEmail)) {
+      setError('Please enter a valid email address (e.g., name@company.com)')
+      toast({
+        title: 'Invalid Email Format',
+        description: 'Please enter a properly formatted email address with @ and a valid domain.',
+        variant: 'default',
+      })
+      return
+    }
+
+    // Block personal email providers - only allow work/organization emails
+    const personalEmailProviders = [
       'gmail.com',
-      'yahoo.com',
-      'outlook.com',
-      'hotmail.com',
-      'live.com',
+      'googlemail.com',
+      'yahoo.',
+      'hotmail.',
       'icloud.com',
-      'aol.com',
-      'protonmail.com',
+      'outlook.',
+      'live.',
+      'msn.',
+      'tutamail.',
+      'tutanota.',
+      'tuta.',
+      'aol.',
+      'protonmail.',
       'mail.com',
-      'zoho.com',
+      'zoho.',
     ]
 
     const emailDomain = organizationEmail.toLowerCase().split('@')[1]
-    if (personalEmailDomains.includes(emailDomain)) {
-      setError(
-        'Please use your work or organization email address. Personal email addresses (Gmail, Yahoo, Outlook, etc.) are not accepted for verification.'
-      )
+    const isPersonalEmail = personalEmailProviders.some(
+      (provider) => emailDomain.startsWith(provider) || emailDomain.includes(provider)
+    )
+
+    if (isPersonalEmail) {
+      const errorMsg =
+        'Please use your work or organization email address. Personal email addresses (Gmail, Yahoo, Hotmail, Outlook, etc.) are not accepted for verification.'
+      setError(errorMsg)
       toast({
         title: 'Work Email Required',
-        description:
-          'Please use your organization email address to verify your account. Personal emails like Gmail, Yahoo, and Outlook are not accepted for verification.',
+        description: errorMsg,
         variant: 'default',
       })
       return
@@ -169,7 +189,7 @@ export default function VerificationPage() {
       toast({
         title: 'Verification Code Sent',
         description:
-          "Check your work email for the 6-digit verification code. It should arrive within a few minutes. Please check your spam folder if you don't see it.",
+          'Great news! We have sent a 6-digit verification code to your work email. Please also check your spam or junk folder if you do not see it within a few minutes.',
         variant: 'default',
       })
     } catch (error) {
@@ -258,11 +278,11 @@ export default function VerificationPage() {
             ) : (
               <Alert className="mb-6 bg-[#F8FAFB] border-[#E2E8F0]">
                 <Mail className="h-4 w-4 text-[#64748B]" />
-                <AlertDescription className="text-[#64748B] text-sm space-y-1">
-                  <p>Please verify your work email to unlock buying and selling features</p>
-                  <p className="font-medium">
-                    Note: Check your spam folder if you don&apos;t see the email within a few
-                    minutes
+                <AlertDescription className="text-[#64748B] text-sm space-y-2">
+                  <p>Please verify your work email to unlock buying and selling features.</p>
+                  <p className="font-bold text-blue-600 bg-blue-50 p-2 rounded border border-blue-200">
+                    Tip: Be sure to check your SPAM or JUNK folder - the verification email might
+                    end up there!
                   </p>
                 </AlertDescription>
               </Alert>
@@ -274,17 +294,33 @@ export default function VerificationPage() {
                 {/* Email Input */}
                 <div>
                   <Label htmlFor="organizationEmail" className="text-sm font-medium text-[#0F172A]">
-                    Your Email
+                    Work Email Address
                   </Label>
                   <Input
                     id="organizationEmail"
                     type="email"
-                    placeholder="Input your organization email"
+                    placeholder="name@yourcompany.com"
                     value={organizationEmail}
                     onChange={(e) => setOrganizationEmail(e.target.value)}
                     disabled={isSubmitting}
-                    className="mt-1 h-11 border border-[#E2E8F0] focus:border-[#1E3A8A]"
+                    className={`mt-1 h-11 border focus:border-[#1E3A8A] ${
+                      organizationEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(organizationEmail)
+                        ? 'border-red-300 focus:border-red-500'
+                        : organizationEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(organizationEmail)
+                          ? 'border-green-300 focus:border-green-500'
+                          : 'border-[#E2E8F0]'
+                    }`}
                   />
+                  {organizationEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(organizationEmail) && (
+                    <p className="text-xs text-red-500 mt-1">
+                      Please enter a valid email address (e.g., name@yourcompany.com)
+                    </p>
+                  )}
+                  {(!organizationEmail || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(organizationEmail)) && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Use your company or organization email (not Gmail, Yahoo, Outlook, etc.)
+                    </p>
+                  )}
                 </div>
 
                 {/* Role Selection */}

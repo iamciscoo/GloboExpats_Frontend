@@ -167,6 +167,10 @@ export function CurrencyProvider({
         USD: CURRENCIES.USD.exchangeRate,
         KES: CURRENCIES.KES.exchangeRate,
         UGX: CURRENCIES.UGX.exchangeRate,
+        EUR: CURRENCIES.EUR.exchangeRate,
+        JPY: CURRENCIES.JPY.exchangeRate,
+        KRW: CURRENCIES.KRW.exchangeRate,
+        CNY: CURRENCIES.CNY.exchangeRate,
       }
 
       converter.updateExchangeRates(currentRates)

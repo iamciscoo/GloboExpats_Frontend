@@ -59,7 +59,7 @@ export const VerificationBanner = () => {
   // Simplified verification message
   const title = 'Email verification required'
   const description =
-    'Verify with your work email to unlock all platform features including buying, selling, and messaging.'
+    'Verify with your work email to unlock all platform features including buying, selling, and messaging. Remember to check your spam folder!'
   const IconComponent = Mail
   const linkText = 'Verify Email'
   const linkHref = '/account/verification'

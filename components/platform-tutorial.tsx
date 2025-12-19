@@ -63,12 +63,23 @@ export function PlatformTutorial() {
     // For NON-LOGGED-IN users - encourage sign up and show platform overview
     if (!isLoggedIn) {
       return [
-        // Welcome Introduction
+        // Welcome Introduction with Logo
         {
           popover: {
-            title: 'Welcome to Globoexpats! 🌍',
-            description:
-              "The trusted marketplace for the expat community. Discover quality secondhand items from verified sellers, or list your own products to reach thousands of expats. Let's explore what you can do here!",
+            title: '',
+            description: `
+              <div class="tutorial-welcome-header">
+                <img src="/icon.svg" alt="Globoexpats" class="tutorial-welcome-logo" />
+                <div class="tutorial-welcome-brand">Welcome to Globoexpats! 🌍</div>
+                <div class="tutorial-welcome-tagline">The trusted marketplace for the expat community</div>
+              </div>
+              <p style="text-align: center; font-size: 14px; color: #475569; line-height: 1.5; margin: 0;">
+                Discover quality secondhand items from verified sellers, or list your own products to reach thousands of expats across East Africa.
+              </p>
+              <p style="text-align: center; font-size: 13px; color: #64748b; margin-top: 6px; margin-bottom: 0;">
+                Let's explore what you can do here! ✨
+              </p>
+            `,
             onNextClick: () => {
               driverObj.current?.moveNext()
             },
@@ -138,6 +149,22 @@ export function PlatformTutorial() {
             },
           },
         },
+
+        // WhatsApp Help
+        {
+          element: '[data-tutorial="whatsapp-help"]',
+          popover: {
+            title: 'Need Help? 💬',
+            description:
+              "See the green WhatsApp icon? Click it anytime to chat with our support team. We're here to help with registration, verification, or any questions!",
+            side: 'left',
+            align: 'end',
+            onNextClick: () => {
+              driverObj.current?.moveNext()
+            },
+          },
+        },
+
         {
           element: 'form',
           popover: {
@@ -157,12 +184,23 @@ export function PlatformTutorial() {
     // For UNVERIFIED users - prioritize email verification
     if (!isEmailVerified) {
       return [
-        // Introduction emphasizing verification
+        // Introduction emphasizing verification with Logo
         {
           popover: {
-            title: 'Welcome to Globoexpats! 🌍',
-            description:
-              "Welcome to Globoexpats! 🌍\n\nBefore exploring the full marketplace, let's complete your email verification. This unlocks all features including buying and selling. We'll guide you through the quick verification process first!",
+            title: '',
+            description: `
+              <div class="tutorial-welcome-header">
+                <img src="/icon.svg" alt="Globoexpats" class="tutorial-welcome-logo" />
+                <div class="tutorial-welcome-brand">Welcome to Globoexpats! 🌍</div>
+                <div class="tutorial-welcome-tagline">Let's complete your setup</div>
+              </div>
+              <p style="text-align: center; font-size: 14px; color: #475569; line-height: 1.5; margin: 0;">
+                Before exploring the full marketplace, let's complete your email verification. This unlocks all features including buying and selling.
+              </p>
+              <p style="text-align: center; font-size: 13px; color: #64748b; margin-top: 6px; margin-bottom: 0;">
+                We'll guide you through the quick verification process! ✨
+              </p>
+            `,
             onNextClick: () => {
               driverObj.current?.moveNext()
             },
@@ -210,6 +248,22 @@ export function PlatformTutorial() {
             },
           },
         },
+
+        // WhatsApp Help
+        {
+          element: '[data-tutorial="whatsapp-help"]',
+          popover: {
+            title: 'Need Help? 💬',
+            description:
+              "Having trouble with verification? Click the green WhatsApp icon to chat with our support team. We're here to help!",
+            side: 'left',
+            align: 'end',
+            onNextClick: () => {
+              driverObj.current?.moveNext()
+            },
+          },
+        },
+
         {
           element: 'form',
           popover: {
@@ -228,12 +282,23 @@ export function PlatformTutorial() {
 
     // For VERIFIED users - comprehensive platform tour
     return [
-      // Homepage - Introduction
+      // Homepage - Introduction with Logo
       {
         popover: {
-          title: 'Welcome to Globoexpats! 🌍',
-          description:
-            "The trusted marketplace for the expat community. This comprehensive tour will guide you through every feature of the platform - from browsing to buying, selling, and managing your account. Let's get started!",
+          title: '',
+          description: `
+            <div class="tutorial-welcome-header">
+              <img src="/icon.svg" alt="Globoexpats" class="tutorial-welcome-logo" />
+              <div class="tutorial-welcome-brand">Welcome to Globoexpats! 🌍</div>
+              <div class="tutorial-welcome-tagline">The trusted marketplace for the expat community</div>
+            </div>
+            <p style="text-align: center; font-size: 14px; color: #475569; line-height: 1.5; margin: 0;">
+              This comprehensive tour will guide you through every feature of the platform - from browsing to buying, selling, and managing your account.
+            </p>
+            <p style="text-align: center; font-size: 13px; color: #64748b; margin-top: 6px; margin-bottom: 0;">
+              Let's get started! ✨
+            </p>
+          `,
           onNextClick: () => {
             driverObj.current?.moveNext()
           },
@@ -524,14 +589,17 @@ export function PlatformTutorial() {
         },
       },
 
-      // Final Step - Back on Homepage
+      // WhatsApp Help - Before Final Step
       {
+        element: '[data-tutorial="whatsapp-help"]',
         popover: {
-          title: 'Welcome Back Home! 🏠',
+          title: 'Need Help? 💬',
           description:
-            "You're now back on the homepage and ready to explore! 🚀\n\nYou've mastered the essentials:\n✅ Finding products & deals\n✅ Selling your own items\n✅ Managing your Space\n\nThe entire platform is now open for you. Happy exploring!",
+            "See the green WhatsApp icon in the bottom right corner? Click it anytime to chat with our support team. We're here to help with any questions about buying, selling, or using the platform!",
+          side: 'left',
+          align: 'end',
           onNextClick: () => {
-            closeTutorial()
+            driverObj.current?.moveNext()
           },
           onPrevClick: () => {
             showLoadingFeedback()
@@ -541,6 +609,21 @@ export function PlatformTutorial() {
             setTimeout(() => {
               router.push('/account')
             }, 150)
+          },
+        },
+      },
+
+      // Final Step - Back on Homepage
+      {
+        popover: {
+          title: 'Welcome Back Home! 🏠',
+          description:
+            "You're now back on the homepage and ready to explore! 🚀\n\nYou've mastered the essentials:\n✅ Finding products & deals\n✅ Selling your own items\n✅ Managing your Space\n✅ Getting help via WhatsApp\n\nThe entire platform is now open for you. Happy exploring!",
+          onNextClick: () => {
+            closeTutorial()
+          },
+          onPrevClick: () => {
+            driverObj.current?.movePrevious()
           },
         },
       },

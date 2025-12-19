@@ -42,7 +42,8 @@ export const CURRENCIES: Record<CurrencyCode, Currency> = {
     code: 'TZS',
     symbol: 'TSh',
     name: 'Tanzanian Shilling',
-    flag: '🇹🇿', // Emoji flag with text fallback
+    flag: '🇹🇿', // Fallback emoji
+    countryCode: 'TZ', // For SVG flag rendering
     exchangeRate: 1, // Base currency
     decimals: 0,
     symbolPosition: 'before',
@@ -53,7 +54,8 @@ export const CURRENCIES: Record<CurrencyCode, Currency> = {
     code: 'USD',
     symbol: '$',
     name: 'US Dollar',
-    flag: '🇺🇸', // Emoji flag with text fallback
+    flag: '🇺🇸', // Fallback emoji
+    countryCode: 'US', // For SVG flag rendering
     exchangeRate: 0.0004, // 1 TZS = 0.0004 USD (2,500 TZS = 1 USD)
     decimals: 2,
     symbolPosition: 'before',
@@ -64,7 +66,8 @@ export const CURRENCIES: Record<CurrencyCode, Currency> = {
     code: 'KES',
     symbol: 'KSh',
     name: 'Kenyan Shilling',
-    flag: '🇰🇪', // Emoji flag with text fallback
+    flag: '🇰🇪', // Fallback emoji
+    countryCode: 'KE', // For SVG flag rendering
     exchangeRate: 0.0525, // 1 TZS = 0.0525 KES (19 TZS ≈ 1 KES)
     decimals: 0,
     symbolPosition: 'before',
@@ -75,9 +78,58 @@ export const CURRENCIES: Record<CurrencyCode, Currency> = {
     code: 'UGX',
     symbol: 'USh',
     name: 'Ugandan Shilling',
-    flag: '🇺🇬', // Emoji flag with text fallback
+    flag: '🇺🇬', // Fallback emoji
+    countryCode: 'UG', // For SVG flag rendering
     exchangeRate: 1.48, // 1 TZS = 1.48 UGX (0.68 TZS ≈ 1 UGX)
     decimals: 0,
+    symbolPosition: 'before',
+    thousandsSeparator: ',',
+    decimalSeparator: '.',
+  },
+  EUR: {
+    code: 'EUR',
+    symbol: '€',
+    name: 'Euro',
+    flag: '🇪🇺', // Fallback emoji
+    countryCode: 'EU', // For SVG flag rendering
+    exchangeRate: 0.00037, // 1 TZS ≈ 0.00037 EUR (2,700 TZS ≈ 1 EUR)
+    decimals: 2,
+    symbolPosition: 'before',
+    thousandsSeparator: '.',
+    decimalSeparator: ',',
+  },
+  JPY: {
+    code: 'JPY',
+    symbol: '¥',
+    name: 'Japanese Yen',
+    flag: '🇯🇵', // Fallback emoji
+    countryCode: 'JP', // For SVG flag rendering
+    exchangeRate: 0.058, // 1 TZS ≈ 0.058 JPY (17.2 TZS ≈ 1 JPY)
+    decimals: 0,
+    symbolPosition: 'before',
+    thousandsSeparator: ',',
+    decimalSeparator: '.',
+  },
+  KRW: {
+    code: 'KRW',
+    symbol: '₩',
+    name: 'Korean Won',
+    flag: '🇰🇷', // Fallback emoji
+    countryCode: 'KR', // For SVG flag rendering
+    exchangeRate: 0.54, // 1 TZS ≈ 0.54 KRW (1.85 TZS ≈ 1 KRW)
+    decimals: 0,
+    symbolPosition: 'before',
+    thousandsSeparator: ',',
+    decimalSeparator: '.',
+  },
+  CNY: {
+    code: 'CNY',
+    symbol: '¥',
+    name: 'Chinese Yuan',
+    flag: '🇨🇳', // Fallback emoji
+    countryCode: 'CN', // For SVG flag rendering
+    exchangeRate: 0.0028, // 1 TZS ≈ 0.0028 CNY (357 TZS ≈ 1 CNY)
+    decimals: 2,
     symbolPosition: 'before',
     thousandsSeparator: ',',
     decimalSeparator: '.',

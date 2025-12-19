@@ -34,12 +34,17 @@ import type {
 /**
  * Supported currencies for the platform
  * Includes regional currencies for East Africa and international options
+ * countryCode is used for SVG flag rendering to ensure cross-browser compatibility
  */
 export const CURRENCIES = [
-  { code: 'TZS', name: 'Tanzanian Shilling', flag: '🇹🇿' },
-  { code: 'KES', name: 'Kenyan Shilling', flag: '🇰🇪' },
-  { code: 'UGX', name: 'Ugandan Shilling', flag: '🇺🇬' },
-  { code: 'USD', name: 'US Dollar', flag: '🇺🇸' },
+  { code: 'TZS', name: 'Tanzanian Shilling', countryCode: 'TZ', flag: '🇹🇿' },
+  { code: 'KES', name: 'Kenyan Shilling', countryCode: 'KE', flag: '🇰🇪' },
+  { code: 'UGX', name: 'Ugandan Shilling', countryCode: 'UG', flag: '🇺🇬' },
+  { code: 'USD', name: 'US Dollar', countryCode: 'US', flag: '🇺🇸' },
+  { code: 'EUR', name: 'Euro', countryCode: 'EU', flag: '🇪🇺' },
+  { code: 'JPY', name: 'Japanese Yen', countryCode: 'JP', flag: '🇯🇵' },
+  { code: 'KRW', name: 'Korean Won', countryCode: 'KR', flag: '🇰🇷' },
+  { code: 'CNY', name: 'Chinese Yuan', countryCode: 'CN', flag: '🇨🇳' },
 ] as const
 
 /**
@@ -60,24 +65,25 @@ export const SUPPORTED_LANGUAGES: Language[] = [
 /**
  * Top expat locations and markets
  * Primary cities where the platform operates - focused on East Africa region
+ * countryCode is used for SVG flag rendering to ensure cross-browser compatibility
  */
 export const EXPAT_LOCATIONS: Location[] = [
-  { value: 'dar-es-salaam', label: '🇹🇿 Dar es Salaam, TZ', country: 'Tanzania' },
-  { value: 'nairobi', label: '🇰🇪 Nairobi, KE', country: 'Kenya' },
-  { value: 'arusha', label: '🇹🇿 Arusha, TZ', country: 'Tanzania' },
-  { value: 'kampala', label: '🇺🇬 Kampala, UG', country: 'Uganda' },
-  { value: 'zanzibar', label: '🇹🇿 Zanzibar, TZ', country: 'Tanzania' },
-  { value: 'mombasa', label: '🇰🇪 Mombasa, KE', country: 'Kenya' },
-  { value: 'kigali', label: '🇷🇼 Kigali, RW', country: 'Rwanda' },
-  { value: 'dodoma', label: '🇹🇿 Dodoma, TZ', country: 'Tanzania' },
-  { value: 'entebbe', label: '🇺🇬 Entebbe, UG', country: 'Uganda' },
-  { value: 'stone-town', label: '🇹🇿 Stone Town, TZ', country: 'Tanzania' },
-  { value: 'mwanza', label: '🇹🇿 Mwanza, TZ', country: 'Tanzania' },
-  { value: 'kisumu', label: '🇰🇪 Kisumu, KE', country: 'Kenya' },
-  { value: 'nakuru', label: '🇰🇪 Nakuru, KE', country: 'Kenya' },
-  { value: 'gulu', label: '🇺🇬 Gulu, UG', country: 'Uganda' },
-  { value: 'mbarara', label: '🇺🇬 Mbarara, UG', country: 'Uganda' },
-  { value: 'jinja', label: '🇺🇬 Jinja, UG', country: 'Uganda' },
+  { value: 'dar-es-salaam', label: 'Dar es Salaam, TZ', country: 'Tanzania', countryCode: 'TZ' },
+  { value: 'nairobi', label: 'Nairobi, KE', country: 'Kenya', countryCode: 'KE' },
+  { value: 'arusha', label: 'Arusha, TZ', country: 'Tanzania', countryCode: 'TZ' },
+  { value: 'kampala', label: 'Kampala, UG', country: 'Uganda', countryCode: 'UG' },
+  { value: 'zanzibar', label: 'Zanzibar, TZ', country: 'Tanzania', countryCode: 'TZ' },
+  { value: 'mombasa', label: 'Mombasa, KE', country: 'Kenya', countryCode: 'KE' },
+  { value: 'kigali', label: 'Kigali, RW', country: 'Rwanda', countryCode: 'RW' },
+  { value: 'dodoma', label: 'Dodoma, TZ', country: 'Tanzania', countryCode: 'TZ' },
+  { value: 'entebbe', label: 'Entebbe, UG', country: 'Uganda', countryCode: 'UG' },
+  { value: 'stone-town', label: 'Stone Town, TZ', country: 'Tanzania', countryCode: 'TZ' },
+  { value: 'mwanza', label: 'Mwanza, TZ', country: 'Tanzania', countryCode: 'TZ' },
+  { value: 'kisumu', label: 'Kisumu, KE', country: 'Kenya', countryCode: 'KE' },
+  { value: 'nakuru', label: 'Nakuru, KE', country: 'Kenya', countryCode: 'KE' },
+  { value: 'gulu', label: 'Gulu, UG', country: 'Uganda', countryCode: 'UG' },
+  { value: 'mbarara', label: 'Mbarara, UG', country: 'Uganda', countryCode: 'UG' },
+  { value: 'jinja', label: 'Jinja, UG', country: 'Uganda', countryCode: 'UG' },
 ]
 
 // ============================================================================

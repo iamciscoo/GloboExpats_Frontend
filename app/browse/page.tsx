@@ -17,11 +17,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Separator } from '@/components/ui/separator'
 import { CATEGORIES, ITEM_CONDITIONS, EXPAT_LOCATIONS } from '@/lib/constants'
 import { debounce, generateSlug } from '@/lib/utils'
 import { ProductCard } from '@/components/ui/product-card'
+import { CountryFlag } from '@/components/country-flag'
 import { apiClient } from '@/lib/api'
 import { transformBackendProduct } from '@/lib/image-utils'
 import type { FeaturedItem } from '@/lib/types'
@@ -36,6 +43,7 @@ import {
   ChevronRight,
   MoreHorizontal,
   Loader2,
+  ArrowUp,
 } from 'lucide-react'
 import { SheetTitle } from '@/components/ui/sheet'
 
@@ -59,6 +67,8 @@ interface FilterState {
   expatType: string
   location: string
   country: string
+  customCountry: string
+  customCity: string
 }
 
 interface FilterProps {
@@ -76,33 +86,65 @@ const FilterContentEl = ({
   categoryCounts,
   onFilterChange,
 }: FilterProps) => {
+  const formatWithCommas = (value: string) => {
+    // Remove non-numeric characters
+    const numericValue = value.replace(/[^\d]/g, '')
+    if (!numericValue) return ''
+    // Add commas
+    return parseInt(numericValue, 10).toLocaleString('en-US')
+  }
+
+  const parseFormattedNumber = (value: string) => {
+    return value.replace(/[^\d]/g, '')
+  }
+
   const updateFilter = useCallback(
     (key: keyof FilterState, value: string | number | string[] | [number, number] | boolean) => {
-      setFilters((prev) => ({
-        ...prev,
+      const newFilters = {
+        ...filters,
         [key]: value,
-      }))
+      }
+
+      // If clearing country, also clear location
+      if (key === 'country' && (value === '' || value === 'all')) {
+        newFilters.location = ''
+        newFilters.customCountry = ''
+        newFilters.customCity = ''
+      }
+
+      setFilters(newFilters)
       // Notify parent when filter changes (for auto-close on mobile)
       if (onFilterChange) {
         setTimeout(onFilterChange, 100) // Small delay to ensure state updates
       }
     },
-    [setFilters, onFilterChange]
+    [filters, setFilters, onFilterChange]
   )
 
   const hasActiveFilters =
-    filters.selectedCategory || filters.priceFilterEnabled || filters.condition || filters.location
+    filters.selectedCategory ||
+    filters.priceFilterEnabled ||
+    filters.condition ||
+    filters.location ||
+    filters.country ||
+    filters.customCountry ||
+    filters.customCity
 
   // Local state for price inputs to allow smooth editing
-  const [minPriceInput, setMinPriceInput] = useState(filters.priceRange[0].toString())
-  const [maxPriceInput, setMaxPriceInput] = useState(filters.priceRange[1].toString())
+  // Initialize with formatted values
+  const [minPriceInput, setMinPriceInput] = useState(
+    filters.priceRange[0] === 0 ? '' : filters.priceRange[0].toLocaleString('en-US')
+  )
+  const [maxPriceInput, setMaxPriceInput] = useState(
+    filters.priceRange[1] === 10000000 ? '' : filters.priceRange[1].toLocaleString('en-US')
+  )
 
   // Debounced price update function
   const debouncedPriceUpdate = useMemo(
     () =>
       debounce((minValue: string, maxValue: string) => {
-        const numMin = minValue === '' ? 0 : parseInt(minValue, 10)
-        const numMax = maxValue === '' ? 10000000 : parseInt(maxValue, 10)
+        const numMin = minValue === '' ? 0 : parseInt(parseFormattedNumber(minValue), 10)
+        const numMax = maxValue === '' ? 10000000 : parseInt(parseFormattedNumber(maxValue), 10)
         const validMin = isNaN(numMin) ? 0 : Math.max(0, numMin)
         const validMax = isNaN(numMax) ? 10000000 : Math.max(0, numMax)
         updateFilter('priceRange', [validMin, validMax])
@@ -112,8 +154,12 @@ const FilterContentEl = ({
 
   // Sync with external filter changes
   useEffect(() => {
-    setMinPriceInput(filters.priceRange[0].toString())
-    setMaxPriceInput(filters.priceRange[1].toString())
+    setMinPriceInput(
+      filters.priceRange[0] === 0 ? '' : filters.priceRange[0].toLocaleString('en-US')
+    )
+    setMaxPriceInput(
+      filters.priceRange[1] === 10000000 ? '' : filters.priceRange[1].toLocaleString('en-US')
+    )
   }, [filters.priceRange])
 
   // Get unique countries
@@ -142,6 +188,55 @@ const FilterContentEl = ({
           Clear All
         </Button>
       </div>
+
+      {/* Price Range - Moved to top for better visibility */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-semibold text-gray-700">Price Range (TZS)</Label>
+          <div className="flex items-center space-x-2">
+            <Label htmlFor="price-filter-toggle" className="text-xs text-gray-500">
+              Enable
+            </Label>
+            <Switch
+              id="price-filter-toggle"
+              checked={filters.priceFilterEnabled}
+              onCheckedChange={(checked) => updateFilter('priceFilterEnabled', checked)}
+            />
+          </div>
+        </div>
+        <div
+          className={`grid grid-cols-2 gap-2 ${!filters.priceFilterEnabled ? 'opacity-50' : ''}`}
+        >
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder="Min (0)"
+              value={minPriceInput}
+              onChange={(e) => {
+                const formatted = formatWithCommas(e.target.value)
+                setMinPriceInput(formatted)
+                debouncedPriceUpdate(formatted, maxPriceInput)
+              }}
+              className="text-sm h-9 pr-3"
+            />
+          </div>
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder="Max (10B)"
+              value={maxPriceInput}
+              onChange={(e) => {
+                const formatted = formatWithCommas(e.target.value)
+                setMaxPriceInput(formatted)
+                debouncedPriceUpdate(minPriceInput, formatted)
+              }}
+              className="text-sm h-9 pr-3"
+            />
+          </div>
+        </div>
+      </div>
+
+      <Separator />
 
       {/* Categories - Primary Filter */}
       <div className="space-y-3">
@@ -187,172 +282,229 @@ const FilterContentEl = ({
 
       <Separator />
 
-      {/* Location */}
-      <div className="space-y-4">
-        <div className="space-y-3">
-          <Label className="text-sm font-semibold text-gray-700">Country</Label>
-          <Select
-            value={filters.country || 'all'}
-            onValueChange={(value) => {
-              updateFilter('country', value === 'all' ? '' : value)
-              updateFilter('location', '') // Reset city when country changes
-            }}
-          >
-            <SelectTrigger className="text-gray-600 h-10">
-              <SelectValue placeholder="Any country" />
-            </SelectTrigger>
-            <SelectContent className="z-[100]" position="popper" side="bottom" align="start">
-              <SelectItem value="all">Any country</SelectItem>
-              {countries.map((country) => (
-                <SelectItem key={country} value={country}>
-                  {country}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-3">
-          <Label className="text-sm font-semibold text-gray-700">City</Label>
-          <Select
-            value={filters.location || 'all'}
-            onValueChange={(value) => updateFilter('location', value === 'all' ? '' : value)}
-            disabled={!filters.country}
-          >
-            <SelectTrigger className={`h-10 ${!filters.country ? 'opacity-50' : 'text-gray-600'}`}>
-              <SelectValue placeholder={filters.country ? 'Select city' : 'Select country first'} />
-            </SelectTrigger>
-            <SelectContent
-              className="z-[100]"
-              position="popper"
-              side="bottom"
-              align="start"
-              sideOffset={4}
-            >
-              <SelectItem value="all">Any city</SelectItem>
-              {filteredLocations.map((location) => (
-                <SelectItem key={location.value} value={location.value}>
-                  {location.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Price Range */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Label className="text-sm font-semibold text-gray-700">Price Range (TZS)</Label>
-          <div className="flex items-center space-x-2">
-            <Label htmlFor="price-filter-toggle" className="text-xs text-gray-500">
-              Enable
-            </Label>
-            <Switch
-              id="price-filter-toggle"
-              checked={filters.priceFilterEnabled}
-              onCheckedChange={(checked) => updateFilter('priceFilterEnabled', checked)}
-            />
-          </div>
-        </div>
-        <div
-          className={`grid grid-cols-2 gap-2 ${!filters.priceFilterEnabled ? 'opacity-50' : ''}`}
-        >
-          <Input
-            type="text"
-            inputMode="numeric"
-            placeholder="Min (0)"
-            value={minPriceInput}
-            onChange={(e) => {
-              const value = e.target.value
-              // Allow empty string or numbers only
-              if (value === '' || /^\d+$/.test(value)) {
-                setMinPriceInput(value)
-                debouncedPriceUpdate(value, maxPriceInput)
-              }
-            }}
-            className="text-sm h-9"
-          />
-          <Input
-            type="text"
-            inputMode="numeric"
-            placeholder="Max (10B)"
-            value={maxPriceInput}
-            onChange={(e) => {
-              const value = e.target.value
-              // Allow empty string or numbers only
-              if (value === '' || /^\d+$/.test(value)) {
-                setMaxPriceInput(value)
-                debouncedPriceUpdate(minPriceInput, value)
-              }
-            }}
-            className="text-sm h-9"
-          />
-        </div>
-      </div>
-
-      <Separator />
-
-      {/* Condition */}
-      <div className="space-y-3">
-        <Label className="text-sm font-semibold text-gray-700">Condition</Label>
-        <RadioGroup
-          value={filters.condition}
-          onValueChange={(value) => updateFilter('condition', value)}
-          className="space-y-2"
-        >
-          <div
-            className="flex items-center space-x-2 p-3 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer touch-manipulation min-h-[48px]"
-            role="button"
-            tabIndex={0}
-            onClick={() => updateFilter('condition', '')}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                updateFilter('condition', '')
-              }
-            }}
-          >
-            <RadioGroupItem value="" id="condition-all" className="pointer-events-none" />
-            <Label
-              htmlFor="condition-all"
-              className="text-sm text-gray-600 cursor-pointer hover:text-gray-800 transition-colors flex-1 pointer-events-none"
-            >
-              Any condition
-            </Label>
-          </div>
-          {ITEM_CONDITIONS.slice(0, 4).map((condition) => (
-            <div
-              key={condition.value}
-              className="flex items-center space-x-2 p-3 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer touch-manipulation min-h-[48px]"
-              role="button"
-              tabIndex={0}
-              onClick={() => updateFilter('condition', condition.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  updateFilter('condition', condition.value)
-                }
-              }}
-            >
-              <RadioGroupItem
-                value={condition.value}
-                id={`condition-${condition.value}`}
-                className="pointer-events-none"
-              />
-              <Label
-                htmlFor={`condition-${condition.value}`}
-                className="text-sm text-gray-600 cursor-pointer hover:text-gray-800 transition-colors flex-1 pointer-events-none"
-              >
-                {condition.label}
-                <span className="text-gray-400 ml-1 text-xs">({condition.description})</span>
-              </Label>
+      {/* Location - Collapsible */}
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="location" className="border-none">
+          <AccordionTrigger className="text-sm font-semibold text-gray-700 py-2 hover:no-underline">
+            <div className="flex items-center justify-between w-full pr-4">
+              <span>Location</span>
+              <div className="flex items-center gap-2">
+                {(filters.country || filters.customCountry) && (
+                  <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
+                    {filters.country === 'other' ? filters.customCountry : filters.country}
+                  </Badge>
+                )}
+                {(filters.country ||
+                  filters.location ||
+                  filters.customCountry ||
+                  filters.customCity) && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-5 w-5 text-gray-400 hover:text-red-500 rounded-full"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      updateFilter('country', '')
+                      window.scrollTo({ top: 0, behavior: 'smooth' })
+                    }}
+                    title="Clear location"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
             </div>
-          ))}
-        </RadioGroup>
-      </div>
+          </AccordionTrigger>
+          <AccordionContent className="pt-2 pb-1">
+            {filters.country === 'other' ? (
+              <div className="space-y-2">
+                <Input
+                  placeholder="Enter country..."
+                  value={filters.customCountry}
+                  onChange={(e) => {
+                    updateFilter('customCountry', e.target.value)
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  className="h-9 text-sm"
+                />
+                <Input
+                  placeholder="Enter city..."
+                  value={filters.customCity}
+                  onChange={(e) => {
+                    updateFilter('customCity', e.target.value)
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  className="h-9 text-sm"
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-blue-600 p-0 h-auto"
+                  onClick={() => {
+                    setFilters({
+                      ...filters,
+                      country: '',
+                      location: '',
+                      customCountry: '',
+                      customCity: '',
+                    })
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                >
+                  ← Back to list
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Select
+                  value={filters.country || 'all'}
+                  onValueChange={(value) => {
+                    if (value === 'other') {
+                      setFilters({
+                        ...filters,
+                        country: 'other',
+                        location: '',
+                      })
+                    } else {
+                      setFilters({
+                        ...filters,
+                        country: value === 'all' ? '' : value,
+                        location: '',
+                      })
+                    }
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                    if (onFilterChange) {
+                      setTimeout(onFilterChange, 100)
+                    }
+                  }}
+                >
+                  <SelectTrigger className="text-gray-600 h-9 text-sm border-gray-200 focus:ring-1 focus:ring-blue-500 rounded-md">
+                    <SelectValue placeholder="Any country" />
+                  </SelectTrigger>
+                  <SelectContent className="z-[100]" position="popper" side="bottom" align="start">
+                    <SelectItem value="all">Any country</SelectItem>
+                    {countries.map((country) => (
+                      <SelectItem key={country} value={country}>
+                        {country}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="other" className="border-t mt-1 pt-1 text-blue-600">
+                      Other...
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select
+                  value={filters.location || 'all'}
+                  onValueChange={(value) => {
+                    updateFilter('location', value === 'all' ? '' : value)
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                  }}
+                  disabled={!filters.country}
+                >
+                  <SelectTrigger
+                    className={`h-9 text-sm border-gray-200 focus:ring-1 focus:ring-blue-500 rounded-md ${!filters.country ? 'opacity-50' : 'text-gray-600'}`}
+                  >
+                    <SelectValue
+                      placeholder={filters.country ? 'Any city' : 'Select country first'}
+                    />
+                  </SelectTrigger>
+                  <SelectContent
+                    className="z-[100]"
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                  >
+                    <SelectItem value="all">Any city</SelectItem>
+                    {filteredLocations.map((location) => (
+                      <SelectItem key={location.value} value={location.value}>
+                        <span className="flex items-center gap-2">
+                          {location.countryCode && (
+                            <CountryFlag countryCode={location.countryCode} size="sm" />
+                          )}
+                          {location.label}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+
+      <Separator />
+
+      {/* Condition - Collapsible */}
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="condition" className="border-none">
+          <AccordionTrigger className="text-sm font-semibold text-gray-700 py-2 hover:no-underline">
+            Condition{' '}
+            {filters.condition && (
+              <Badge variant="secondary" className="ml-2 text-xs">
+                {filters.condition}
+              </Badge>
+            )}
+          </AccordionTrigger>
+          <AccordionContent>
+            <RadioGroup
+              value={filters.condition}
+              onValueChange={(value) => updateFilter('condition', value)}
+              className="space-y-1 pt-1"
+            >
+              <div
+                className="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
+                role="button"
+                tabIndex={0}
+                onClick={() => updateFilter('condition', '')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    updateFilter('condition', '')
+                  }
+                }}
+              >
+                <RadioGroupItem value="" id="condition-all" className="pointer-events-none" />
+                <Label
+                  htmlFor="condition-all"
+                  className="text-sm text-gray-600 cursor-pointer hover:text-gray-800 transition-colors flex-1 pointer-events-none"
+                >
+                  Any condition
+                </Label>
+              </div>
+              {ITEM_CONDITIONS.slice(0, 4).map((condition) => (
+                <div
+                  key={condition.value}
+                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => updateFilter('condition', condition.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      updateFilter('condition', condition.value)
+                    }
+                  }}
+                >
+                  <RadioGroupItem
+                    value={condition.value}
+                    id={`condition-${condition.value}`}
+                    className="pointer-events-none"
+                  />
+                  <Label
+                    htmlFor={`condition-${condition.value}`}
+                    className="text-sm text-gray-600 cursor-pointer hover:text-gray-800 transition-colors flex-1 pointer-events-none"
+                  >
+                    {condition.label}
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   )
 }
@@ -372,7 +524,17 @@ export default function BrowsePage() {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(initialPage)
   const [itemsPerPage] = useState(20) // 5 rows × 4 columns = 20 items per page
+  const [_showScrollTop, setShowScrollTop] = useState(false)
   const isApplyingUrlParams = useRef(false)
+
+  // Track scroll position for floating "Back to Top" button
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // Scroll to top on initial page load
   useEffect(() => {
@@ -404,6 +566,8 @@ export default function BrowsePage() {
     expatType: '',
     location: '',
     country: '',
+    customCountry: '',
+    customCity: '',
   }
 
   const [filters, setFilters] = useState<FilterState>(initialFilters)
@@ -507,6 +671,8 @@ export default function BrowsePage() {
       expatType: '',
       location: '',
       country: '',
+      customCountry: '',
+      customCity: '',
     })
   }
 
@@ -531,7 +697,10 @@ export default function BrowsePage() {
   }, [searchQuery, filters.selectedCategory, currentPage])
 
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase())
+    const searchLower = searchQuery.toLowerCase()
+    const matchesSearch =
+      product.title.toLowerCase().includes(searchLower) ||
+      (product.description?.toLowerCase() || '').includes(searchLower)
 
     // Category filtering - match against both slug and category name
     let matchesCategory = !filters.selectedCategory
@@ -692,25 +861,45 @@ export default function BrowsePage() {
 
     // Location filtering
     const matchesLocation =
-      !filters.location ||
-      product.location?.toLowerCase().includes(filters.location.toLowerCase()) ||
-      generateSlug(product.location).includes(filters.location)
+      filters.country === 'other'
+        ? !filters.customCity ||
+          product.location?.toLowerCase().includes(filters.customCity.toLowerCase())
+        : !filters.location ||
+          product.location?.toLowerCase().includes(filters.location.toLowerCase()) ||
+          generateSlug(product.location).includes(filters.location)
 
     // Country filtering
     let matchesCountry = true
-    if (filters.country) {
+    if (filters.country === 'other') {
+      matchesCountry =
+        !filters.customCountry ||
+        product.location?.toLowerCase().includes(filters.customCountry.toLowerCase())
+    } else if (filters.country) {
       // Find all valid city slugs for this country
       const countryCitySlugs = EXPAT_LOCATIONS.filter((l) => l.country === filters.country).map(
         (l) => l.value
       )
-      // Check if product location matches any of these cities
-      // We rely on the fact that product.location usually contains the city name or matches the slug
-      const productSlug = generateSlug(product.location)
-      matchesCountry = countryCitySlugs.some(
-        (citySlug) =>
-          productSlug.includes(citySlug) ||
-          product.location?.toLowerCase().includes(citySlug.replace(/-/g, ' '))
+      // Also get city names (from label, extract just the city name)
+      const countryCityNames = EXPAT_LOCATIONS.filter((l) => l.country === filters.country).map(
+        (l) =>
+          l.label
+            .replace(/^[^ ]+ /, '')
+            .split(',')[0]
+            .toLowerCase() // e.g., "🇹🇿 Dar es Salaam, TZ" -> "dar es salaam"
       )
+
+      const productLocation = product.location?.toLowerCase() || ''
+      const productSlug = generateSlug(product.location)
+      const countryLower = filters.country.toLowerCase()
+
+      // Check multiple matching strategies:
+      // 1. Product location contains country name
+      // 2. Product slug matches a city slug
+      // 3. Product location contains a city name
+      matchesCountry =
+        productLocation.includes(countryLower) ||
+        countryCitySlugs.some((citySlug) => productSlug.includes(citySlug)) ||
+        countryCityNames.some((cityName) => productLocation.includes(cityName))
     }
 
     // Debug all filter conditions for vehicles
@@ -1068,7 +1257,8 @@ export default function BrowsePage() {
                 {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="mt-12 border-t border-gray-200 pt-8">
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    {/* Desktop/Tablet Pagination */}
+                    <div className="hidden sm:flex items-center justify-between gap-4">
                       {/* Page Info */}
                       <div className="text-sm text-gray-600">
                         Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
@@ -1078,8 +1268,20 @@ export default function BrowsePage() {
                         of <span className="font-medium">{totalProductsCount}</span> total products
                       </div>
 
-                      {/* Pagination Controls */}
+                      {/* Pagination Controls with Back to Top */}
                       <div className="flex items-center space-x-2">
+                        {/* Improved Back to Top Button */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                          className="text-blue-600 border-blue-600 hover:bg-blue-50 font-semibold transition-all shadow-sm flex items-center gap-1.5 px-3"
+                          title="Back to Top"
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                          <span className="text-xs">Back to Top</span>
+                        </Button>
+
                         {/* Previous Button */}
                         <Button
                           variant="outline"
@@ -1132,32 +1334,51 @@ export default function BrowsePage() {
                     </div>
 
                     {/* Mobile Pagination - Simplified */}
-                    <div className="sm:hidden mt-4 flex justify-center items-center space-x-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => goToPage(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className="flex items-center gap-1"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                        Prev
-                      </Button>
+                    <div className="sm:hidden flex flex-col items-center gap-4">
+                      {/* Page Info (Mobile) */}
+                      <div className="text-sm text-gray-500">
+                        {startIndex + 1}-{Math.min(endIndex, filteredProducts.length)} of{' '}
+                        {totalProductsCount}
+                      </div>
 
-                      <span className="text-sm text-gray-600 font-medium">
-                        {currentPage} / {totalPages}
-                      </span>
+                      <div className="flex items-center justify-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => goToPage(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className="flex items-center gap-1"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                          Prev
+                        </Button>
 
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => goToPage(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className="flex items-center gap-1"
-                      >
-                        Next
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
+                        <span className="text-sm text-gray-600 font-medium px-2">
+                          {currentPage} / {totalPages}
+                        </span>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => goToPage(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                          className="flex items-center gap-1"
+                        >
+                          Next
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+
+                        <div className="w-px h-4 bg-gray-200 mx-1" />
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                          className="p-2 text-gray-500 hover:text-blue-600"
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}

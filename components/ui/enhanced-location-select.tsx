@@ -29,6 +29,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { EXPAT_LOCATIONS } from '@/lib/constants'
+import { CountryFlag } from '@/components/country-flag'
 import { cn } from '@/lib/utils'
 
 interface EnhancedLocationSelectProps {
@@ -51,20 +52,20 @@ interface EnhancedLocationSelectProps {
   showLabels?: boolean
 }
 
-// Country data with flags
+// Country data with country codes for SVG flags
 const COUNTRIES = [
-  { code: 'TZ', name: 'Tanzania', flag: '🇹🇿' },
-  { code: 'KE', name: 'Kenya', flag: '🇰🇪' },
-  { code: 'UG', name: 'Uganda', flag: '🇺🇬' },
-  { code: 'RW', name: 'Rwanda', flag: '🇷🇼' },
+  { code: 'TZ', name: 'Tanzania' },
+  { code: 'KE', name: 'Kenya' },
+  { code: 'UG', name: 'Uganda' },
+  { code: 'RW', name: 'Rwanda' },
 ] as const
 
 /**
- * Get flag for a country
+ * Get country code for a country name
  */
-function getFlagForCountry(countryName: string): string {
+function getCountryCodeForName(countryName: string): string | undefined {
   const country = COUNTRIES.find((c) => c.name.toLowerCase() === countryName.toLowerCase())
-  return country?.flag || '🌍'
+  return country?.code
 }
 
 /**
@@ -266,7 +267,7 @@ export function EnhancedLocationSelect({
                 {COUNTRIES.map((country) => (
                   <SelectItem key={country.code} value={country.name}>
                     <span className="flex items-center gap-2">
-                      <span className="text-lg">{country.flag}</span>
+                      <CountryFlag countryCode={country.code} size="md" />
                       <span>{country.name}</span>
                     </span>
                   </SelectItem>
@@ -301,13 +302,13 @@ export function EnhancedLocationSelect({
               </SelectTrigger>
               <SelectContent>
                 {availableCities.map((city) => {
-                  // Extract just the city name from the label (remove emoji and country code)
-                  const cityName = city.label.replace(/^[^\s]+\s/, '').replace(/,\s*[A-Z]{2}$/, '')
-                  const flag = getFlagForCountry(city.country || '')
+                  // Extract just the city name from the label (remove country code suffix)
+                  const cityName = city.label.replace(/,\s*[A-Z]{2}$/, '')
+                  const countryCode = city.countryCode || getCountryCodeForName(city.country || '')
                   return (
                     <SelectItem key={city.value} value={city.label}>
                       <span className="flex items-center gap-2">
-                        <span className="text-lg">{flag}</span>
+                        {countryCode && <CountryFlag countryCode={countryCode} size="sm" />}
                         <span>{cityName}</span>
                       </span>
                     </SelectItem>

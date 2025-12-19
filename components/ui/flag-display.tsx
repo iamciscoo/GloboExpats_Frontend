@@ -3,25 +3,26 @@
  * FLAG DISPLAY COMPONENT
  * =============================================================================
  *
- * Displays country flag emojis with automatic text fallback for browsers
- * that don't support emoji rendering properly.
+ * Displays country flags using SVG icons from country-flag-icons package
+ * for reliable cross-platform rendering.
  *
  * Usage:
  * ```tsx
- * <FlagDisplay emoji="🇹🇿" fallback="TZ" />
+ * <FlagDisplay emoji="🇹🇿" fallback="TZ" countryName="Tanzania" />
  * ```
  */
 
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { cn } from '@/lib/utils'
+import { TZ, KE, UG, RW, US, JP, CN, BI, GB, EU, KR } from 'country-flag-icons/react/3x2'
 
 interface FlagDisplayProps {
-  /** Emoji flag (e.g., "🇹🇿") */
+  /** Emoji flag (e.g., "🇹🇿") - used as fallback identifier */
   emoji: string
 
-  /** Text fallback if emoji not supported (e.g., "TZ") */
+  /** Text fallback / country code or currency code (e.g., "TZ" or "TZS") */
   fallback: string
 
   /** Country name for accessibility */
@@ -35,58 +36,83 @@ interface FlagDisplayProps {
 }
 
 /**
- * Mapping of emoji flags to their text codes
+ * Mapping of country codes to SVG flag components
  */
-const EMOJI_TO_TEXT: Record<string, string> = {
+const FLAG_COMPONENTS: Record<string, React.ComponentType<{ className?: string }>> = {
+  TZ: TZ,
+  KE: KE,
+  UG: UG,
+  RW: RW,
+  BI: BI,
+  US: US,
+  JP: JP,
+  CN: CN,
+  GB: GB,
+  EU: EU,
+  KR: KR,
+}
+
+/**
+ * Mapping of currency codes to country codes
+ */
+const CURRENCY_TO_COUNTRY: Record<string, string> = {
+  TZS: 'TZ',
+  USD: 'US',
+  KES: 'KE',
+  UGX: 'UG',
+  RWF: 'RW',
+  EUR: 'EU',
+  JPY: 'JP',
+  KRW: 'KR',
+  CNY: 'CN',
+  GBP: 'GB',
+  BIF: 'BI',
+}
+
+/**
+ * Mapping of emoji flags to their country codes
+ */
+const EMOJI_TO_CODE: Record<string, string> = {
   '🇹🇿': 'TZ',
   '🇺🇸': 'US',
   '🇰🇪': 'KE',
   '🇺🇬': 'UG',
+  '🇷🇼': 'RW',
+  '🇧🇮': 'BI',
+  '🇪🇺': 'EU',
+  '🇯🇵': 'JP',
+  '🇰🇷': 'KR',
+  '🇨🇳': 'CN',
+  '🇬🇧': 'GB',
 }
 
 /**
- * Check if browser supports emoji rendering
- * Uses canvas detection method
+ * Get country code from various input formats
  */
-function supportsEmoji(): boolean {
-  if (typeof window === 'undefined') return false
-
-  try {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-
-    if (!ctx) return false
-
-    // Set canvas size
-    canvas.width = 20
-    canvas.height = 20
-
-    // Draw emoji
-    ctx.textBaseline = 'top'
-    ctx.font = '16px Arial'
-    ctx.fillText('🇹🇿', 0, 0)
-
-    // Check if anything was actually drawn (emoji support)
-    const imageData = ctx.getImageData(0, 0, 20, 20)
-    const data = imageData.data
-
-    // If all pixels are transparent/black, emoji isn't supported
-    for (let i = 0; i < data.length; i += 4) {
-      if (data[i] !== 0 || data[i + 1] !== 0 || data[i + 2] !== 0) {
-        return true // Found colored pixel, emoji works
-      }
-    }
-
-    return false
-  } catch {
-    return false
+function getCountryCode(fallback: string, emoji: string): string {
+  // First try direct country code lookup
+  const upperFallback = fallback?.toUpperCase() || ''
+  if (FLAG_COMPONENTS[upperFallback]) {
+    return upperFallback
   }
+
+  // Try currency code to country code mapping
+  if (CURRENCY_TO_COUNTRY[upperFallback]) {
+    return CURRENCY_TO_COUNTRY[upperFallback]
+  }
+
+  // Try emoji lookup
+  if (emoji && EMOJI_TO_CODE[emoji]) {
+    return EMOJI_TO_CODE[emoji]
+  }
+
+  return upperFallback
 }
 
 /**
  * FlagDisplay Component
  *
- * Displays emoji flag with automatic fallback to text code
+ * Displays SVG flag with text fallback if flag not available
  */
 export function FlagDisplay({
   emoji,
@@ -95,59 +121,42 @@ export function FlagDisplay({
   className,
   variant = 'button',
 }: FlagDisplayProps) {
-  const [showEmoji, setShowEmoji] = useState(true)
-  const [isMounted, setIsMounted] = useState(false)
+  // Get country code from fallback or emoji
+  const countryCode = getCountryCode(fallback, emoji)
+  const FlagComponent = FLAG_COMPONENTS[countryCode]
 
-  useEffect(() => {
-    setIsMounted(true)
-
-    // Check emoji support on mount
-    const hasEmojiSupport = supportsEmoji()
-    setShowEmoji(hasEmojiSupport)
-  }, [])
-
-  // Get text fallback from emoji if not provided
-  const textFallback = fallback || EMOJI_TO_TEXT[emoji] || emoji
-
-  // Don't render until mounted to prevent hydration mismatch
-  if (!isMounted) {
-    return null
+  // Variant-specific styles for SVG flags - LARGER SIZES FOR BETTER VISIBILITY
+  const svgStyles = {
+    button: 'w-7 h-5 rounded-sm shadow-sm',
+    dropdown: 'w-10 h-7 rounded-sm shadow-sm',
+    minimal: 'w-6 h-4 rounded-sm',
   }
 
-  // Variant-specific styles
-  const variantStyles = {
-    button: 'text-base leading-none',
-    dropdown: 'text-xl leading-none',
-    minimal: 'text-sm leading-none',
-  }
-
+  // Text fallback styles - for currencies without flags
   const textStyles = {
-    button: 'px-1.5 py-0.5 bg-white/20 rounded text-[10px] font-bold tracking-wide',
-    dropdown: 'px-2 py-1 bg-slate-200 rounded text-xs font-bold tracking-wide text-slate-700',
-    minimal: 'px-1 py-0.5 bg-white/20 rounded text-[9px] font-bold tracking-wide',
+    button:
+      'px-2 py-1 bg-gradient-to-br from-slate-100 to-slate-200 rounded text-[11px] font-bold tracking-wide text-slate-700 border border-slate-300',
+    dropdown:
+      'px-2.5 py-1.5 bg-gradient-to-br from-slate-100 to-slate-200 rounded text-sm font-bold tracking-wide text-slate-700 border border-slate-300 min-w-[40px] text-center',
+    minimal:
+      'px-1.5 py-0.5 bg-gradient-to-br from-slate-100 to-slate-200 rounded text-[10px] font-bold tracking-wide text-slate-600 border border-slate-300',
   }
 
-  if (showEmoji) {
-    // Render emoji with proper font family
+  // If we have an SVG flag component, use it
+  if (FlagComponent) {
     return (
-      <span
-        className={cn(variantStyles[variant], className)}
-        style={{
-          fontFamily:
-            '"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Android Emoji", sans-serif',
-        }}
+      <FlagComponent
+        className={cn(svgStyles[variant], 'inline-block', className)}
         aria-label={`${countryName} flag`}
-        role="img"
-      >
-        {emoji}
-      </span>
+      />
     )
   }
 
-  // Render text fallback as badge
+  // Render text fallback as styled badge (for currencies like EUR, KRW without SVG flags)
+  const displayCode = countryCode || fallback?.toUpperCase().slice(0, 3) || '??'
   return (
     <span className={cn(textStyles[variant], className)} aria-label={`${countryName} flag`}>
-      {textFallback}
+      {displayCode}
     </span>
   )
 }

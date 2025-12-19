@@ -12,6 +12,7 @@ import { TutorialProvider } from '@/providers/tutorial-provider'
 import { ScrollToTop } from '@/components/scroll-to-top'
 import { PlatformTutorial } from '@/components/platform-tutorial'
 import { MatomoTagManager } from '@/components/matomo-tag-manager'
+import { WhatsAppButton } from '@/components/whatsapp-button'
 import { seoConfig } from '@/lib/seo-config'
 
 const inter = Inter({
@@ -144,6 +145,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                   <LayoutContent>{children}</LayoutContent>
                   <Toaster />
                   <PlatformTutorial />
+                  <WhatsAppButton />
                 </ErrorBoundary>
               </TutorialProvider>
             </CartProvider>

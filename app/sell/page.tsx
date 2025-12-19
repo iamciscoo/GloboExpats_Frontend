@@ -23,6 +23,7 @@ import { CURRENCIES as CURRENCY_CONFIG } from '@/lib/currency-converter'
 import { getCategoryFields } from '@/lib/category-fields'
 import { getStepTips, getCategoryTips, getStepName } from '@/lib/step-tips'
 import { useToast } from '@/components/ui/use-toast'
+import { CountryFlag } from '@/components/country-flag'
 import Image from 'next/image'
 
 interface FormData {
@@ -1198,7 +1199,10 @@ function Step3Content({
           <SelectContent>
             {CURRENCIES.map((curr) => (
               <SelectItem key={curr.code} value={curr.code}>
-                {curr.flag} {curr.code} - {curr.name}
+                <span className="flex items-center gap-2">
+                  <CountryFlag countryCode={curr.countryCode} size="sm" />
+                  {curr.code} - {curr.name}
+                </span>
               </SelectItem>
             ))}
           </SelectContent>

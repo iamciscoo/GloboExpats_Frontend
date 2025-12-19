@@ -117,12 +117,12 @@ const paymentMethods: PaymentMethod[] = [
 
 const mobilePaymentMethodIds = ['mpesa', 'airtel', 'mixx']
 
-// Simplified East African countries for delivery with flags
+// Simplified East African countries for delivery with countryCode for SVG flags
 const eastAfricanCountries = [
-  { code: 'TZ', name: 'Tanzania', flag: '🇹🇿', currency: 'TZS', phoneCode: '+255' },
-  { code: 'KE', name: 'Kenya', flag: '🇰🇪', currency: 'KES', phoneCode: '+254' },
-  { code: 'UG', name: 'Uganda', flag: '🇺🇬', currency: 'UGX', phoneCode: '+256' },
-  { code: 'RW', name: 'Rwanda', flag: '🇷🇼', currency: 'RWF', phoneCode: '+250' },
+  { code: 'TZ', name: 'Tanzania', countryCode: 'TZ', currency: 'TZS', phoneCode: '+255' },
+  { code: 'KE', name: 'Kenya', countryCode: 'KE', currency: 'KES', phoneCode: '+254' },
+  { code: 'UG', name: 'Uganda', countryCode: 'UG', currency: 'UGX', phoneCode: '+256' },
+  { code: 'RW', name: 'Rwanda', countryCode: 'RW', currency: 'RWF', phoneCode: '+250' },
 ]
 
 export default function CheckoutPage() {

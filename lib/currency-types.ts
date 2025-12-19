@@ -16,7 +16,7 @@
 /**
  * Supported currency codes
  */
-export type CurrencyCode = 'TZS' | 'USD' | 'KES' | 'UGX'
+export type CurrencyCode = 'TZS' | 'USD' | 'KES' | 'UGX' | 'EUR' | 'JPY' | 'KRW' | 'CNY'
 
 /**
  * Complete currency information with exchange rate
@@ -31,8 +31,11 @@ export interface Currency {
   /** Full currency name */
   name: string
 
-  /** Country/region flag emoji */
+  /** Country/region flag emoji (fallback) */
   flag: string
+
+  /** ISO 3166-1 alpha-2 country code for SVG flag rendering */
+  countryCode?: string
 
   /** Exchange rate relative to base currency (TZS) */
   exchangeRate: number

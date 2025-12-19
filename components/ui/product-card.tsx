@@ -150,7 +150,7 @@ export function ProductCard({
     <Card
       className={cn(
         'group cursor-pointer transition-all duration-300 hover:shadow-card-modern hover:-translate-y-1 focus-within:ring-2 focus-within:ring-brand-primary focus-within:ring-offset-2',
-        'bg-surface-primary border border-neutral-200 rounded-xl overflow-hidden h-full flex flex-col m-1',
+        'bg-surface-primary border border-neutral-200 rounded-xl overflow-hidden h-full flex flex-col',
         compact && 'border-neutral-300',
         className
       )}
@@ -170,7 +170,7 @@ export function ProductCard({
           {/* Image */}
           <div
             className={cn(
-              'relative overflow-hidden flex-shrink-0 bg-white',
+              'relative overflow-hidden flex-shrink-0 bg-white w-full',
               viewMode === 'list' ? 'w-48 aspect-[4/3] rounded-l-xl' : 'aspect-[4/3] rounded-t-xl'
             )}
           >
@@ -179,10 +179,7 @@ export function ProductCard({
               alt={`${product.title} product image`}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className={cn(
-                'object-contain transition-transform duration-300',
-                viewMode === 'list' ? '' : 'group-hover:scale-[1.02]'
-              )}
+              className={cn('object-cover', viewMode === 'list' ? '' : '')}
               loading="lazy"
               placeholder="blur"
               blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="

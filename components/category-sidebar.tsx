@@ -16,6 +16,19 @@ export default function CategorySidebar() {
   return (
     <aside className="w-64 flex-shrink-0 bg-white border-r border-slate-200 min-h-screen sticky top-16 overflow-hidden">
       <div className="h-screen flex flex-col">
+        {/* User Guide Button - At the top */}
+        <div className="px-4 py-3 border-b border-slate-100">
+          <Button
+            onClick={startTutorial}
+            variant="outline"
+            size="sm"
+            className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 hover:bg-blue-100 hover:border-blue-300 text-blue-700 font-medium"
+          >
+            <HelpCircle className="w-4 h-4 mr-2" />
+            User Guide
+          </Button>
+        </div>
+
         {/* Unified Expat Dashboard Section */}
         <div className="p-4 border-b border-slate-100">
           <Card className="bg-blue-50 border-brand-primary/20 shadow-futuristic">
@@ -38,7 +51,7 @@ export default function CategorySidebar() {
                     >
                       <Link href="/sell" className="flex flex-col items-center gap-1">
                         <Plus className="w-3 h-3" />
-                        <span>New Listing</span>
+                        <span>Sell Listing</span>
                       </Link>
                     </Button>
 
@@ -105,19 +118,6 @@ export default function CategorySidebar() {
 
         {/* Admin Section - Only visible to admin users */}
         <AdminSection />
-
-        {/* Tutorial Button */}
-        <div className="px-4 py-3 border-b border-slate-100">
-          <Button
-            onClick={startTutorial}
-            variant="outline"
-            size="sm"
-            className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 hover:bg-blue-100 hover:border-blue-300 text-blue-700 font-medium"
-          >
-            <HelpCircle className="w-4 h-4 mr-2" />
-            Platform Tutorial
-          </Button>
-        </div>
 
         {/* Categories Section with Custom Scroll */}
         <div className="flex-1 flex flex-col px-4 py-2 min-h-0">

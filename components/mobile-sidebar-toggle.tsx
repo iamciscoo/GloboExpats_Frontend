@@ -72,7 +72,7 @@ export default function MobileSidebarToggle() {
                         >
                           <Link href="/sell" className="flex flex-col items-center gap-1">
                             <Plus className="w-3 h-3" />
-                            <span>New Listing</span>
+                            <span>Sell</span>
                           </Link>
                         </Button>
 

@@ -422,6 +422,7 @@ export interface Location {
   value: string
   label: string
   country?: string
+  countryCode?: string // ISO 3166-1 alpha-2 code for SVG flags
 }
 
 // Language support
