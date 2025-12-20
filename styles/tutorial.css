@@ -329,3 +329,20 @@
     justify-content: center;
   }
 }
+
+/* Welcome Step Specific Styling - Fix spacing issues */
+.driver-popover.tutorial-welcome-popover .driver-popover-title {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 0 !important;
+}
+
+/* Adjust padding for the welcome popover since title is removed */
+.driver-popover.tutorial-welcome-popover {
+  padding-top: 24px !important;
+}
+
+.driver-popover.tutorial-welcome-popover .driver-popover-description {
+  margin-top: 0 !important;
+}

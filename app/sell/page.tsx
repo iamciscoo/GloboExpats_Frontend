@@ -592,13 +592,13 @@ function SellPageContent() {
         await new Promise((resolve) => setTimeout(resolve, 1500))
       }
 
+      // Reset form immediately before redirecting to prevent visual flicker
+      setFormData(INITIAL_FORM_DATA)
+      setCurrentStep(1)
+
       // Redirect to dashboard with My Listings tab
       // Using replace to prevent back button from returning to form
       window.location.replace('/expat/dashboard?tab=listings')
-
-      // Reset form
-      setFormData(INITIAL_FORM_DATA)
-      setCurrentStep(1)
     } catch (error) {
       console.error('❌ Failed to publish listing:', error)
       let errorMessage = 'Failed to publish listing. Please try again.'

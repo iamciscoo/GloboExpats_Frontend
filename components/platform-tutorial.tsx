@@ -67,6 +67,7 @@ export function PlatformTutorial() {
         {
           popover: {
             title: '',
+            popoverClass: 'globoexpats-tour-popover tutorial-welcome-popover',
             description: `
               <div class="tutorial-welcome-header">
                 <img src="/icon.svg" alt="Globoexpats" class="tutorial-welcome-logo" />
@@ -188,6 +189,7 @@ export function PlatformTutorial() {
         {
           popover: {
             title: '',
+            popoverClass: 'globoexpats-tour-popover tutorial-welcome-popover',
             description: `
               <div class="tutorial-welcome-header">
                 <img src="/icon.svg" alt="Globoexpats" class="tutorial-welcome-logo" />
@@ -286,14 +288,15 @@ export function PlatformTutorial() {
       {
         popover: {
           title: '',
+          popoverClass: 'globoexpats-tour-popover tutorial-welcome-popover',
           description: `
             <div class="tutorial-welcome-header">
               <img src="/icon.svg" alt="Globoexpats" class="tutorial-welcome-logo" />
               <div class="tutorial-welcome-brand">Welcome to Globoexpats! 🌍</div>
-              <div class="tutorial-welcome-tagline">The trusted marketplace for the expat community</div>
+              <div class="tutorial-welcome-tagline">The trusted marketplace for the expat community, Buy Quality items from verified seller or sell to thousands of expats by listinfg your own Items.</div>
             </div>
             <p style="text-align: center; font-size: 13px; color: #475569; line-height: 1.4; margin: 0; padding: 0;">This comprehensive tour will guide you through every feature of the platform - from browsing to buying, selling, and managing your account.</p>
-            <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: 4px; margin-bottom: 0;">Let's get started! ✨</p>
+            <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: 4px; margin-bottom: 0;">Let's explore what you can do here! ✨</p>
           `,
           onNextClick: () => {
             driverObj.current?.moveNext()
@@ -371,7 +374,7 @@ export function PlatformTutorial() {
       // Browse Page
       {
         popover: {
-          title: 'Browse Marketplace 🛍️',
+          title: 'Explore the Marketplace 🛍️',
           description:
             "Now we're on the Browse page where you can explore all available products. Let's see how to filter and find what you need.",
           onNextClick: () => {

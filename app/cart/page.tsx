@@ -5,7 +5,6 @@ import Image from 'next/image'
 import {
   ShoppingCart,
   Trash2,
-  MessageCircle,
   Shield,
   ArrowRight,
   ShoppingBag,
@@ -206,20 +205,12 @@ export default function CartPage() {
                           </div>
                         </div>
 
-                        {/* Second Row: Location & Contact */}
-                        <div className="mt-1.5 flex items-center justify-between pl-[30px]">
+                        {/* Second Row: Location */}
+                        <div className="mt-1.5 flex items-center pl-[30px]">
                           <div className="flex items-center text-[10px] text-neutral-600">
                             <MapPin className="w-2.5 h-2.5 mr-0.5" />
                             {cleanLocationString(item.location)}
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-brand-primary hover:bg-brand-primary/5 px-1.5 h-6 text-[10px]"
-                          >
-                            <MessageCircle className="w-2.5 h-2.5 mr-0.5" />
-                            Contact
-                          </Button>
                         </div>
 
                         {/* Third Row: Remove Button */}
@@ -314,15 +305,6 @@ export default function CartPage() {
                                   </Badge>
                                 )}
                               </div>
-
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-brand-primary hover:bg-brand-primary/5 px-0 text-sm h-auto py-1"
-                              >
-                                <MessageCircle className="w-4 h-4 mr-2" />
-                                Contact Seller
-                              </Button>
                             </div>
 
                             <div className="flex flex-col items-end gap-3">

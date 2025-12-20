@@ -12,6 +12,9 @@ import {
   Info,
   Banknote,
   Handshake,
+  Minus,
+  Plus,
+  Trash2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -129,7 +132,15 @@ export default function CheckoutPage() {
   const router = useRouter()
   const { user, isLoggedIn, isLoading: authLoading } = useAuth()
   const { userProfile } = useUserProfile()
-  const { items, subtotal, selectedItems, selectedItemsData, selectedSubtotal } = useCart()
+  const {
+    items,
+    subtotal,
+    selectedItems,
+    selectedItemsData,
+    selectedSubtotal,
+    updateQuantity,
+    removeFromCart,
+  } = useCart()
   const { checkVerification } = useVerification()
 
   // Check verification on page load
@@ -1737,56 +1748,129 @@ export default function CheckoutPage() {
 
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-6">
+            <div className="sticky top-6 space-y-4">
+              {/* Cart Items Section */}
               <Card className="shadow-sm border border-neutral-200 rounded-xl overflow-hidden">
-                <CardHeader className="bg-neutral-50 border-b border-neutral-200 p-6">
-                  <CardTitle className="text-2xl font-semibold text-neutral-900">
+                <CardHeader className="bg-neutral-50 border-b border-neutral-200 p-4">
+                  <CardTitle className="text-lg font-semibold text-neutral-900">
+                    Your Items ({checkoutItems.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {/* Scrollable items container */}
+                  <div className="max-h-[280px] overflow-y-auto">
+                    {checkoutItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-start gap-3 p-3 border-b border-neutral-100 last:border-b-0"
+                      >
+                        {/* Product Image */}
+                        <div className="relative w-14 h-14 bg-neutral-100 rounded-lg overflow-hidden flex-shrink-0">
+                          <Image
+                            src={item.image}
+                            alt={item.title}
+                            fill
+                            sizes="56px"
+                            className="object-cover"
+                          />
+                        </div>
+
+                        {/* Product Details */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-medium text-neutral-900 line-clamp-1">
+                            {item.title}
+                          </h4>
+                          <p className="text-sm font-semibold text-neutral-700 mt-0.5">
+                            <PriceDisplay price={item.price * item.quantity} size="sm" />
+                          </p>
+
+                          {/* Quantity Controls */}
+                          <div className="flex items-center gap-2 mt-2">
+                            <div className="flex items-center border border-neutral-200 rounded-md bg-white">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 rounded-none hover:bg-neutral-100"
+                                onClick={() =>
+                                  updateQuantity(item.id, Math.max(1, item.quantity - 1))
+                                }
+                                disabled={item.quantity <= 1}
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <span className="w-7 text-center text-xs font-medium">
+                                {item.quantity}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 rounded-none hover:bg-neutral-100"
+                                onClick={() =>
+                                  updateQuantity(item.id, Math.min(10, item.quantity + 1))
+                                }
+                                disabled={item.quantity >= 10}
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeFromCart(item.id)}
+                              className="h-6 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Order Summary */}
+              <Card className="shadow-sm border border-neutral-200 rounded-xl overflow-hidden">
+                <CardHeader className="bg-neutral-50 border-b border-neutral-200 p-4">
+                  <CardTitle className="text-lg font-semibold text-neutral-900">
                     Order Summary
                   </CardTitle>
-                  <div className="flex items-center gap-2 mt-3">
-                    <div className="bg-white px-3 py-1 rounded-full border border-neutral-200">
-                      <span className="text-sm font-medium text-neutral-700">
-                        {checkoutItems.length} {checkoutItems.length === 1 ? 'item' : 'items'}
-                      </span>
-                    </div>
-                    <div className="bg-white px-3 py-1 rounded-full border border-neutral-200">
-                      <span className="text-sm font-medium text-neutral-700">
-                        {selectedCountryData?.name}
-                      </span>
-                    </div>
-                  </div>
                 </CardHeader>
-                <CardContent className="p-8 space-y-6">
-                  <Alert className="bg-blue-50 border-blue-200">
+                <CardContent className="p-4 space-y-4">
+                  <Alert className="bg-blue-50 border-blue-200 py-2">
                     <Info className="h-4 w-4 text-blue-600" />
-                    <AlertDescription className="text-sm text-blue-800">
+                    <AlertDescription className="text-xs text-blue-800">
                       Prices shown in your selected currency. Payment processed in{' '}
                       <strong>TZS (Tanzanian Shilling)</strong> at checkout.
                     </AlertDescription>
                   </Alert>
 
-                  <div className="space-y-4">
-                    <div className="flex justify-between text-lg p-3 bg-gray-50 rounded-xl">
-                      <span className="font-medium">Subtotal ({checkoutItems.length} items)</span>
-                      <span className="font-bold text-neutral-900">
-                        <PriceDisplay price={checkoutSubtotal} size="lg" weight="bold" />
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm p-2 bg-gray-50 rounded-lg">
+                      <span className="font-medium text-neutral-600">
+                        Subtotal ({checkoutItems.length} items)
+                      </span>
+                      <span className="font-semibold text-neutral-900">
+                        <PriceDisplay price={checkoutSubtotal} size="sm" weight="bold" />
                       </span>
                     </div>
-                    <div className="flex justify-between text-lg p-3 bg-gray-50 rounded-xl">
-                      <span className="font-medium">Delivery ({selectedShippingOption?.name})</span>
-                      <span className="font-semibold text-neutral-600">
+                    <div className="flex justify-between text-sm p-2 bg-gray-50 rounded-lg">
+                      <span className="font-medium text-neutral-600">
+                        Delivery ({selectedShippingOption?.name})
+                      </span>
+                      <span className="font-medium text-neutral-600">
                         {selectedShippingOption?.priceDisplay || 'Varies'}
                       </span>
                     </div>
                   </div>
 
-                  <Separator className="my-6 border-2" />
+                  <Separator className="my-3" />
 
-                  <div className="bg-neutral-50 p-6 rounded-2xl border border-neutral-200">
+                  <div className="bg-neutral-50 p-4 rounded-xl border border-neutral-200">
                     <div className="flex justify-between items-center">
-                      <span className="text-xl font-bold text-gray-800">Total</span>
-                      <span className="text-3xl font-bold text-brand-primary">
-                        <PriceDisplay price={totalAmount} size="xl" weight="bold" showOriginal />
+                      <span className="text-base font-bold text-gray-800">Total</span>
+                      <span className="text-xl font-bold text-brand-primary">
+                        <PriceDisplay price={totalAmount} size="lg" weight="bold" showOriginal />
                       </span>
                     </div>
                   </div>

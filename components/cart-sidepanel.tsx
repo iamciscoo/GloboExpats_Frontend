@@ -355,10 +355,12 @@ CartSidePanel.displayName = 'CartSidePanel'
  * Cart Side Panel Trigger Component
  * Use this component to trigger the cart panel from anywhere
  */
-export const CartSidePanelTrigger: React.FC<{
-  children?: React.ReactNode
-  className?: string
-}> = ({ children, className }) => {
+export const CartSidePanelTrigger: React.FC<
+  {
+    children?: React.ReactNode
+    className?: string
+  } & React.ButtonHTMLAttributes<HTMLButtonElement>
+> = ({ children, className, ...props }) => {
   const [open, setOpen] = useState(false)
   const { itemCount } = useCart()
 
@@ -388,6 +390,7 @@ export const CartSidePanelTrigger: React.FC<{
         aria-label={`Open shopping cart (${itemCount} items)`}
         aria-haspopup="dialog"
         aria-expanded={open}
+        {...props}
       >
         {children || (
           <>
