@@ -536,13 +536,18 @@ export default function CheckoutPage() {
 
         // Log the full response for debugging
         console.log('[Checkout] Mobile payment response:', JSON.stringify(mobileResponse, null, 2))
-        console.log('[Checkout] Response data:', {
+        console.log('[Checkout] Response data (nested):', {
           order_id: mobileResponse.data?.order_id,
           orderId: mobileResponse.data?.orderId,
           transactionId: mobileResponse.data?.transactionId,
           checkoutRequestId: mobileResponse.data?.checkoutRequestId,
           status: mobileResponse.data?.status,
           resultCode: mobileResponse.data?.resultCode,
+        })
+        console.log('[Checkout] Response root level:', {
+          order_id: (mobileResponse as any).order_id,
+          status: (mobileResponse as any).status,
+          resultCode: (mobileResponse as any).resultCode,
         })
 
         // Check if the response indicates a pending/in-progress payment request
@@ -557,8 +562,9 @@ export default function CheckoutPage() {
         }
 
         // Extract orderId - MUST match what Zeno sends to webhook
-        // Zeno API returns 'order_id' (snake_case) which is what webhook will send
+        // Zeno API returns fields at ROOT level, not nested under 'data'
         const extractedOrderId =
+          (mobileResponse as any).order_id ||
           mobileResponse.data?.order_id ||
           mobileResponse.data?.orderId ||
           mobileResponse.data?.transactionId ||
@@ -569,7 +575,7 @@ export default function CheckoutPage() {
           console.error('[Checkout] Full response:', JSON.stringify(mobileResponse, null, 2))
           throw new Error(
             'Payment initiated but no order ID received. Please contact support with reference: ' +
-              (mobileResponse.data?.checkoutRequestId || 'N/A')
+              ((mobileResponse as any).order_id || mobileResponse.data?.checkoutRequestId || 'N/A')
           )
         }
 
