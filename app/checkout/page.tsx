@@ -558,14 +558,13 @@ export default function CheckoutPage() {
 
         // Extract orderId - MUST match what Zeno sends to webhook
         // Zeno API returns 'order_id' (snake_case) which is what webhook will send
-        orderId = mobileResponse.data?.order_id || mobileResponse.data?.orderId
+        const extractedOrderId =
+          mobileResponse.data?.order_id ||
+          mobileResponse.data?.orderId ||
+          mobileResponse.data?.transactionId ||
+          mobileResponse.data?.checkoutRequestId
 
-        if (!orderId) {
-          // If no orderId, try fallback fields that Zeno might use
-          orderId = mobileResponse.data?.transactionId || mobileResponse.data?.checkoutRequestId
-        }
-
-        if (!orderId) {
+        if (!extractedOrderId) {
           console.error('[Checkout] ❌ CRITICAL: No order_id received from Zeno API')
           console.error('[Checkout] Full response:', JSON.stringify(mobileResponse, null, 2))
           throw new Error(
@@ -573,6 +572,8 @@ export default function CheckoutPage() {
               (mobileResponse.data?.checkoutRequestId || 'N/A')
           )
         }
+
+        orderId = extractedOrderId
 
         console.log('[Checkout] ✅ OrderId from Zeno API (order_id field):', orderId)
         console.log('[Checkout] 🔔 Webhook MUST send orderId:', orderId)
