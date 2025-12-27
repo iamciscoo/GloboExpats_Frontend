@@ -18,6 +18,8 @@ import {
   Package,
   Palette,
   Sprout,
+  LayoutGrid,
+  MoreHorizontal,
 } from 'lucide-react'
 import type {
   CategoryWithRequirements,
@@ -219,6 +221,20 @@ export const CATEGORIES = [
     count: '321 items',
     slug: 'art-crafts',
   },
+  {
+    id: 12,
+    name: 'Board Games',
+    icon: LayoutGrid,
+    count: '245 items',
+    slug: 'board-games',
+  },
+  {
+    id: 13,
+    name: 'Other',
+    icon: MoreHorizontal,
+    count: '156 items',
+    slug: 'other',
+  },
 ] as const
 
 /**
@@ -280,6 +296,16 @@ export const SELLING_CATEGORIES: CategoryWithRequirements[] = [
   {
     value: 'art-crafts',
     label: 'Art & Crafts',
+    imageRequirements: ['main', 'detail'],
+  },
+  {
+    value: 'board-games',
+    label: 'Board Games',
+    imageRequirements: ['main'],
+  },
+  {
+    value: 'other',
+    label: 'Other',
     imageRequirements: ['main', 'detail'],
   },
 ]

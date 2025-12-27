@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
         try {
           const ping = `data: ${JSON.stringify({ type: 'ping' })}\n\n`
           controller.enqueue(new TextEncoder().encode(ping))
-        } catch (error) {
+        } catch {
           console.log(`[SSE] Keep-alive failed for order: ${orderId}, cleaning up`)
           clearInterval(keepAlive)
           unregisterConnection(orderId)
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
         unregisterConnection(orderId)
         try {
           controller.close()
-        } catch (e) {
+        } catch {
           // Already closed
         }
       })

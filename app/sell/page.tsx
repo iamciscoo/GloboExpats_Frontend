@@ -851,7 +851,7 @@ function Step1Content({
             <SelectTrigger className="h-12 sm:h-14 border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 bg-white">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
-            <SelectContent className="max-h-[400px]">
+            <SelectContent className="max-h-[600px]">
               {backendCategories.length > 0 ? (
                 (() => {
                   // Debug: Check for duplicates
@@ -871,13 +871,22 @@ function Step1Content({
                     )
                   }
 
-                  return uniqueCategories
-                    .filter((cat) => cat.categoryName.toLowerCase() !== 'jobs')
-                    .map((cat) => (
-                      <SelectItem key={cat.categoryId} value={cat.categoryName}>
-                        {cat.categoryName}
-                      </SelectItem>
-                    ))
+                  const displayCategories = uniqueCategories.filter(
+                    (cat) => cat.categoryName.toLowerCase() !== 'jobs'
+                  )
+
+                  // Sort alphabetically, then move "Other" to the bottom
+                  const sortedCategories = [...displayCategories].sort((a, b) => {
+                    if (a.categoryName === 'Other') return 1
+                    if (b.categoryName === 'Other') return -1
+                    return a.categoryName.localeCompare(b.categoryName)
+                  })
+
+                  return sortedCategories.map((cat) => (
+                    <SelectItem key={cat.categoryId} value={cat.categoryName}>
+                      {cat.categoryName}
+                    </SelectItem>
+                  ))
                 })()
               ) : (
                 <SelectItem disabled value="loading">

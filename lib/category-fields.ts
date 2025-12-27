@@ -667,6 +667,47 @@ export const CATEGORY_FIELDS: CategoryFieldGroup[] = [
       },
     ],
   },
+  {
+    categoryName: 'Other',
+    fields: [
+      {
+        key: 'itemType',
+        label: 'Item Type',
+        type: 'select',
+        required: true,
+        options: [
+          { value: 'animals', label: 'Animals' },
+          { value: 'artifacts', label: 'Artifacts & Antiques' },
+          { value: 'instruments', label: 'Musical Instruments' },
+          { value: 'collectibles', label: 'Collectibles' },
+          { value: 'equipment', label: 'Specialized Equipment' },
+          { value: 'other', label: 'Other/Miscellaneous' },
+        ],
+      },
+      {
+        key: 'specificDetail',
+        label: 'Specific Detail',
+        type: 'text',
+        placeholder: 'e.g., Breed of animal, Age of artifact, Brand of instrument',
+        required: true,
+        maxLength: 100,
+      },
+      {
+        key: 'originHistory',
+        label: 'Origin & History',
+        type: 'textarea',
+        placeholder: 'Tell us more about where it comes from or its history...',
+        maxLength: 200,
+      },
+      {
+        key: 'careRequirements',
+        label: 'Care & Requirements',
+        type: 'textarea',
+        placeholder: 'e.g., Feeding instructions, handling delicate items, special storage...',
+        maxLength: 200,
+      },
+    ],
+  },
 ]
 
 /**

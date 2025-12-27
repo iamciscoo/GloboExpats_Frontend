@@ -52,9 +52,9 @@
 }
 
 .tutorial-welcome-logo {
-  width: 56px;
-  height: 56px;
-  margin: 0 auto 6px;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 10px;
   object-fit: contain;
 }
 
@@ -345,4 +345,5 @@
 
 .driver-popover.tutorial-welcome-popover .driver-popover-description {
   margin-top: 0 !important;
+  white-space: normal !important;
 }

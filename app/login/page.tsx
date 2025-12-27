@@ -224,7 +224,7 @@ function LoginContent() {
         // Use the specific error message from the server
         toast({
           title: 'Oops! Something Happened',
-          description: `${error.message} Please retry! New here? Join the GloboExpat community by registering!`,
+          description: `${error.message} New here? Join the GloboExpat community by registering!`,
           variant: 'warning',
         })
       } else {

@@ -263,7 +263,7 @@ export default function VerificationPage() {
         <Card className="border border-[#E2E8F0] bg-white">
           <CardHeader className="bg-white border-b border-[#E2E8F0] p-6">
             <CardTitle className="text-xl font-semibold text-[#0F172A]">
-              Email Verification
+              Organization Email Verification
             </CardTitle>
           </CardHeader>
           <CardContent className="p-8">

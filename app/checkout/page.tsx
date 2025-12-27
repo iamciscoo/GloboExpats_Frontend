@@ -545,8 +545,11 @@ export default function CheckoutPage() {
           resultCode: mobileResponse.data?.resultCode,
         })
         console.log('[Checkout] Response root level:', {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           order_id: (mobileResponse as any).order_id,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           status: (mobileResponse as any).status,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           resultCode: (mobileResponse as any).resultCode,
         })
 
@@ -564,6 +567,7 @@ export default function CheckoutPage() {
         // Extract orderId - MUST match what Zeno sends to webhook
         // Zeno API returns fields at ROOT level, not nested under 'data'
         const extractedOrderId =
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (mobileResponse as any).order_id ||
           mobileResponse.data?.order_id ||
           mobileResponse.data?.orderId ||
@@ -575,6 +579,7 @@ export default function CheckoutPage() {
           console.error('[Checkout] Full response:', JSON.stringify(mobileResponse, null, 2))
           throw new Error(
             'Payment initiated but no order ID received. Please contact support with reference: ' +
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               ((mobileResponse as any).order_id || mobileResponse.data?.checkoutRequestId || 'N/A')
           )
         }
