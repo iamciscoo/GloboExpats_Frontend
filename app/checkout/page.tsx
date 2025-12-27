@@ -457,6 +457,14 @@ export default function CheckoutPage() {
     setIsProcessing(true)
     setOrderError(null)
 
+    // Notify user that processing has started
+    toast({
+      title: 'Processing Order',
+      description:
+        'You will receive a USSD push to complete payment. Please wait a minute as we send emails and set up your order...',
+      duration: 5000,
+    })
+
     try {
       const isMobilePayment = mobilePaymentMethodIds.includes(selectedPayment)
       const isMeetupPayment = selectedPayment === 'meetup'
@@ -603,6 +611,35 @@ export default function CheckoutPage() {
             'Please check your phone and approve the STK push. Do not close this page.',
         })
 
+        // Construct sellers/contact info for Mobile Payment (mimicking Meet Seller structure)
+        const mobileSellersMap = new Map<
+          string,
+          { name: string; email: string; phone: string; address: string; orderId: string }
+        >()
+
+        checkoutItems.forEach((item) => {
+          const sellerName = item.expatName || 'Verified Seller'
+          if (!mobileSellersMap.has(sellerName)) {
+            // Use fetched sellerDetails if it matches this seller, otherwise fall back to generic/item data
+            // Note: In a real app we would fetch details for all sellers. Here we do best-effort mapping.
+            const details =
+              sellerDetails &&
+              (sellerDetails.name === sellerName || sellerDetails.id === item.expatId)
+                ? sellerDetails
+                : null
+
+            mobileSellersMap.set(sellerName, {
+              name: sellerName,
+              email: details?.email || 'Not Listed',
+              phone: details?.phone || 'Not Listed',
+              address: details?.phone ? 'Arusha, Tanzania' : item.location || 'Not Listed',
+              orderId: `${orderId}-${mobileSellersMap.size + 1}`,
+            })
+          }
+        })
+
+        const mobileSellers = Array.from(mobileSellersMap.values())
+
         // Store complete order data for success page
         const orderData = {
           id: orderId,
@@ -622,6 +659,7 @@ export default function CheckoutPage() {
             seller: item.expatName || 'Unknown Seller',
             sellerVerified: item.verified || false,
           })),
+          sellers: mobileSellers,
           shippingAddress: {
             name: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
             address: shippingAddress.address,
@@ -725,7 +763,7 @@ export default function CheckoutPage() {
         }
 
         // Fallback: Timeout after 3 minutes if no SSE notification received
-        const timeout = setTimeout(() => {
+        setTimeout(() => {
           if (!paymentConfirmed) {
             console.log('[Checkout] ⏱️ Timeout reached, no SSE notification received')
             eventSource.close()
@@ -743,11 +781,9 @@ export default function CheckoutPage() {
           }
         }, 180000) // 3 minutes
 
-        // Cleanup
-        return () => {
-          clearTimeout(timeout)
-          eventSource.close()
-        }
+        // Return here to prevent falling through to the default synchronous success flow
+        // This ensures the user sees the 'Waiting for payment' state and SSE can do its job
+        return
       } else if (isMeetupPayment) {
         // Handle Meet in Person checkout via meet-seller API
         checkoutItemsPayload = prepareCheckoutItems()
