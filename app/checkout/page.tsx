@@ -256,21 +256,20 @@ export default function CheckoutPage() {
   useEffect(() => {
     const fetchSellerDetails = async () => {
       if (shippingMethod === 'pickup' && checkoutItems.length > 0) {
-        // For simulation: Use mock seller data instead of API call
+        // Use real API call to fetch seller details
         const sellerId = checkoutItems[0].expatId
         if (sellerId) {
           setLoadingSeller(true)
           try {
-            // Simulate delay
-            await new Promise((resolve) => setTimeout(resolve, 500))
+            const profile = await api.users.getSellerProfile(Number(sellerId))
 
-            // Mock seller data - realistic East African details
             setSellerDetails({
               id: sellerId,
-              name: 'John Mwangi',
-              email: 'john.mwangi@globoexpats.com',
-              phone: '+255 712 345 678',
-              verified: true,
+              name: `${profile.firstName} ${profile.lastName}`,
+              // Public profile might not have email/phone, defaults to undefined -> handled as "Not Listed" in UI
+              email: undefined,
+              phone: undefined,
+              verified: profile.verificationStatus === 'VERIFIED',
             })
           } catch (error) {
             console.error('Failed to fetch seller details:', error)

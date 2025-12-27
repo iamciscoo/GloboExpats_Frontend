@@ -1769,6 +1769,7 @@ export const api = {
   users: {
     get: (id: string) => apiClient.getUser(id),
     update: (id: string, data: Partial<Record<string, unknown>>) => apiClient.updateUser(id, data),
+    getSellerProfile: (sellerId: number) => apiClient.getSellerProfile(sellerId),
   },
 
   /** Authentication operations */
