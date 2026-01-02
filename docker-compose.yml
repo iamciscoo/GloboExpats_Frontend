@@ -1,5 +1,5 @@
 services:
-  robotics-lab:
+  globoexpats:
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,13 +11,13 @@ services:
         NEXT_PUBLIC_CDN_URL: ${NEXT_PUBLIC_CDN_URL}
         NEXT_PUBLIC_ENVIRONMENT: ${NEXT_PUBLIC_ENVIRONMENT}
         NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL}
-    container_name: globoexpats_frontend
+    container_name: frontend
     ports:
       - '3000:3000'
     restart: unless-stopped
     networks:
-      - globoexpats_frontend
+      - frontend
 
 networks:
-  globoexpats_frontend:
+  frontend:
     driver: bridge
