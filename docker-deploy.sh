@@ -63,11 +63,14 @@ show_help() {
     echo "  -h, --help           Show this help"
     echo ""
     echo "Environment Files:"
+    echo "  .env.dev     Development environment"
     echo "  .env.local   Local development environment"
-    echo "  .env.prod    Production environment"
+    echo "  .env.prod    Production environment (default)"
     echo ""
     echo "Examples:"
-    echo "  $0 deploy                      # Full deployment with .env.prod"
+    echo "  $0 deploy                      # Full deployment with .env.prod (default)"
+    echo "  $0 -e .env.dev deploy         # Full deployment with dev environment"
+    echo "  $0 -e .env.dev up             # Start with dev environment"
     echo "  $0 -e .env.local up           # Start with local environment"
     echo "  $0 logs                        # Show logs"
     echo "  $0 restart                     # Restart services"
@@ -228,6 +231,7 @@ main() {
             down_services
             ;;
         start)
+            check_env_file
             log "Starting services"
             docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" start
             ;;
@@ -235,6 +239,7 @@ main() {
             stop_services
             ;;
         restart)
+            check_env_file
             log "Restarting services"
             docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" restart
             ;;
@@ -248,6 +253,8 @@ main() {
             clean_up
             ;;
         deploy)
+            check_env_file
+            log "Starting full deployment with environment: $ENV_FILE"
             build_image
             start_services
             info "Deployment completed successfully!"
