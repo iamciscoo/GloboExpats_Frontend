@@ -45,7 +45,7 @@ show_help() {
     echo ""
     echo "Commands:"
     echo "  build         Build the Docker image using docker-compose"
-    echo "  up            Start services in detached mode"
+    echo "  up            Start services (uses existing image)"
     echo "  down          Stop and remove containers"
     echo "  start         Start existing services"
     echo "  stop          Stop services"
@@ -53,7 +53,7 @@ show_help() {
     echo "  logs          Show container logs"
     echo "  shell         Access container shell"
     echo "  clean         Remove containers, images, and volumes"
-    echo "  deploy        Full deployment (build + up)"
+    echo "  deploy        Full deployment (build + up - use for code changes)"
     echo "  status        Show container status"
     echo "  ps            List running services"
     echo ""
@@ -69,8 +69,8 @@ show_help() {
     echo ""
     echo "Examples:"
     echo "  $0 deploy                      # Full deployment with .env.prod (default)"
-    echo "  $0 -e .env.dev deploy         # Full deployment with dev environment"
-    echo "  $0 -e .env.dev up             # Start with dev environment"
+    echo "  $0 -e .env.dev deploy         # Rebuild & start with dev environment"
+    echo "  $0 -e .env.dev up             # Start (no rebuild) with dev environment"
     echo "  $0 -e .env.local up           # Start with local environment"
     echo "  $0 logs                        # Show logs"
     echo "  $0 restart                     # Restart services"
@@ -132,7 +132,7 @@ start_services() {
 stop_services() {
     log "Stopping services with docker-compose"
     
-    docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" stop || error "Failed to stop services"
+    docker compose -f "$COMPOSE_FILE" stop || error "Failed to stop services"
     
     log "Services stopped successfully"
 }
@@ -141,7 +141,7 @@ stop_services() {
 down_services() {
     log "Stopping and removing services with docker-compose"
     
-    docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" down || error "Failed to stop and remove services"
+    docker compose -f "$COMPOSE_FILE" down || error "Failed to stop and remove services"
     
     log "Services stopped and removed successfully"
 }
@@ -150,21 +150,21 @@ down_services() {
 show_logs() {
     log "Showing logs for services"
     
-    docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" logs -f
+    docker compose -f "$COMPOSE_FILE" logs -f
 }
 
 # Access shell
 access_shell() {
     log "Accessing shell for service: $SERVICE_NAME"
     
-    docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" exec "$SERVICE_NAME" /bin/sh || error "Failed to access shell"
+    docker compose -f "$COMPOSE_FILE" exec "$SERVICE_NAME" /bin/sh || error "Failed to access shell"
 }
 
 # Clean up
 clean_up() {
     log "Cleaning up containers, images, and volumes"
     
-    docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" down -v --rmi all || error "Failed to clean up"
+    docker compose -f "$COMPOSE_FILE" down -v --rmi all || error "Failed to clean up"
     
     log "Cleanup completed"
 }
@@ -173,7 +173,7 @@ clean_up() {
 show_status() {
     log "Service status:"
     
-    docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" ps
+    docker compose -f "$COMPOSE_FILE" ps
     
     echo ""
     info "Resource usage:"
@@ -184,7 +184,7 @@ show_status() {
 list_services() {
     log "Listing services:"
     
-    docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" ps
+    docker compose -f "$COMPOSE_FILE" ps
 }
 
 # Parse command line arguments
