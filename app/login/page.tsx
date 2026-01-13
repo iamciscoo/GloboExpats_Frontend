@@ -22,14 +22,12 @@ import type React from 'react'
 import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Mail, Lock, Eye, EyeOff, Loader2, Shield, UserCheck, Clock } from 'lucide-react'
+import { Mail, Eye, EyeOff, Loader2, Shield, UserCheck, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/providers/auth-provider'
 import { exchangeAuthCode } from '@/lib/auth-service'
 import { useToast } from '@/components/ui/use-toast'
@@ -43,11 +41,11 @@ function LoginContent() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
   const [socialLoading, setSocialLoading] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({})
   const [isFormValid, setIsFormValid] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showEmailForm, setShowEmailForm] = useState(false)
 
   // Handle OAuth callback
   useEffect(() => {
@@ -175,15 +173,6 @@ function LoginContent() {
     try {
       await login({ email, password })
 
-      // Store remember me preference
-      if (rememberMe) {
-        localStorage.setItem('rememberMe', 'true')
-        localStorage.setItem('savedEmail', email)
-      } else {
-        localStorage.removeItem('rememberMe')
-        localStorage.removeItem('savedEmail')
-      }
-
       toast({
         title: 'Login Successful!',
         description: 'Welcome back! Redirecting...',
@@ -271,260 +260,245 @@ function LoginContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-primary via-blue-800 to-cyan-600 overflow-y-auto">
-      <div className="flex items-center justify-center p-4 py-8 min-h-screen">
-        <div className="w-full max-w-7xl mx-auto grid lg:grid-cols-5 gap-6 lg:gap-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#1e40af] via-[#1e3a8a] to-[#1e40af] overflow-y-auto">
+      <div className="flex flex-col justify-center min-h-screen p-4 py-12 lg:py-20">
+        <div className="w-full max-w-6xl mx-auto grid lg:grid-cols-5 gap-8 items-center">
           {/* Left Panel - Hero Information */}
-          <div className="hidden lg:flex lg:col-span-2 flex-col justify-center text-white relative overflow-hidden">
-            <div className="relative z-10">
-              <div className="mb-8">
-                <Link href="/" className="inline-block">
-                  <div className="text-4xl font-bold font-display mb-4 hover:opacity-80 transition-opacity cursor-pointer">
-                    Globo<span className="text-brand-secondary">expats</span>
-                  </div>
-                </Link>
-                <p className="text-xl text-blue-100 leading-relaxed mb-6">
-                  Welcome back to your trusted expat marketplace
-                </p>
+          <div className="hidden lg:flex lg:col-span-2 flex-col justify-center text-white space-y-8">
+            <div>
+              <Link href="/" className="inline-block">
+                <div className="text-4xl font-bold font-display mb-4">
+                  <span className="text-white">Globo</span>
+                  <span className="text-brand-secondary">expats</span>
+                </div>
+              </Link>
+              <h1 className="text-3xl font-bold leading-tight mb-4">
+                Welcome back to the world&apos;s most trusted expat marketplace
+              </h1>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center flex-shrink-0 border border-white/20">
+                  <Shield className="w-6 h-6 text-blue-200" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">Secure Access</h3>
+                  <p className="text-blue-100 text-sm">
+                    Your account and data are protected with encryption
+                  </p>
+                </div>
               </div>
 
-              <div className="space-y-6 mb-8">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-brand-secondary/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Shield className="w-6 h-6 text-brand-secondary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">Secure Access</h3>
-                    <p className="text-blue-100 text-sm">
-                      Your account and data are protected with industry-standard encryption
-                    </p>
-                  </div>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center flex-shrink-0 border border-white/20">
+                  <UserCheck className="w-6 h-6 text-green-300" />
                 </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <UserCheck className="w-6 h-6 text-green-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">Trusted Community</h3>
-                    <p className="text-blue-100 text-sm">
-                      Connect with verified expats in East Africa
-                    </p>
-                  </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">Trusted Community</h3>
+                  <p className="text-blue-100 text-sm">
+                    Connect with verified expats in East Africa
+                  </p>
                 </div>
+              </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <Clock className="w-6 h-6 text-purple-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">Quick & Easy</h3>
-                    <p className="text-blue-100 text-sm">
-                      Sign in with Google or your email in seconds
-                    </p>
-                  </div>
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center flex-shrink-0 border border-white/20">
+                  <Clock className="w-6 h-6 text-purple-300" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">Quick & Easy</h3>
+                  <p className="text-blue-100 text-sm">
+                    Sign in with Google or your email in seconds
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Right Panel - Login Form */}
-          <div className="lg:col-span-3 flex items-center justify-center">
-            <Card className="w-full max-w-xl bg-white/95 backdrop-blur-sm shadow-2xl rounded-2xl border border-white/20">
-              <CardHeader className="text-center pb-4 pt-6">
-                <Link href="/" className="inline-block mx-auto mb-3 lg:hidden">
-                  <div className="text-2xl lg:text-3xl font-bold font-display text-brand-primary">
-                    Globo<span className="text-brand-secondary">expats</span>
-                  </div>
-                </Link>
-                <CardTitle className="text-xl lg:text-2xl font-bold text-neutral-800">
-                  Welcome Back
-                </CardTitle>
-                <CardDescription className="text-neutral-600 text-sm">
-                  Sign in to access your account.
+          <div className="lg:col-span-3 flex items-center justify-center w-full">
+            <Card className="w-full max-w-xl bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl border-0 overflow-hidden text-center">
+              <CardHeader className="text-center space-y-2 pb-6 pt-8">
+                <div className="lg:hidden mb-4">
+                  <Link href="/" className="inline-block">
+                    <div className="text-3xl font-bold font-display text-brand-primary">
+                      Globo<span className="text-brand-secondary">expats</span>
+                    </div>
+                  </Link>
+                </div>
+                <CardTitle className="text-3xl font-bold text-neutral-800">Sign In</CardTitle>
+                <CardDescription className="text-neutral-500 font-medium">
+                  Enter your email and password to access your account
                 </CardDescription>
               </CardHeader>
 
-              <CardContent className="px-6 pb-6 space-y-4">
-                {/* Social Authentication Options */}
-                <div className="space-y-2">
-                  <p className="text-center text-neutral-600 font-medium">Quick sign in with</p>
-                  <Button
-                    variant="outline"
-                    onClick={handleGoogleLogin}
-                    disabled={isSubmitting || socialLoading !== null}
-                    className="w-full h-14 text-lg border-2 hover:bg-neutral-50 transition-all duration-200 rounded-full"
-                  >
-                    {socialLoading === 'google' ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <div className="flex items-center justify-center gap-3">
-                        <svg className="w-5 h-5" viewBox="0 0 24 24">
-                          <path
-                            fill="#4285F4"
-                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                          />
-                          <path
-                            fill="#34A853"
-                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                          />
-                          <path
-                            fill="#FBBC05"
-                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                          />
-                          <path
-                            fill="#EA4335"
-                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                          />
-                        </svg>
-                        <span className="font-bold text-lg">Sign in with Google</span>
-                      </div>
-                    )}
-                  </Button>
-                </div>
+              <CardContent className="px-6 pb-10 space-y-6 text-left">
+                {/* Continue with Google Button */}
+                <Button
+                  variant="outline"
+                  onClick={handleGoogleLogin}
+                  disabled={isSubmitting || socialLoading !== null}
+                  className="w-full h-14 text-base border-2 border-neutral-300 hover:bg-neutral-50 transition-all duration-300 rounded-full font-semibold group translate-y-0 active:translate-y-px"
+                >
+                  {socialLoading === 'google' ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <div className="flex items-center justify-center gap-3">
+                      <svg
+                        className="w-5 h-5 transition-transform group-hover:scale-110"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          fill="#4285F4"
+                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                        />
+                        <path
+                          fill="#34A853"
+                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                        />
+                        <path
+                          fill="#FBBC05"
+                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                        />
+                        <path
+                          fill="#EA4335"
+                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                        />
+                      </svg>
+                      <span>Continue with Google</span>
+                    </div>
+                  )}
+                </Button>
 
-                {/* Divider */}
+                {/* OR Divider */}
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
                     <Separator className="w-full" />
                   </div>
-                  <div className="relative flex justify-center text-sm uppercase">
-                    <span className="bg-white px-4 text-neutral-500 font-medium">
-                      Or sign in with email
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-4 text-neutral-400 font-bold tracking-widest">
+                      or sign in with email
                     </span>
                   </div>
                 </div>
 
-                {/* Traditional Login Form */}
-                <form onSubmit={handleSubmit} className="space-y-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-neutral-700 font-medium text-sm">
-                      Personal Email Address
-                    </Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                {/* Continue with Email Button - Always Visible */}
+                <Button
+                  variant="outline"
+                  onClick={() => setShowEmailForm(!showEmailForm)}
+                  disabled={isSubmitting || socialLoading !== null}
+                  className="w-full h-14 text-base border-2 border-neutral-300 hover:bg-neutral-50 transition-all duration-300 rounded-full font-medium translate-y-0 active:translate-y-px"
+                >
+                  <div className="flex items-center justify-center gap-3">
+                    <Mail className="w-5 h-5 text-neutral-600" />
+                    <span>Continue with Email</span>
+                  </div>
+                </Button>
+
+                {/* Email/Password Form - Smooth Accordion */}
+                <div
+                  className={`overflow-hidden p-1 -m-1 transition-all duration-300 ease-in-out ${
+                    showEmailForm ? 'max-h-[500px] opacity-100 mt-4' : 'max-h-0 opacity-0'
+                  }`}
+                >
+                  <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-neutral-700 font-semibold px-1">
+                        Email Address
+                      </Label>
                       <Input
                         id="email"
                         name="email"
                         type="email"
-                        placeholder="your.personal@email.com"
-                        autoComplete="email"
-                        className={`pl-10 h-10 text-sm border-neutral-300 focus:border-brand-secondary focus:ring-brand-secondary/50 ${
-                          fieldErrors.email ? 'border-red-500 focus:border-red-500' : ''
+                        placeholder="your.email@example.com"
+                        className={`h-12 rounded-xl bg-neutral-50 border-neutral-100 focus:bg-white focus:ring-brand-primary/20 focus-visible:ring-offset-0 ring-offset-0 ${
+                          fieldErrors.email ? 'border-red-500' : ''
                         }`}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         disabled={isLoading || socialLoading !== null}
+                        required
                       />
+                      {fieldErrors.email && (
+                        <p className="text-xs text-red-500 mt-1 px-1">{fieldErrors.email}</p>
+                      )}
                     </div>
-                    {fieldErrors.email && (
-                      <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>
-                    )}
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="text-neutral-700 font-medium text-sm">
-                      Password
-                    </Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                      <Input
-                        id="password"
-                        name="password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Enter your password"
-                        autoComplete="current-password"
-                        className={`pl-10 pr-10 h-10 text-sm border-neutral-300 focus:border-brand-secondary focus:ring-brand-secondary/50 ${
-                          fieldErrors.password ? 'border-red-500 focus:border-red-500' : ''
-                        }`}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        disabled={isLoading || socialLoading !== null}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
-                        disabled={isLoading || socialLoading !== null}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </button>
-                    </div>
-                    {fieldErrors.password && (
-                      <p className="text-xs text-red-500 mt-1">{fieldErrors.password}</p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center justify-between pt-1">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="remember"
-                        checked={rememberMe}
-                        onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                        disabled={isLoading || socialLoading !== null}
-                      />
-                      <Label htmlFor="remember" className="text-xs text-neutral-600 cursor-pointer">
-                        Remember me
+                    <div className="space-y-2">
+                      <Label htmlFor="password" className="text-neutral-700 font-semibold px-1">
+                        Password
                       </Label>
-                    </div>
-                    <Link
-                      href="/reset-password"
-                      className="text-xs font-medium text-brand-primary hover:text-brand-secondary hover:underline"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className={`w-full h-11 text-sm font-bold transition-all duration-200 ${
-                      isFormValid && !isLoading
-                        ? 'bg-brand-primary hover:bg-brand-primary/90 transform hover:scale-105'
-                        : 'bg-neutral-400'
-                    }`}
-                    disabled={!isFormValid || isSubmitting || socialLoading !== null}
-                  >
-                    {isSubmitting ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Logging In...
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          name="password"
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="••••••••••••••••"
+                          className={`h-12 rounded-xl pr-10 bg-neutral-50 border-neutral-100 focus:bg-white focus:ring-brand-primary/20 focus-visible:ring-offset-0 ring-offset-0 ${
+                            fieldErrors.password ? 'border-red-500' : ''
+                          }`}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          disabled={isLoading || socialLoading !== null}
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition-colors"
+                          disabled={isLoading || socialLoading !== null}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-5 w-5" />
+                          ) : (
+                            <Eye className="h-5 w-5" />
+                          )}
+                        </button>
                       </div>
-                    ) : (
-                      'Log In'
-                    )}
-                  </Button>
-
-                  {/* Form validation status */}
-                  {!isFormValid && (email || password) && (
-                    <div className="text-center">
-                      <Badge variant="outline" className="text-xs text-neutral-500">
-                        Please complete all fields correctly
-                      </Badge>
+                      {fieldErrors.password && (
+                        <p className="text-xs text-red-500 mt-1 px-1">{fieldErrors.password}</p>
+                      )}
                     </div>
-                  )}
-                </form>
 
-                {/* Registration Link - Desktop Only (mobile shows in left panel) */}
-                {/* Registration Link - Visible on all devices now */}
-                <div className="text-center pt-6 border-t border-neutral-200">
-                  <h4 className="text-lg font-semibold text-neutral-800 mb-2">
-                    New to GloboExpat?
-                  </h4>
-                  <p className="text-sm text-neutral-600 mb-4">
-                    Join our growing community of verified expat professionals
-                  </p>
-                  <Link href="/register">
                     <Button
-                      variant="outline"
-                      className="w-full h-12 rounded-full border border-brand-primary text-brand-primary hover:bg-brand-primary/5 font-bold text-base transition-all duration-200 hover:scale-[1.02]"
+                      type="submit"
+                      disabled={!isFormValid || isSubmitting || socialLoading !== null}
+                      className={`w-full h-12 rounded-full font-bold text-lg shadow-lg shadow-brand-primary/20 transition-all duration-300 ${
+                        isFormValid && !isSubmitting
+                          ? 'bg-neutral-800 hover:bg-neutral-900 translate-y-0 hover:-translate-y-0.5 active:translate-y-0'
+                          : 'bg-neutral-300 pointer-events-none'
+                      }`}
                     >
-                      Create Account
+                      {isSubmitting ? (
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          Signing In...
+                        </div>
+                      ) : (
+                        'Sign In'
+                      )}
                     </Button>
-                  </Link>
+
+                    <div className="text-center pt-2">
+                      <Link
+                        href="/reset-password"
+                        className="text-sm font-bold text-brand-primary hover:underline hover:opacity-80 transition-opacity"
+                      >
+                        Forgot your password?
+                      </Link>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Don't have an account link */}
+                <div className="text-center pt-4">
+                  <p className="text-neutral-500">
+                    Don&apos;t have an account?{' '}
+                    <Link href="/register" className="text-brand-primary font-bold hover:underline">
+                      Sign up
+                    </Link>
+                  </p>
                 </div>
               </CardContent>
             </Card>
