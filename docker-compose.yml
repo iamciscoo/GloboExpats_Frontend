@@ -21,3 +21,4 @@ services:
 networks:
   frontend:
     driver: bridge
+    name: frontend
