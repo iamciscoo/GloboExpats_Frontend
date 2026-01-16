@@ -2,7 +2,7 @@ export const runtime = 'nodejs'
 
 // Server-side backend URL (NOT the public one - this runs server-side in Next.js)
 // Use process.env.BACKEND_URL for server-side calls to avoid CORS
-const BACKEND_URL = process.env.BACKEND_URL || 'http://10.123.22.21:8081'
+const BACKEND_URL = process.env.BACKEND_URL || 'https://api.globoexpats.com'
 
 export async function POST(req: Request) {
   try {

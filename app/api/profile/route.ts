@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 
 export const runtime = 'nodejs'
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://10.123.22.21:8081'
+const BACKEND_URL = process.env.BACKEND_URL || 'https://api.globoexpats.com'
 
 /**
  * Proxy endpoint for updating user profile

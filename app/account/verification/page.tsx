@@ -4,13 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckCircle2, Mail, AlertTriangle } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+// Select imports removed - role selection no longer needed
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -32,8 +26,7 @@ export default function VerificationPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [organizationEmail, setOrganizationEmail] = useState('')
-  const [userRole, setUserRole] = useState<'BUYER' | 'SELLER'>('BUYER')
-  const [, setOtpSent] = useState(false)
+  const [otpSent, setOtpSent] = useState(false)
   const [otp, setOtp] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -73,7 +66,7 @@ export default function VerificationPage() {
     setError('')
     setSuccess('')
     try {
-      await verifyOrganizationEmail(organizationEmail, otp, userRole)
+      await verifyOrganizationEmail(organizationEmail, otp, 'BUYER')
       setSuccess('Email verified successfully')
       setOtpSent(false)
       setOtp('')
@@ -279,9 +272,9 @@ export default function VerificationPage() {
               <Alert className="mb-6 bg-[#F8FAFB] border-[#E2E8F0]">
                 <Mail className="h-4 w-4 text-[#64748B]" />
                 <AlertDescription className="text-[#64748B] text-sm space-y-2">
-                  <p>Please verify your work email to unlock buying and selling features.</p>
+                  <p>Please verify with your work email to unlock buying and selling features.</p>
                   <p className="font-bold text-blue-600 bg-blue-50 p-2 rounded border border-blue-200">
-                    Tip: Be sure to check your SPAM or JUNK folder - the verification email might
+                    Tip: Be sure to check your JUNK or SPAM folder - the verification email might
                     end up there!
                   </p>
                 </AlertDescription>
@@ -321,26 +314,6 @@ export default function VerificationPage() {
                       Use your company or organization email (not Gmail, Yahoo, Outlook, etc.)
                     </p>
                   )}
-                </div>
-
-                {/* Role Selection */}
-                <div>
-                  <Label className="text-sm font-medium text-[#0F172A]">
-                    I want to primarily be a
-                  </Label>
-                  <Select
-                    value={userRole}
-                    onValueChange={(value: 'BUYER' | 'SELLER') => setUserRole(value)}
-                    disabled={isSubmitting}
-                  >
-                    <SelectTrigger className="mt-1 h-11 border border-[#E2E8F0] focus:border-[#1E3A8A]">
-                      <SelectValue placeholder="Select your role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="BUYER">Buyer</SelectItem>
-                      <SelectItem value="SELLER">Seller</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
 
                 {/* Step 1: Send OTP */}
@@ -385,46 +358,48 @@ export default function VerificationPage() {
                   </Alert>
                 )}
 
-                {/* Step 2: Enter OTP */}
-                <div>
-                  <Label htmlFor="otp" className="text-sm font-medium text-[#0F172A]">
-                    Step 2: Enter Verification Code
-                  </Label>
-                  <div className="mt-2 flex gap-3">
-                    <Input
-                      id="otp"
-                      type="text"
-                      placeholder="000000"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                      disabled={isSubmitting}
-                      maxLength={6}
-                      className="h-11 text-xl tracking-widest text-center font-mono border border-[#E2E8F0] focus:border-[#1E3A8A]"
-                    />
-                    <Button
-                      onClick={handleVerifyOTP}
-                      disabled={isSubmitting || otp.length !== 6}
-                      size="lg"
-                      className="h-11 px-8 bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-white whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed"
-                    >
-                      {isSubmitting ? (
-                        <span className="flex items-center gap-2">
-                          Verifying
-                          <span className="flex gap-1">
-                            <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                            <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                            <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></span>
+                {/* Step 2: Enter OTP - Only show after code is sent */}
+                {otpSent && (
+                  <div>
+                    <Label htmlFor="otp" className="text-sm font-medium text-[#0F172A]">
+                      Step 2: Enter Verification Code
+                    </Label>
+                    <div className="mt-2 flex gap-3">
+                      <Input
+                        id="otp"
+                        type="text"
+                        placeholder="000000"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                        disabled={isSubmitting}
+                        maxLength={6}
+                        className="h-11 text-xl tracking-widest text-center font-mono border border-[#E2E8F0] focus:border-[#1E3A8A]"
+                      />
+                      <Button
+                        onClick={handleVerifyOTP}
+                        disabled={isSubmitting || otp.length !== 6}
+                        size="lg"
+                        className="h-11 px-8 bg-[#1E3A8A] hover:bg-[#1E3A8A]/90 text-white whitespace-nowrap disabled:opacity-70 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? (
+                          <span className="flex items-center gap-2">
+                            Verifying
+                            <span className="flex gap-1">
+                              <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                              <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                              <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></span>
+                            </span>
                           </span>
-                        </span>
-                      ) : (
-                        'Verify'
-                      )}
-                    </Button>
+                        ) : (
+                          'Verify'
+                        )}
+                      </Button>
+                    </div>
+                    <p className="mt-2 text-xs text-[#64748B]">
+                      Enter the 6-digit code from your email
+                    </p>
                   </div>
-                  <p className="mt-2 text-xs text-[#64748B]">
-                    Enter the 6-digit code from your email
-                  </p>
-                </div>
+                )}
               </div>
             )}
 

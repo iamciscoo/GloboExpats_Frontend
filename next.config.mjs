@@ -26,7 +26,7 @@ const resolvedAssetPrefix = (() => {
     // Absolute URL is OK (e.g., https://cdn.example.com)
     const u = new URL(p)
     if (u.protocol === 'http:' || u.protocol === 'https:') return p.replace(/\/$/, '')
-  } catch {}
+  } catch { }
   // If a subpath is intended (e.g., /frontend), prefer basePath instead of assetPrefix
   return ''
 })()
@@ -102,10 +102,11 @@ const nextConfig = {
       { protocol: 'http', hostname: '0.0.0.0' },
       { protocol: 'https', hostname: 'globoexpats.com' }, // Production domain
       { protocol: 'https', hostname: 'www.globoexpats.com' }, // Production domain with www
+      { protocol: 'https', hostname: 'api.globoexpats.com' }, // Production API domain
       { protocol: 'https', hostname: 'dev.globoexpats.com' }, // Development domain
-      { protocol: 'http', hostname: '10.123.22.21', port: '8081' }, // Backend API with port 8081
-      { protocol: 'http', hostname: '10.123.22.21', port: '3000' }, // Backend image server port 3000
-      { protocol: 'http', hostname: '10.123.22.21' }, // Backend API without port
+      { protocol: 'http', hostname: '10.123.22.21', port: '8081' }, // Backend API with port 8081 (dev)
+      { protocol: 'http', hostname: '10.123.22.21', port: '3000' }, // Backend image server port 3000 (dev)
+      { protocol: 'http', hostname: '10.123.22.21' }, // Backend API without port (dev)
     ],
     // Optimize image formats - WebP for best compression, AVIF for even better quality
     formats: ['image/webp', 'image/avif'],
@@ -138,7 +139,7 @@ const nextConfig = {
   // Environment variables accessible to the frontend
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || '',
-    NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || 'ws://10.123.22.21:8081/ws',
+    NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL || 'wss://api.globoexpats.com/ws',
     NEXT_PUBLIC_CDN_URL: process.env.NEXT_PUBLIC_CDN_URL || '',
     NEXT_PUBLIC_ENVIRONMENT: process.env.NODE_ENV || 'development',
   },
