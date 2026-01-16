@@ -232,8 +232,8 @@ export default function RegisterPage() {
 
           {/* Right Panel - Registration Form */}
           <div className="lg:col-span-3 flex items-center justify-center w-full">
-            <Card className="w-full max-w-xl bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl border-0 overflow-hidden">
-              <CardHeader className="text-center space-y-1 pb-3 pt-5">
+            <Card className="w-full max-w-xl bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl border-0 overflow-hidden text-center">
+              <CardHeader className="text-center space-y-2 pb-6 pt-8">
                 <div className="lg:hidden mb-4">
                   <Link href="/" className="inline-block">
                     <div className="text-3xl font-bold font-display text-brand-primary">
@@ -241,15 +241,15 @@ export default function RegisterPage() {
                     </div>
                   </Link>
                 </div>
-                <CardTitle className="text-2xl font-bold text-neutral-800">
+                <CardTitle className="text-3xl font-bold text-neutral-800">
                   Create Your Account
                 </CardTitle>
-                <p className="text-neutral-500 font-medium text-sm">
+                <p className="text-neutral-500 font-medium">
                   Join our global community of professionals
                 </p>
               </CardHeader>
 
-              <CardContent className="px-6 pb-6 space-y-3">
+              <CardContent className="px-6 pb-10 space-y-6 text-left">
                 {error && (
                   <Alert variant="destructive" className="rounded-xl border-red-100 bg-red-50/50">
                     <AlertCircle className="h-4 w-4" />
@@ -294,15 +294,9 @@ export default function RegisterPage() {
                   )}
                 </Button>
 
+                {/* Divider */}
                 <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <Separator />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-4 text-neutral-400 font-bold tracking-widest">
-                      or register with email
-                    </span>
-                  </div>
+                  <Separator className="w-full" />
                 </div>
 
                 {/* Email Registration Button - Always Visible */}
@@ -314,7 +308,7 @@ export default function RegisterPage() {
                 >
                   <div className="flex items-center justify-center gap-3">
                     <Mail className="w-5 h-5 text-neutral-600" />
-                    <span>Register with Email</span>
+                    <span>Sign up with Email</span>
                   </div>
                 </Button>
 
@@ -472,8 +466,8 @@ export default function RegisterPage() {
                   </form>
                 </div>
 
-                <div className="text-center pt-2">
-                  <p className="text-neutral-500 text-sm">
+                <div className="text-center pt-4">
+                  <p className="text-neutral-500">
                     Already have an account?{' '}
                     <Link href="/login" className="text-brand-primary font-bold hover:underline">
                       Sign In

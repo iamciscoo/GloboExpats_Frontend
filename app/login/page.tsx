@@ -327,7 +327,9 @@ function LoginContent() {
                     </div>
                   </Link>
                 </div>
-                <CardTitle className="text-3xl font-bold text-neutral-800">Sign In</CardTitle>
+                <CardTitle className="text-3xl font-bold text-neutral-800">
+                  Login into your account
+                </CardTitle>
                 <CardDescription className="text-neutral-500 font-medium">
                   Enter your email and password to access your account
                 </CardDescription>
@@ -366,21 +368,14 @@ function LoginContent() {
                           d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                         />
                       </svg>
-                      <span>Continue with Google</span>
+                      <span>Login with Google</span>
                     </div>
                   )}
                 </Button>
 
-                {/* OR Divider */}
+                {/* Divider */}
                 <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <Separator className="w-full" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-4 text-neutral-400 font-bold tracking-widest">
-                      or sign in with email
-                    </span>
-                  </div>
+                  <Separator className="w-full" />
                 </div>
 
                 {/* Continue with Email Button - Always Visible */}
@@ -392,7 +387,7 @@ function LoginContent() {
                 >
                   <div className="flex items-center justify-center gap-3">
                     <Mail className="w-5 h-5 text-neutral-600" />
-                    <span>Continue with Email</span>
+                    <span>Login with Email</span>
                   </div>
                 </Button>
 
