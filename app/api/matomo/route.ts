@@ -8,7 +8,7 @@ const MATOMO_SITE_ID = process.env.MATOMO_SITE_ID || '1' // Your site ID
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    
+
     // Get parameters from query string
     const method = searchParams.get('method') || 'VisitsSummary.get'
     const period = searchParams.get('period') || 'day'
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     apiUrl.searchParams.append('period', period)
     apiUrl.searchParams.append('date', date)
     apiUrl.searchParams.append('format', 'JSON')
-    
+
     if (MATOMO_TOKEN) {
       apiUrl.searchParams.append('token_auth', MATOMO_TOKEN)
     } else {
@@ -54,16 +54,19 @@ export async function GET(request: NextRequest) {
     })
 
     const responseText = await response.text()
-    
+
     if (!response.ok) {
       console.error('[MATOMO API] Error response:', {
         status: response.status,
         statusText: response.statusText,
         body: responseText.substring(0, 500),
       })
-      
+
       return NextResponse.json(
-        { error: `Matomo API returned ${response.status}: ${response.statusText}`, details: responseText },
+        {
+          error: `Matomo API returned ${response.status}: ${response.statusText}`,
+          details: responseText,
+        },
         { status: response.status }
       )
     }
@@ -88,7 +91,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('[MATOMO API] Catch block error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch analytics data', details: error instanceof Error ? error.message : String(error) },
+      {
+        error: 'Failed to fetch analytics data',
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     )
   }

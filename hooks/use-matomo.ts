@@ -15,6 +15,7 @@ interface UseMatomoAnalyticsOptions {
   period?: string
   date?: string
   idSite?: string
+  [key: string]: any
 }
 
 export function useMatomo(options: UseMatomoAnalyticsOptions = {}) {
@@ -34,12 +35,12 @@ export function useMatomo(options: UseMatomoAnalyticsOptions = {}) {
       setLoading(true)
       setError(null)
 
-      const params = new URLSearchParams({
-        method,
-        period,
-        date,
-        idSite,
-      })
+      const params = new URLSearchParams()
+      for (const [key, value] of Object.entries(options)) {
+        if (value !== undefined) {
+          params.append(key, String(value))
+        }
+      }
 
       const response = await fetch(`/api/matomo?${params.toString()}`)
 
@@ -78,7 +79,7 @@ export function useMatomo(options: UseMatomoAnalyticsOptions = {}) {
 
   useEffect(() => {
     fetchAnalytics()
-  }, [method, period, date, idSite])
+  }, [JSON.stringify(options)])
 
   return {
     data,

@@ -25,21 +25,33 @@ export default function StatisticsPage() {
   }
 
   // Fetch main analytics data
-  const { data: visitsSummary, loading: loadingVisits, error: errorVisits } = useMatomo({
+  const {
+    data: visitsSummary,
+    loading: loadingVisits,
+    error: errorVisits,
+  } = useMatomo({
     method: 'VisitsSummary.get',
     period,
     date: getMatomoDate(dateRange),
   })
 
   // Fetch page URLs data
-  const { data: pageUrls, loading: loadingPages, error: errorPages } = useMatomo({
+  const {
+    data: pageUrls,
+    loading: loadingPages,
+    error: errorPages,
+  } = useMatomo({
     method: 'Actions.getPageUrls',
     period,
     date: getMatomoDate(dateRange),
   })
 
   // Fetch countries data
-  const { data: countries, loading: loadingCountries, error: errorCountries } = useMatomo({
+  const {
+    data: countries,
+    loading: loadingCountries,
+    error: errorCountries,
+  } = useMatomo({
     method: 'UserCountry.getCountry',
     period,
     date: getMatomoDate(dateRange),
@@ -115,11 +127,21 @@ export default function StatisticsPage() {
     date: getMatomoDate(dateRange),
   })
 
-  const isLoading = loadingVisits || loadingPages || loadingCountries ||
-    loadingDeviceTypes || loadingBrowsers || loadingOS ||
-    loadingLive || loadingRecent ||
-    loadingPageTitles || loadingEntryPages || loadingExitPages ||
-    loadingContinents || loadingCities || loadingLanguages
+  const isLoading =
+    loadingVisits ||
+    loadingPages ||
+    loadingCountries ||
+    loadingDeviceTypes ||
+    loadingBrowsers ||
+    loadingOS ||
+    loadingLive ||
+    loadingRecent ||
+    loadingPageTitles ||
+    loadingEntryPages ||
+    loadingExitPages ||
+    loadingContinents ||
+    loadingCities ||
+    loadingLanguages
 
   const hasError = errorVisits || errorPages || errorCountries
 
@@ -136,10 +158,14 @@ export default function StatisticsPage() {
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="period-select"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Period
               </label>
               <select
+                id="period-select"
                 value={period}
                 onChange={(e) => setPeriod(e.target.value as Period)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -152,10 +178,14 @@ export default function StatisticsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="date-range-select"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Date Range
               </label>
               <select
+                id="date-range-select"
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value as DateRange)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -476,7 +506,9 @@ export default function StatisticsPage() {
                     {countries && Array.isArray(countries) && countries.length > 0 && (
                       <div className="bg-white rounded-lg shadow">
                         <div className="px-6 py-4 border-b border-gray-200">
-                          <h2 className="text-lg font-semibold text-gray-900">Visitors by Country</h2>
+                          <h2 className="text-lg font-semibold text-gray-900">
+                            Visitors by Country
+                          </h2>
                         </div>
                         <div className="overflow-x-auto">
                           <table className="w-full">
@@ -512,7 +544,9 @@ export default function StatisticsPage() {
                                     <td className="px-6 py-4 text-sm text-gray-600">
                                       {country.nb_uniq_visitors?.toLocaleString()}
                                     </td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">{percentage}%</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600">
+                                      {percentage}%
+                                    </td>
                                   </tr>
                                 )
                               })}
@@ -528,7 +562,9 @@ export default function StatisticsPage() {
                       {continents && Array.isArray(continents) && continents.length > 0 && (
                         <div className="bg-white rounded-lg shadow">
                           <div className="px-6 py-4 border-b border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">Visitors by Continent</h3>
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              Visitors by Continent
+                            </h3>
                           </div>
                           <div className="p-6">
                             <ul className="space-y-3">
@@ -570,7 +606,9 @@ export default function StatisticsPage() {
                       {languages && Array.isArray(languages) && languages.length > 0 && (
                         <div className="bg-white rounded-lg shadow">
                           <div className="px-6 py-4 border-b border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">Browser Languages</h3>
+                            <h3 className="text-lg font-semibold text-gray-900">
+                              Browser Languages
+                            </h3>
                           </div>
                           <div className="p-6">
                             <ul className="space-y-3">
@@ -603,12 +641,17 @@ export default function StatisticsPage() {
                               <div key={index}>
                                 <div className="flex justify-between items-center mb-2">
                                   <span className="text-sm font-medium text-gray-900 capitalize">
-                                    {device.label === 'Desktop' ? '💻 Desktop' :
-                                     device.label === 'Smartphone' ? '📱 Mobile' :
-                                     device.label === 'Tablet' ? '📱 Tablet' :
-                                     device.label === 'Feature phone' ? '📱 Feature Phone' :
-                                     device.label === 'Phablet' ? '📱 Phablet' :
-                                     `📱 ${device.label}`}
+                                    {device.label === 'Desktop'
+                                      ? '💻 Desktop'
+                                      : device.label === 'Smartphone'
+                                        ? '📱 Mobile'
+                                        : device.label === 'Tablet'
+                                          ? '📱 Tablet'
+                                          : device.label === 'Feature phone'
+                                            ? '📱 Feature Phone'
+                                            : device.label === 'Phablet'
+                                              ? '📱 Phablet'
+                                              : `📱 ${device.label}`}
                                   </span>
                                   <span className="text-sm text-gray-600">
                                     {device.nb_visits?.toLocaleString()}
@@ -618,8 +661,20 @@ export default function StatisticsPage() {
                                   <div
                                     className="bg-blue-600 h-2 rounded-full"
                                     style={{
-                                      width: `${deviceTypes.filter((d: any) => d.nb_visits > 0).reduce((sum: number, d: any) => sum + d.nb_visits, 0) > 0 ?
-                                        (device.nb_visits / deviceTypes.filter((d: any) => d.nb_visits > 0).reduce((sum: number, d: any) => sum + d.nb_visits, 0)) * 100 : 0}%`,
+                                      width: `${
+                                        deviceTypes
+                                          .filter((d: any) => d.nb_visits > 0)
+                                          .reduce((sum: number, d: any) => sum + d.nb_visits, 0) > 0
+                                          ? (device.nb_visits /
+                                              deviceTypes
+                                                .filter((d: any) => d.nb_visits > 0)
+                                                .reduce(
+                                                  (sum: number, d: any) => sum + d.nb_visits,
+                                                  0
+                                                )) *
+                                            100
+                                          : 0
+                                      }%`,
                                     }}
                                   ></div>
                                 </div>
@@ -642,8 +697,11 @@ export default function StatisticsPage() {
                                     <div
                                       className="bg-green-600 h-2 rounded-full"
                                       style={{
-                                        width: `${browsers[0]?.nb_visits ?
-                                          (browser.nb_visits / browsers[0].nb_visits) * 100 : 0}%`,
+                                        width: `${
+                                          browsers[0]?.nb_visits
+                                            ? (browser.nb_visits / browsers[0].nb_visits) * 100
+                                            : 0
+                                        }%`,
                                       }}
                                     ></div>
                                   </div>
@@ -658,19 +716,25 @@ export default function StatisticsPage() {
                       )}
 
                       {/* Operating Systems */}
-                      {operatingSystems && Array.isArray(operatingSystems) && operatingSystems.length > 0 && (
-                        <div className="bg-white rounded-lg shadow p-6">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-4">Operating Systems</h3>
-                          <ul className="space-y-3">
-                            {operatingSystems.slice(0, 5).map((os: any, index: number) => (
-                              <li key={index} className="flex justify-between text-sm">
-                                <span className="text-gray-700">{os.label}</span>
-                                <span className="font-medium text-gray-900">{os.nb_visits?.toLocaleString()}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
+                      {operatingSystems &&
+                        Array.isArray(operatingSystems) &&
+                        operatingSystems.length > 0 && (
+                          <div className="bg-white rounded-lg shadow p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                              Operating Systems
+                            </h3>
+                            <ul className="space-y-3">
+                              {operatingSystems.slice(0, 5).map((os: any, index: number) => (
+                                <li key={index} className="flex justify-between text-sm">
+                                  <span className="text-gray-700">{os.label}</span>
+                                  <span className="font-medium text-gray-900">
+                                    {os.nb_visits?.toLocaleString()}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                     </div>
                   </div>
                 )}
@@ -689,8 +753,13 @@ export default function StatisticsPage() {
                             <ul className="space-y-3">
                               {pageTitles.slice(0, 5).map((page: any, index: number) => (
                                 <li key={index} className="flex justify-between items-center">
-                                  <span className="text-sm text-gray-700 truncate flex-1 mr-2" title={page.label}>
-                                    {page.label.length > 30 ? `${page.label.substring(0, 30)}...` : page.label}
+                                  <span
+                                    className="text-sm text-gray-700 truncate flex-1 mr-2"
+                                    title={page.label}
+                                  >
+                                    {page.label.length > 30
+                                      ? `${page.label.substring(0, 30)}...`
+                                      : page.label}
                                   </span>
                                   <span className="text-sm font-medium text-gray-900">
                                     {page.nb_visits?.toLocaleString()}
@@ -712,8 +781,13 @@ export default function StatisticsPage() {
                             <ul className="space-y-3">
                               {entryPages.slice(0, 5).map((page: any, index: number) => (
                                 <li key={index} className="flex justify-between items-center">
-                                  <span className="text-sm text-gray-700 truncate flex-1 mr-2" title={page.label}>
-                                    {page.label.length > 30 ? `${page.label.substring(0, 30)}...` : page.label}
+                                  <span
+                                    className="text-sm text-gray-700 truncate flex-1 mr-2"
+                                    title={page.label}
+                                  >
+                                    {page.label.length > 30
+                                      ? `${page.label.substring(0, 30)}...`
+                                      : page.label}
                                   </span>
                                   <span className="text-sm font-medium text-gray-900">
                                     {page.nb_visits?.toLocaleString()}
@@ -735,8 +809,13 @@ export default function StatisticsPage() {
                             <ul className="space-y-3">
                               {exitPages.slice(0, 5).map((page: any, index: number) => (
                                 <li key={index} className="flex justify-between items-center">
-                                  <span className="text-sm text-gray-700 truncate flex-1 mr-2" title={page.label}>
-                                    {page.label.length > 30 ? `${page.label.substring(0, 30)}...` : page.label}
+                                  <span
+                                    className="text-sm text-gray-700 truncate flex-1 mr-2"
+                                    title={page.label}
+                                  >
+                                    {page.label.length > 30
+                                      ? `${page.label.substring(0, 30)}...`
+                                      : page.label}
                                   </span>
                                   <span className="text-sm font-medium text-gray-900">
                                     {page.nb_visits?.toLocaleString()}
@@ -760,9 +839,13 @@ export default function StatisticsPage() {
                         <div className="bg-gradient-to-r from-green-400 to-green-600 rounded-lg shadow p-6 text-white">
                           <div className="flex items-center justify-between">
                             <div>
-                              <p className="text-green-100 text-sm font-medium">Live Visitors (Last 30 min)</p>
+                              <p className="text-green-100 text-sm font-medium">
+                                Live Visitors (Last 30 min)
+                              </p>
                               <p className="mt-2 text-4xl font-bold">{liveVisitors.visits || 0}</p>
-                              <p className="text-green-100 text-sm mt-1">Active visitors right now</p>
+                              <p className="text-green-100 text-sm mt-1">
+                                Active visitors right now
+                              </p>
                             </div>
                             <div className="flex items-center justify-center w-16 h-16">
                               <div className="relative w-12 h-12">
@@ -777,10 +860,15 @@ export default function StatisticsPage() {
                       {/* Recent Visits */}
                       {recentVisits && Array.isArray(recentVisits) && recentVisits.length > 0 && (
                         <div className="bg-white rounded-lg shadow p-6">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Visitor Activity</h3>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                            Recent Visitor Activity
+                          </h3>
                           <div className="space-y-3">
                             {recentVisits.slice(0, 5).map((visit: any, index: number) => (
-                              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div
+                                key={index}
+                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                              >
                                 <div className="flex items-center gap-3">
                                   <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                                     <span className="text-xs font-medium text-blue-600">
@@ -792,13 +880,19 @@ export default function StatisticsPage() {
                                       {visit.visitorId?.substring(0, 8) || 'Anonymous'}
                                     </p>
                                     <p className="text-xs text-gray-600">
-                                      {visit.lastActionDateTime ? new Date(visit.lastActionDateTime).toLocaleTimeString() : 'Unknown time'}
+                                      {visit.lastActionDateTime
+                                        ? new Date(visit.lastActionDateTime).toLocaleTimeString()
+                                        : 'Unknown time'}
                                     </p>
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <p className="text-sm font-medium text-gray-900">{visit.actions || 0} actions</p>
-                                  <p className="text-xs text-gray-600">{visit.visitDuration || 0}s</p>
+                                  <p className="text-sm font-medium text-gray-900">
+                                    {visit.actions || 0} actions
+                                  </p>
+                                  <p className="text-xs text-gray-600">
+                                    {visit.visitDuration || 0}s
+                                  </p>
                                 </div>
                               </div>
                             ))}
