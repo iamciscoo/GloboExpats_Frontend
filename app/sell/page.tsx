@@ -25,6 +25,7 @@ import { getStepTips, getCategoryTips, getStepName } from '@/lib/step-tips'
 import { useToast } from '@/components/ui/use-toast'
 import { CountryFlag } from '@/components/country-flag'
 import Image from 'next/image'
+import { ReviewStep } from '@/components/sell/review-step'
 
 interface FormData {
   images: File[]
@@ -60,7 +61,7 @@ const INITIAL_FORM_DATA: FormData = {
   categoryFields: {},
 }
 
-const STEP_TITLES = ['Basic Details', 'Photos & Description', 'Pricing & Publish']
+const STEP_TITLES = ['Basic Details', 'Photos & Description', 'Pricing', 'Review & Publish']
 
 export default function SellPage() {
   return (
@@ -268,7 +269,7 @@ function SellPageContent() {
   }
 
   const nextStep = () => {
-    if (validateStep(currentStep) && currentStep < 3) {
+    if (validateStep(currentStep) && currentStep < 4) {
       setCurrentStep(currentStep + 1)
       scrollToTop()
     }
@@ -277,6 +278,13 @@ function SellPageContent() {
   const prevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
+      scrollToTop()
+    }
+  }
+
+  const goToStep = (step: number) => {
+    if (step >= 1 && step <= 4) {
+      setCurrentStep(step)
       scrollToTop()
     }
   }
@@ -480,7 +488,7 @@ function SellPageContent() {
                 // Don't continue - stop on first failure to trigger rollback
                 throw new Error(
                   `Failed to upload batch ${batchNumber} of ${Math.ceil(remainingImages.length / batchSize)}. ` +
-                    `${batchError instanceof Error ? batchError.message : 'Unknown error'}`
+                  `${batchError instanceof Error ? batchError.message : 'Unknown error'}`
                 )
               }
             }
@@ -642,35 +650,32 @@ function SellPageContent() {
 
         {/* Step Indicator */}
         <div className="mb-10 sm:mb-12">
-          <div className="flex items-center justify-center max-w-3xl mx-auto px-4">
-            {[1, 2, 3].map((step, index) => (
+          <div className="flex items-center justify-center max-w-4xl mx-auto px-4">
+            {[1, 2, 3, 4].map((step, index) => (
               <div key={step} className="flex items-center flex-1">
                 <div className="flex flex-col items-center w-full">
                   <div
-                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold transition-all duration-300 ${
-                      step === currentStep
+                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold transition-all duration-300 ${step === currentStep
                         ? 'bg-[#1E3A8A] text-white shadow-md'
                         : step < currentStep
                           ? 'bg-[#1E3A8A] text-white'
                           : 'bg-[#F1F5F9] text-[#94A3B8] border-2 border-[#E2E8F0]'
-                    }`}
+                      }`}
                   >
                     {step}
                   </div>
                   <span
-                    className={`mt-2 text-xs sm:text-sm font-medium transition-all duration-300 text-center ${
-                      step <= currentStep ? 'text-[#0F172A]' : 'text-[#94A3B8]'
-                    }`}
+                    className={`mt-2 text-xs sm:text-sm font-medium transition-all duration-300 text-center ${step <= currentStep ? 'text-[#0F172A]' : 'text-[#94A3B8]'
+                      }`}
                   >
                     {STEP_TITLES[step - 1]}
                   </span>
                 </div>
-                {index < 2 && (
+                {index < 3 && (
                   <div className="flex-1 h-0.5 mx-2 sm:mx-4 mb-8">
                     <div
-                      className={`h-full transition-all duration-300 ${
-                        step < currentStep ? 'bg-[#1E3A8A]' : 'bg-[#E2E8F0]'
-                      }`}
+                      className={`h-full transition-all duration-300 ${step < currentStep ? 'bg-[#1E3A8A]' : 'bg-[#E2E8F0]'
+                        }`}
                     />
                   </div>
                 )}
@@ -689,6 +694,7 @@ function SellPageContent() {
               removeImage={removeImage}
               setMainImage={setMainImage}
               backendCategories={backendCategories}
+              onEditStep={goToStep}
             />
 
             <div className="flex flex-col sm:flex-row justify-between gap-4 mt-8 sm:mt-12">
@@ -700,7 +706,7 @@ function SellPageContent() {
               >
                 Previous
               </Button>
-              {currentStep < 3 ? (
+              {currentStep < 4 ? (
                 <Button
                   onClick={nextStep}
                   className="w-full sm:w-auto px-8 py-3 text-base bg-[#1E3A8A] hover:bg-[#1e3a8a]/90 text-white order-1 sm:order-2"
@@ -711,7 +717,7 @@ function SellPageContent() {
                 <Button
                   onClick={publishListing}
                   disabled={isPublishing}
-                  className="w-full sm:w-auto px-8 py-3 text-base bg-[#1E3A8A] hover:bg-[#1e3a8a]/90 text-white order-1 sm:order-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full sm:w-auto px-8 py-3 text-base bg-emerald-600 hover:bg-emerald-700 text-white order-1 sm:order-2 disabled:opacity-70 disabled:cursor-not-allowed shadow-lg"
                 >
                   {isPublishing ? (
                     <span className="flex items-center gap-2">
@@ -746,6 +752,7 @@ function StepContent({
   removeImage,
   setMainImage,
   backendCategories,
+  onEditStep,
 }: {
   currentStep: number
   formData: FormData
@@ -754,6 +761,7 @@ function StepContent({
   removeImage: (index: number) => void
   setMainImage: (imageUrl: string) => void
   backendCategories: Array<{ categoryId: number; categoryName: string }>
+  onEditStep: (step: number) => void
 }) {
   const stepConfig = {
     1: {
@@ -768,9 +776,24 @@ function StepContent({
       title: 'Pricing & Options',
       description: 'Set a competitive price and choose listing options.',
     },
+    4: {
+      title: 'Review & Publish',
+      description: 'Review your listing before publishing to the marketplace.',
+    },
   }
 
   const config = stepConfig[currentStep as keyof typeof stepConfig]
+
+  // Step 4 has a different layout - no card wrapper
+  if (currentStep === 4) {
+    return (
+      <ReviewStep
+        formData={formData}
+        backendCategories={backendCategories}
+        onEditStep={onEditStep}
+      />
+    )
+  }
 
   return (
     <Card className="shadow-lg border-2 border-[#E2E8F0] bg-white rounded-xl sm:rounded-2xl overflow-hidden">
@@ -1312,13 +1335,6 @@ function Step3Content({
           manufacturer warranty, seller guarantee)
         </p>
       </div>
-
-      <div className="bg-[#F8FAFB] border border-[#E2E8F0] rounded-lg p-6">
-        <h3 className="text-base font-semibold text-[#0F172A] mb-2">Review & Publish</h3>
-        <p className="text-sm text-[#475569]">
-          Your listing will be published immediately and visible to buyers on the marketplace.
-        </p>
-      </div>
     </>
   )
 }
@@ -1385,13 +1401,13 @@ function SellingSidebar({
               <div className="flex justify-between items-center">
                 <span className="text-xs text-[#64748B]">Progress</span>
                 <span className="text-xs font-semibold text-[#0F172A]">
-                  Step {currentStep} of 3
+                  Step {currentStep} of 4
                 </span>
               </div>
               <div className="w-full bg-[#F1F5F9] rounded-full h-1.5">
                 <div
                   className="bg-[#1E3A8A] h-1.5 rounded-full transition-all duration-300"
-                  style={{ width: `${(currentStep / 3) * 100}%` }}
+                  style={{ width: `${(currentStep / 4) * 100}%` }}
                 />
               </div>
             </div>
