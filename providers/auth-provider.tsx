@@ -107,8 +107,8 @@ interface AuthContextType extends AuthState {
     lastName: string
     password: string
     emailAddress: string
-    agreeToTerms: boolean
-    agreeToPrivacyPolicy: boolean
+    agreeToTerms?: boolean
+    agreeToPrivacyPolicy?: boolean
     phoneNumber?: string
   }) => Promise<void>
 
@@ -585,8 +585,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       lastName: string
       password: string
       emailAddress: string
-      agreeToTerms: boolean
-      agreeToPrivacyPolicy: boolean
+      agreeToTerms?: boolean
+      agreeToPrivacyPolicy?: boolean
       phoneNumber?: string
     }): Promise<void> => {
       setAuthState((prev) => ({ ...prev, isLoading: true, error: null }))

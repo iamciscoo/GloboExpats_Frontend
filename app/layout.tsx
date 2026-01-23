@@ -11,7 +11,6 @@ import { CurrencyProvider } from '@/providers/currency-provider'
 import { TutorialProvider } from '@/providers/tutorial-provider'
 import { ScrollToTop } from '@/components/scroll-to-top'
 import { PlatformTutorial } from '@/components/platform-tutorial'
-import { MatomoTagManager } from '@/components/matomo-tag-manager'
 import { WhatsAppButton } from '@/components/whatsapp-button'
 import { seoConfig } from '@/lib/seo-config'
 
@@ -135,7 +134,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
         />
       </head>
       <body className="font-sans antialiased min-h-screen bg-background">
-        <MatomoTagManager />
         <CurrencyProvider enableAutoRefresh>
           <AuthProvider>
             <CartProvider>

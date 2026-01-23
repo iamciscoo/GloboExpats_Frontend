@@ -4,7 +4,7 @@ export const runtime = 'nodejs'
 
 // Use BACKEND_URL (server-side) or fall back to NEXT_PUBLIC_BACKEND_URL
 const BACKEND_URL =
-  process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://10.123.22.21:8081'
+  process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://api.globoexpats.com'
 
 /**
  * Proxy endpoint for Google OAuth initiation

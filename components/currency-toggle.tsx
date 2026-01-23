@@ -150,7 +150,10 @@ export function CurrencyToggle({
   }
 
   return (
-    <div className={cn('inline-flex items-center gap-2', className)}>
+    <div
+      className={cn('inline-flex items-center gap-2', className)}
+      data-tutorial="currency-selector"
+    >
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button

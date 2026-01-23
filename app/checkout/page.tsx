@@ -534,6 +534,25 @@ export default function CheckoutPage() {
 
         const mobileResponse = await api.checkout.mobilePay(mobilePayload)
 
+        // Log the full response for debugging
+        console.log('[Checkout] Mobile payment response:', JSON.stringify(mobileResponse, null, 2))
+        console.log('[Checkout] Response data (nested):', {
+          order_id: mobileResponse.data?.order_id,
+          orderId: mobileResponse.data?.orderId,
+          transactionId: mobileResponse.data?.transactionId,
+          checkoutRequestId: mobileResponse.data?.checkoutRequestId,
+          status: mobileResponse.data?.status,
+          resultCode: mobileResponse.data?.resultCode,
+        })
+        console.log('[Checkout] Response root level:', {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          order_id: (mobileResponse as any).order_id,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          status: (mobileResponse as any).status,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          resultCode: (mobileResponse as any).resultCode,
+        })
+
         // Check if the response indicates a pending/in-progress payment request
         const isPendingPayment =
           mobileResponse.message?.toLowerCase().includes('in progress') ||
@@ -545,11 +564,31 @@ export default function CheckoutPage() {
           throw new Error(mobileResponse.message || 'Unable to initiate mobile payment.')
         }
 
-        orderId =
+        // Extract orderId - MUST match what Zeno sends to webhook
+        // Zeno API returns fields at ROOT level, not nested under 'data'
+        const extractedOrderId =
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (mobileResponse as any).order_id ||
+          mobileResponse.data?.order_id ||
           mobileResponse.data?.orderId ||
           mobileResponse.data?.transactionId ||
-          mobileResponse.data?.checkoutRequestId ||
-          `MP-${Date.now()}`
+          mobileResponse.data?.checkoutRequestId
+
+        if (!extractedOrderId) {
+          console.error('[Checkout] ❌ CRITICAL: No order_id received from Zeno API')
+          console.error('[Checkout] Full response:', JSON.stringify(mobileResponse, null, 2))
+          throw new Error(
+            'Payment initiated but no order ID received. Please contact support with reference: ' +
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ((mobileResponse as any).order_id || mobileResponse.data?.checkoutRequestId || 'N/A')
+          )
+        }
+
+        orderId = extractedOrderId
+
+        console.log('[Checkout] ✅ OrderId from Zeno API (order_id field):', orderId)
+        console.log('[Checkout] 🔔 Webhook MUST send orderId:', orderId)
+        console.log('[Checkout] ⚠️ SSE now listening for:', orderId)
 
         mobileReference =
           mobileResponse.data?.checkoutRequestId || mobileResponse.data?.transactionId
@@ -564,20 +603,51 @@ export default function CheckoutPage() {
             'Please check your phone and approve the STK push. Do not close this page.',
         })
 
-        // Store pending order info
-        const pendingOrderKey = `pending_order_${orderId}`
-        localStorage.setItem(
-          pendingOrderKey,
-          JSON.stringify({
-            orderId,
+        // Store complete order data for success page
+        const orderData = {
+          id: orderId,
+          status: 'pending',
+          paymentStatus: 'Pending',
+          date: new Date().toLocaleDateString(),
+          estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+          total: Number(checkoutSubtotal.toFixed(2)),
+          currency: selectedCountryData?.currency || 'TZS',
+          paymentMethod: paymentLabel,
+          items: checkoutItems.map((item) => ({
+            id: String(item.id),
+            title: item.title,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image || '/placeholder.svg',
+            seller: item.expatName || 'Unknown Seller',
+            sellerVerified: item.verified || false,
+          })),
+          shippingAddress: {
+            name: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
+            address: shippingAddress.address,
+            city: shippingAddress.city,
+            country: shippingAddress.country,
+            state: shippingAddress.state,
+            zip: shippingAddress.zip,
+          },
+          shippingMethod: shippingMethod,
+          mobilePayment: {
             reference: mobileReference,
-            timestamp: Date.now(),
-            status: 'pending',
-          })
-        )
+            status: mobileStatus || 'PENDING',
+            message: mobileMessage,
+          },
+        }
+
+        localStorage.setItem(`order_${orderId}`, JSON.stringify(orderData))
+        localStorage.setItem('lastOrderId', orderId)
+        console.log('[Checkout] ✅ Order data saved to localStorage:', orderId)
 
         // Connect to Server-Sent Events for real-time updates
-        console.log('[Checkout] Connecting to SSE for order:', orderId)
+        console.log('='.repeat(80))
+        console.log('[Checkout] 🔌 Connecting to SSE for real-time payment updates')
+        console.log('[Checkout] 📡 Listening for orderId:', orderId)
+        console.log('[Checkout] ⚠️ Webhook must send this EXACT orderId:', orderId)
+        console.log('='.repeat(80))
         const eventSource = new EventSource(`/api/order-updates?orderId=${orderId}`)
         let paymentConfirmed = false
 
@@ -586,8 +656,18 @@ export default function CheckoutPage() {
             const data = JSON.parse(event.data)
             console.log('[Checkout] SSE message received:', data)
 
+            // Log orderId comparison if it's a payment update
+            if (data.type === 'payment_update' && data.orderId) {
+              console.log('[Checkout] OrderId comparison:', {
+                expected: orderId,
+                received: data.orderId,
+                match: orderId === data.orderId,
+              })
+            }
+
             if (data.type === 'payment_update') {
               console.log('[Checkout] Payment update received:', data.paymentStatus)
+              console.log('[Checkout] Full payment data:', JSON.stringify(data, null, 2))
 
               if (
                 data.paymentStatus?.toUpperCase() === 'COMPLETED' ||

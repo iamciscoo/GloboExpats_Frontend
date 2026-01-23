@@ -18,6 +18,7 @@ import {
   Package,
   Palette,
   Sprout,
+  MoreHorizontal,
 } from 'lucide-react'
 import type {
   CategoryWithRequirements,
@@ -165,7 +166,7 @@ export const CATEGORIES = [
   },
   {
     id: 4,
-    name: 'Vehicles',
+    name: 'Vehicle & Supplies',
     icon: Car,
     count: '2,847 items',
     slug: 'vehicles',
@@ -186,24 +187,24 @@ export const CATEGORIES = [
   },
   {
     id: 7,
-    name: 'Sports & Outdoors',
+    name: 'Sports & Games',
     icon: Dumbbell,
     count: '987 items',
-    slug: 'sports-outdoors',
+    slug: 'sports-games',
   },
   {
     id: 8,
-    name: 'Home Appliances',
+    name: 'Home & Kitchen Appliances',
     icon: Package,
     count: '1,567 items',
-    slug: 'home-appliances',
+    slug: 'home-kitchen',
   },
   {
     id: 9,
-    name: 'Beauty & Health',
+    name: 'Beauty & Personal Care',
     icon: Star,
     count: '892 items',
-    slug: 'beauty-health',
+    slug: 'beauty-personal-care',
   },
   {
     id: 10,
@@ -218,6 +219,20 @@ export const CATEGORIES = [
     icon: Palette,
     count: '321 items',
     slug: 'art-crafts',
+  },
+  {
+    id: 12,
+    name: 'Pet Supplies',
+    icon: MoreHorizontal, // Using a fallback icon first, maybe search for Paw/Dog later or keep generic
+    count: '245 items',
+    slug: 'pet-supplies',
+  },
+  {
+    id: 13,
+    name: 'Other',
+    icon: MoreHorizontal,
+    count: '156 items',
+    slug: 'other',
   },
 ] as const
 
@@ -280,6 +295,16 @@ export const SELLING_CATEGORIES: CategoryWithRequirements[] = [
   {
     value: 'art-crafts',
     label: 'Art & Crafts',
+    imageRequirements: ['main', 'detail'],
+  },
+  {
+    value: 'board-games',
+    label: 'Board Games',
+    imageRequirements: ['main'],
+  },
+  {
+    value: 'other',
+    label: 'Other',
     imageRequirements: ['main', 'detail'],
   },
 ]

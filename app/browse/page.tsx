@@ -39,8 +39,6 @@ import {
   List,
   SlidersHorizontal,
   X,
-  ChevronLeft,
-  ChevronRight,
   MoreHorizontal,
   Loader2,
   ArrowUp,
@@ -163,7 +161,16 @@ const FilterContentEl = ({
   }, [filters.priceRange])
 
   // Get unique countries
-  const countries = Array.from(new Set(EXPAT_LOCATIONS.map((loc) => loc.country || 'Other'))).sort()
+  // Get unique countries with their codes
+  const countries = useMemo(() => {
+    const countryMap = new Map<string, string>()
+    EXPAT_LOCATIONS.forEach((loc) => {
+      if (loc.country && loc.countryCode) {
+        countryMap.set(loc.country, loc.countryCode)
+      }
+    })
+    return Array.from(countryMap.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+  }, [])
 
   // Filter cities based on selected country
   const filteredLocations = filters.country
@@ -238,47 +245,60 @@ const FilterContentEl = ({
 
       <Separator />
 
-      {/* Categories - Primary Filter */}
-      <div className="space-y-3">
-        <Label className="text-sm font-semibold text-gray-700">Categories</Label>
-        <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
-          {CATEGORIES.map((category) => {
-            const count = categoryCounts[category.slug] || 0
-            const isChecked = filters.selectedCategory === category.slug
-            return (
-              <div
-                key={category.name}
-                className="flex items-center space-x-2 p-3 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer touch-manipulation min-h-[48px]"
-                role="button"
-                tabIndex={0}
-                onClick={() => updateFilter('selectedCategory', isChecked ? '' : category.slug)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    updateFilter('selectedCategory', isChecked ? '' : category.slug)
-                  }
-                }}
-              >
-                <Checkbox
-                  id={`filter-${category.slug}`}
-                  checked={isChecked}
-                  onCheckedChange={(checked) =>
-                    updateFilter('selectedCategory', checked ? category.slug : '')
-                  }
-                  className="pointer-events-none"
-                />
-                <Label
-                  htmlFor={`filter-${category.slug}`}
-                  className="text-sm text-gray-600 flex-1 cursor-pointer hover:text-gray-800 transition-colors pointer-events-none"
-                >
-                  {category.name}
-                  <span className="text-gray-400 ml-1">({count.toLocaleString()})</span>
-                </Label>
-              </div>
-            )
-          })}
-        </div>
-      </div>
+      <Separator />
+
+      {/* Categories - Collapsible */}
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="categories" className="border-none">
+          <AccordionTrigger className="text-sm font-semibold text-gray-700 py-2 hover:no-underline">
+            Categories
+            {filters.selectedCategory && (
+              <Badge variant="secondary" className="ml-2 text-xs">
+                {CATEGORIES.find((c) => c.slug === filters.selectedCategory)?.name ||
+                  filters.selectedCategory}
+              </Badge>
+            )}
+          </AccordionTrigger>
+          <AccordionContent className="pt-2 pb-1">
+            <div className="space-y-1 max-h-64 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-200">
+              {CATEGORIES.map((category) => {
+                const count = categoryCounts[category.slug] || 0
+                const isChecked = filters.selectedCategory === category.slug
+                return (
+                  <div
+                    key={category.name}
+                    className="flex items-center space-x-2 p-2 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer group"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => updateFilter('selectedCategory', isChecked ? '' : category.slug)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        updateFilter('selectedCategory', isChecked ? '' : category.slug)
+                      }
+                    }}
+                  >
+                    <Checkbox
+                      id={`filter-${category.slug}`}
+                      checked={isChecked}
+                      className="h-4 w-4 border-gray-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                    />
+                    <Label
+                      htmlFor={`filter-${category.slug}`}
+                      className="text-sm text-gray-600 flex-1 cursor-pointer group-hover:text-gray-900 transition-colors flex items-center justify-between"
+                    >
+                      <span>{category.name}</span>
+                      <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full font-medium">
+                        {count.toLocaleString()}
+                      </span>
+                    </Label>
+                  </div>
+                )
+              })}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
       <Separator />
 
@@ -383,9 +403,12 @@ const FilterContentEl = ({
                   </SelectTrigger>
                   <SelectContent className="z-[100]" position="popper" side="bottom" align="start">
                     <SelectItem value="all">Any country</SelectItem>
-                    {countries.map((country) => (
-                      <SelectItem key={country} value={country}>
-                        {country}
+                    {countries.map(([countryName, countryCode]) => (
+                      <SelectItem key={countryName} value={countryName}>
+                        <div className="flex items-center gap-2">
+                          <CountryFlag countryCode={countryCode} size="sm" />
+                          <span>{countryName}</span>
+                        </div>
                       </SelectItem>
                     ))}
                     <SelectItem value="other" className="border-t mt-1 pt-1 text-blue-600">
@@ -523,9 +546,17 @@ export default function BrowsePage() {
   const [sortBy, setSortBy] = useState('relevance')
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(initialPage)
+  const [activePage, setActivePage] = useState(initialPage)
   const [itemsPerPage] = useState(20) // 5 rows × 4 columns = 20 items per page
-  const [_showScrollTop, setShowScrollTop] = useState(false)
+  const [showScrollTop, setShowScrollTop] = useState(false)
   const isApplyingUrlParams = useRef(false)
+  const [isAutoLoading, setIsAutoLoading] = useState(false)
+
+  // Ref for the bottom intersection observer (infinite scroll)
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  // Ref for tracking which page is currently in view
+  const pageRefs = useRef<Record<number, HTMLDivElement | null>>({})
 
   // Track scroll position for floating "Back to Top" button
   useEffect(() => {
@@ -536,6 +567,11 @@ export default function BrowsePage() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Auto-scroll to top on filter/search change
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
+
   // Scroll to top on initial page load
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' })
@@ -544,7 +580,7 @@ export default function BrowsePage() {
 
   // Backend data state
   const [products, setProducts] = useState<FeaturedItem[]>([])
-  const [totalProductsCount, setTotalProductsCount] = useState(0) // Total count from backend
+  const [_totalProductsCount, setTotalProductsCount] = useState(0) // Total count from backend
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [categoryCounts, setCategoryCounts] = useState<Record<string, number>>({})
@@ -650,8 +686,11 @@ export default function BrowsePage() {
     if (cat !== filters.selectedCategory) {
       setFilters((prev) => ({ ...prev, selectedCategory: cat }))
     }
-    if (Number.isFinite(page) && page !== currentPage) {
-      setCurrentPage(page)
+    if (Number.isFinite(page)) {
+      if (page > currentPage) {
+        setCurrentPage(page)
+      }
+      setActivePage(page)
     }
 
     const t = setTimeout(() => {
@@ -687,14 +726,14 @@ export default function BrowsePage() {
     if (filters.selectedCategory) params.set('category', filters.selectedCategory)
     else params.delete('category')
 
-    // page
-    if (currentPage > 1) params.set('page', currentPage.toString())
+    // page reflects the active visible page
+    if (activePage > 1) params.set('page', activePage.toString())
     else params.delete('page')
 
     const qs = params.toString()
-    router.replace(qs ? `/browse?${qs}` : '/browse')
+    router.replace(qs ? `/browse?${qs}` : '/browse', { scroll: false })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, filters.selectedCategory, currentPage])
+  }, [searchQuery, filters.selectedCategory, activePage])
 
   const filteredProducts = products.filter((product) => {
     const searchLower = searchQuery.toLowerCase()
@@ -965,16 +1004,33 @@ export default function BrowsePage() {
     return arr
   }, [filteredProducts, sortBy])
 
-  // Pagination calculations
   const totalPages = Math.ceil(sortedProducts.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const currentProducts = sortedProducts.slice(startIndex, endIndex)
 
-  // Extract product IDs for dependency tracking
+  // For infinite scroll, we show all products up to the current page
+  const displayedProducts = useMemo(() => {
+    return sortedProducts.slice(0, currentPage * itemsPerPage)
+  }, [sortedProducts, currentPage, itemsPerPage])
+
+  // Group products by page for marker rendering with unique keys
+  const productsByPage = useMemo(() => {
+    const pages = []
+    // Range: from 1 to current loaded page or at least 1
+    const lastPage = Math.max(currentPage, 1)
+    for (let i = 1; i <= lastPage; i++) {
+      const pageStartIndex = (i - 1) * itemsPerPage
+      const pageEndIndex = i * itemsPerPage
+      const pageItems = sortedProducts.slice(pageStartIndex, pageEndIndex)
+      if (pageItems.length > 0) {
+        pages.push({ pageNumber: i, items: pageItems })
+      }
+    }
+    return pages
+  }, [sortedProducts, currentPage, itemsPerPage])
+
+  // Extract all currently displayed product IDs for view count tracking
   const currentProductIds = useMemo(
-    () => currentProducts.map((p) => p.id).join(','),
-    [currentProducts]
+    () => displayedProducts.map((p) => p.id).join(','),
+    [displayedProducts]
   )
 
   // Fetch click counts for currently visible products in background
@@ -982,10 +1038,10 @@ export default function BrowsePage() {
   const fetchedClickCountsRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
-    if (currentProducts.length === 0) return
+    if (displayedProducts.length === 0) return
 
     // Filter out products we've already fetched
-    const productsToFetch = currentProducts.filter(
+    const productsToFetch = displayedProducts.filter(
       (p) => !fetchedClickCountsRef.current.has(String(p.id))
     )
 
@@ -1018,20 +1074,78 @@ export default function BrowsePage() {
       })
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentProductIds]) // Only re-run when visible product IDs change (currentProducts omitted to prevent infinite loop)
+  }, [currentProductIds]) // Only re-run when visible product IDs change
+
+  // Infinite Scroll Trigger
+  useEffect(() => {
+    if (loading || currentPage >= totalPages) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isAutoLoading) {
+          setIsAutoLoading(true)
+          setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          setTimeout(() => setIsAutoLoading(false), 500)
+        }
+      },
+      { threshold: 0.1, rootMargin: '100px' }
+    )
+
+    if (bottomRef.current) {
+      observer.observe(bottomRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [loading, currentPage, totalPages, isAutoLoading])
+
+  // Page Tracking Observer (Updates activePage as you scroll)
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const pageNum = parseInt(entry.target.getAttribute('data-page') || '1')
+            if (pageNum !== activePage && !isApplyingUrlParams.current) {
+              setActivePage(pageNum)
+            }
+          }
+        })
+      },
+      { threshold: 0.3, rootMargin: '-10% 0px -80% 0px' }
+    )
+
+    Object.values(pageRefs.current).forEach((el) => {
+      if (el) observer.observe(el)
+    })
+
+    return () => observer.disconnect()
+  }, [productsByPage, activePage])
 
   // Reset to page 1 when filters change
   useEffect(() => {
     if (isApplyingUrlParams.current) return
     setCurrentPage(1)
-  }, [filters, searchQuery])
+    setActivePage(1)
+    scrollToTop()
+  }, [filters, searchQuery, scrollToTop])
 
-  const goToPage = (page: number) => {
+  const _goToPage = (page: number) => {
     if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page)
-      // Scroll to top of page instantly for better mobile experience
-      window.scrollTo({ top: 0, behavior: 'instant' })
-      window.scrollTo(0, 0) // Fallback for older browsers
+      if (page > currentPage) {
+        setCurrentPage(page)
+      }
+      setActivePage(page)
+
+      // If already loaded, scroll to it
+      if (pageRefs.current[page]) {
+        pageRefs.current[page]?.scrollIntoView({ behavior: 'smooth' })
+      } else {
+        // If not loaded, it will be loaded because currentPage changed
+        // But we need to wait for render to scroll
+        setTimeout(() => {
+          pageRefs.current[page]?.scrollIntoView({ behavior: 'smooth' })
+        }, 100)
+      }
     }
   }
 
@@ -1202,13 +1316,15 @@ export default function BrowsePage() {
           <div className="flex-1">
             <div className="flex items-center justify-between mb-4 sm:mb-6">
               <div>
-                <h2 className="text-base sm:text-xl font-semibold text-gray-800">
-                  Showing {startIndex + 1}-{Math.min(endIndex, filteredProducts.length)} of{' '}
-                  {totalProductsCount} total products
+                <h2 className="text-sm sm:text-lg font-medium text-gray-500">
+                  Showing{' '}
+                  <span className="text-gray-900 font-semibold">{displayedProducts.length}</span> of{' '}
+                  <span className="text-gray-900 font-semibold">{sortedProducts.length}</span>{' '}
+                  results
                 </h2>
                 {totalPages > 1 && (
-                  <p className="text-sm text-gray-500 mt-1">
-                    Page {currentPage} of {totalPages}
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Currently at Page {activePage} of {totalPages}
                   </p>
                 )}
               </div>
@@ -1237,147 +1353,120 @@ export default function BrowsePage() {
               </div>
             ) : filteredProducts.length > 0 ? (
               <>
-                <div
-                  className={
-                    viewMode === 'grid'
-                      ? 'grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6 p-1'
-                      : 'space-y-4'
-                  }
-                >
-                  {currentProducts.map((product: FeaturedItem) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      viewMode={viewMode}
-                      compact={viewMode === 'grid'}
-                    />
+                <div className="space-y-12">
+                  {productsByPage.map((group) => (
+                    <div
+                      key={`page-block-${group.pageNumber}`}
+                      data-page={group.pageNumber}
+                      ref={(el) => {
+                        pageRefs.current[group.pageNumber] = el
+                      }}
+                      className="scroll-mt-40"
+                    >
+                      {group.pageNumber > 1 && (
+                        <div className="flex items-center gap-4 mb-8">
+                          <div className="h-px bg-gray-200 flex-1"></div>
+                          <Badge variant="outline" className="text-gray-400 font-medium px-4 py-1">
+                            Page {group.pageNumber}
+                          </Badge>
+                          <div className="h-px bg-gray-200 flex-1"></div>
+                        </div>
+                      )}
+                      <div
+                        className={
+                          viewMode === 'grid'
+                            ? 'grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6 p-1'
+                            : 'space-y-4'
+                        }
+                      >
+                        {group.items.map((product) => (
+                          <ProductCard
+                            key={product.id}
+                            product={product}
+                            viewMode={viewMode}
+                            compact={viewMode === 'grid'}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
 
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="mt-12 border-t border-gray-200 pt-8">
-                    {/* Desktop/Tablet Pagination */}
-                    <div className="hidden sm:flex items-center justify-between gap-4">
-                      {/* Page Info */}
-                      <div className="text-sm text-gray-600">
-                        Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
-                        <span className="font-medium">
-                          {Math.min(endIndex, filteredProducts.length)}
-                        </span>{' '}
-                        of <span className="font-medium">{totalProductsCount}</span> total products
-                      </div>
-
-                      {/* Pagination Controls with Back to Top */}
-                      <div className="flex items-center space-x-2">
-                        {/* Improved Back to Top Button */}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                          className="text-blue-600 border-blue-600 hover:bg-blue-50 font-semibold transition-all shadow-sm flex items-center gap-1.5 px-3"
-                          title="Back to Top"
-                        >
-                          <ArrowUp className="h-4 w-4" />
-                          <span className="text-xs">Back to Top</span>
-                        </Button>
-
-                        {/* Previous Button */}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => goToPage(currentPage - 1)}
-                          disabled={currentPage === 1}
-                          className="flex items-center gap-1 border-gray-300 hover:bg-gray-50"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                          Previous
-                        </Button>
-
-                        {/* Page Numbers */}
-                        <div className="flex items-center space-x-1">
-                          {getPageNumbers().map((pageNum, index) =>
-                            pageNum === 'ellipsis' ? (
-                              <div key={`ellipsis-${index}`} className="px-2">
-                                <MoreHorizontal className="h-4 w-4 text-gray-400" />
-                              </div>
-                            ) : (
-                              <Button
-                                key={pageNum}
-                                variant={currentPage === pageNum ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => goToPage(pageNum as number)}
-                                className={
-                                  currentPage === pageNum
-                                    ? 'bg-blue-600 text-white hover:bg-blue-700 border-blue-600'
-                                    : 'border-gray-300 hover:bg-gray-50 text-gray-700'
-                                }
-                              >
-                                {pageNum}
-                              </Button>
-                            )
-                          )}
-                        </div>
-
-                        {/* Next Button */}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => goToPage(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                          className="flex items-center gap-1 border-gray-300 hover:bg-gray-50"
-                        >
-                          Next
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
+                {/* Infinite Scroll Trigger / Loading Indicator */}
+                {currentPage < totalPages && (
+                  <div ref={bottomRef} className="py-12 flex justify-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                      <p className="text-sm text-gray-500 animate-pulse">
+                        Loading more products...
+                      </p>
                     </div>
+                  </div>
+                )}
 
-                    {/* Mobile Pagination - Simplified */}
-                    <div className="sm:hidden flex flex-col items-center gap-4">
-                      {/* Page Info (Mobile) */}
-                      <div className="text-sm text-gray-500">
-                        {startIndex + 1}-{Math.min(endIndex, filteredProducts.length)} of{' '}
-                        {totalProductsCount}
-                      </div>
+                {/* End of list message */}
+                {currentPage === totalPages && totalPages > 1 && (
+                  <div className="py-12 text-center">
+                    <div className="h-px bg-gray-200 w-24 mx-auto mb-6"></div>
+                    <p className="text-gray-400 text-sm italic font-medium">
+                      You've reached the end of the market for now.
+                    </p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={scrollToTop}
+                      className="mt-4 text-blue-600 hover:text-blue-700 font-semibold"
+                    >
+                      <ArrowUp className="h-4 w-4 mr-2" />
+                      Back to Top
+                    </Button>
+                  </div>
+                )}
 
-                      <div className="flex items-center justify-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => goToPage(currentPage - 1)}
-                          disabled={currentPage === 1}
-                          className="flex items-center gap-1"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                          Prev
-                        </Button>
+                {/* Footer Navigation / Page Shortcuts */}
+                {totalPages > 1 && (
+                  <div className="mt-8 border-t border-gray-200 pt-8 pb-12">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                      <div className="text-sm text-gray-500">Quick Navigation</div>
 
-                        <span className="text-sm text-gray-600 font-medium px-2">
-                          {currentPage} / {totalPages}
-                        </span>
-
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => goToPage(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                          className="flex items-center gap-1"
-                        >
-                          Next
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-
-                        <div className="w-px h-4 bg-gray-200 mx-1" />
-
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                          className="p-2 text-gray-500 hover:text-blue-600"
-                        >
-                          <ArrowUp className="h-4 w-4" />
-                        </Button>
+                      <div className="flex items-center gap-2 overflow-x-auto max-w-full pb-2 px-4 scrollbar-hide">
+                        {getPageNumbers().map((pageNum, index) =>
+                          pageNum === 'ellipsis' ? (
+                            <div key={`ellipsis-${index}`} className="px-1">
+                              <MoreHorizontal className="h-4 w-4 text-gray-300" />
+                            </div>
+                          ) : (
+                            <Button
+                              key={pageNum}
+                              variant={activePage === pageNum ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => {
+                                if ((pageNum as number) > currentPage) {
+                                  // If jumping forward beyond loaded, we need to load it
+                                  setCurrentPage(pageNum as number)
+                                  setActivePage(pageNum as number)
+                                  setTimeout(() => {
+                                    pageRefs.current[pageNum as number]?.scrollIntoView({
+                                      behavior: 'smooth',
+                                    })
+                                  }, 100)
+                                } else {
+                                  // Scroll to page
+                                  pageRefs.current[pageNum as number]?.scrollIntoView({
+                                    behavior: 'smooth',
+                                  })
+                                }
+                              }}
+                              className={`min-w-[40px] h-10 ${
+                                activePage === pageNum
+                                  ? 'bg-blue-600 text-white border-blue-600'
+                                  : 'text-gray-600 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                              }`}
+                            >
+                              {pageNum}
+                            </Button>
+                          )
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1400,6 +1489,20 @@ export default function BrowsePage() {
           </div>
         </div>
       </main>
+
+      {/* Floating Back to Top Button */}
+      <Button
+        onClick={scrollToTop}
+        className={`fixed bottom-24 right-6 z-50 rounded-full h-10 px-4 shadow-2xl bg-blue-600 hover:bg-blue-700 text-white transition-all duration-500 flex items-center justify-center gap-2 shadow-blue-500/40 border-2 border-white/20 ${
+          showScrollTop
+            ? 'opacity-100 translate-y-0 scale-100'
+            : 'opacity-0 translate-y-10 scale-90 pointer-events-none'
+        }`}
+        aria-label="Back to top"
+      >
+        <ArrowUp className="h-4 w-4" />
+        <span className="font-semibold text-xs whitespace-nowrap">Back to top</span>
+      </Button>
     </div>
   )
 }

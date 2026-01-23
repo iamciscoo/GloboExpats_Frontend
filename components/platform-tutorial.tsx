@@ -73,13 +73,7 @@ export function PlatformTutorial() {
                 <img src="/icon.svg" alt="Globoexpats" class="tutorial-welcome-logo" />
                 <div class="tutorial-welcome-brand">Welcome to Globoexpats! 🌍</div>
                 <div class="tutorial-welcome-tagline">The trusted marketplace for the expat community</div>
-              </div>
-              <p style="text-align: center; font-size: 14px; color: #475569; line-height: 1.5; margin: 0;">
-                Discover quality secondhand items from verified sellers, or list your own products to reach thousands of expats across East Africa.
-              </p>
-              <p style="text-align: center; font-size: 13px; color: #64748b; margin-top: 6px; margin-bottom: 0;">
-                Let's explore what you can do here! ✨
-              </p>
+              </div><p style="text-align: center; font-size: 14px; color: #475569; line-height: 1.5; margin-top: 16px; margin-bottom: 0;">Discover quality items from verified sellers, or list your own products to reach thousands of expats across East Africa.</p><p style="text-align: center; font-size: 13px; color: #64748b; margin-top: 10px; margin-bottom: 0;">Let's explore what you can do here! ✨</p>
             `,
             onNextClick: () => {
               driverObj.current?.moveNext()
@@ -91,9 +85,9 @@ export function PlatformTutorial() {
         {
           element: '[data-tutorial="logo"]',
           popover: {
-            title: 'Browse the Marketplace 🏪',
+            title: 'Explore The Homepage',
             description:
-              'You can browse all available listings without an account - explore furniture, electronics, vehicles, and more from the expat community.',
+              'Click the Globoexpats logo to return to the homepage and explore new, trending and featured items.',
             side: 'bottom',
             align: 'start',
           },
@@ -103,9 +97,29 @@ export function PlatformTutorial() {
           popover: {
             title: 'Search Products 🔍',
             description:
-              'Use the search bar to find specific items. Try searching for "furniture", "laptop", or any product you need.',
+              'Use the search bar to find specific listed items. Try searching for any product you need.',
             side: 'bottom',
             align: 'center',
+          },
+        },
+        {
+          element: '[data-tutorial="marketplace"]',
+          popover: {
+            title: 'Market Place 🛍️',
+            description:
+              'Click Market Place to browse all available listings - explore furniture, electronics, vehicles, and more from the expat community.',
+            side: 'bottom',
+            align: 'start',
+          },
+        },
+        {
+          element: '[data-tutorial="currency-selector"]',
+          popover: {
+            title: 'Currency Converter 💱',
+            description:
+              'Click the flag icon to switch currencies and see prices in USD, TZS, or other currencies with real-time conversion rates.\n\n⚠️ Exchange rates are indicative. TZS is the base currency for purchase.',
+            side: 'bottom',
+            align: 'end',
           },
         },
 
@@ -130,7 +144,7 @@ export function PlatformTutorial() {
             onNextClick: () => {
               showLoadingFeedback()
               isNavigatingRef.current = true
-              sessionStorage.setItem('tutorial-step', '5')
+              sessionStorage.setItem('tutorial-step', '7')
               sessionStorage.setItem('tutorial-navigating', 'true')
               setTimeout(() => {
                 router.push('/register')
@@ -144,7 +158,7 @@ export function PlatformTutorial() {
           popover: {
             title: 'Create Your Account 📝',
             description:
-              "Sign up with your email or Google account to join the Globoexpats community. After registration, you'll verify your organization email to unlock buying features.",
+              "Sign up with your personal email or Google account to join the Globoexpats community. After registration, you'll verify your organization email to unlock buying features.",
             onNextClick: () => {
               driverObj.current?.moveNext()
             },
@@ -195,13 +209,7 @@ export function PlatformTutorial() {
                 <img src="/icon.svg" alt="Globoexpats" class="tutorial-welcome-logo" />
                 <div class="tutorial-welcome-brand">Welcome to Globoexpats! 🌍</div>
                 <div class="tutorial-welcome-tagline">Let's complete your setup</div>
-              </div>
-              <p style="text-align: center; font-size: 14px; color: #475569; line-height: 1.5; margin: 0;">
-                Before exploring the full marketplace, let's complete your email verification. This unlocks all features including buying and selling.
-              </p>
-              <p style="text-align: center; font-size: 13px; color: #64748b; margin-top: 6px; margin-bottom: 0;">
-                We'll guide you through the quick verification process! ✨
-              </p>
+              </div><p style="text-align: center; font-size: 14px; color: #475569; line-height: 1.5; margin-top: 16px; margin-bottom: 0;">Before exploring the full marketplace, let's complete your email verification. This unlocks all features including buying and selling.</p><p style="text-align: center; font-size: 13px; color: #64748b; margin-top: 10px; margin-bottom: 0;">We'll guide you through the quick verification process! ✨</p>
             `,
             onNextClick: () => {
               driverObj.current?.moveNext()
@@ -220,17 +228,27 @@ export function PlatformTutorial() {
           },
         },
         {
+          element: '[data-tutorial="currency-selector"]',
+          popover: {
+            title: 'Currency Converter 💱',
+            description:
+              'Click the flag icon to switch currencies and see prices in your preferred currency.\n\n⚠️ Exchange rates are indicative. TZS is the base currency for purchase.',
+            side: 'bottom',
+            align: 'end',
+          },
+        },
+        {
           element: '[data-tutorial="profile-dropdown"]',
           popover: {
-            title: 'Your Account Menu 👤',
+            title: 'Account Menu 👤',
             description:
-              "⚠️ Notice: Some features are locked until you verify your email. Let's complete that now to unlock full access!",
+              "Access your settings, verification status, and more. You can also restart this tutorial anytime from here.\n\n⚠️ Notice: Some features are locked until you verify your email. Let's complete that now to unlock full access!",
             side: 'bottom',
             align: 'end',
             onNextClick: () => {
               showLoadingFeedback()
               isNavigatingRef.current = true
-              sessionStorage.setItem('tutorial-step', '3')
+              sessionStorage.setItem('tutorial-step', '4')
               sessionStorage.setItem('tutorial-navigating', 'true')
               setTimeout(() => {
                 router.push('/account/verification')
@@ -293,10 +311,8 @@ export function PlatformTutorial() {
             <div class="tutorial-welcome-header">
               <img src="/icon.svg" alt="Globoexpats" class="tutorial-welcome-logo" />
               <div class="tutorial-welcome-brand">Welcome to Globoexpats! 🌍</div>
-              <div class="tutorial-welcome-tagline">The trusted marketplace for the expat community, Buy Quality items from verified seller or sell to thousands of expats by listinfg your own Items.</div>
-            </div>
-            <p style="text-align: center; font-size: 13px; color: #475569; line-height: 1.4; margin: 0; padding: 0;">This comprehensive tour will guide you through every feature of the platform - from browsing to buying, selling, and managing your account.</p>
-            <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: 4px; margin-bottom: 0;">Let's explore what you can do here! ✨</p>
+              <div class="tutorial-welcome-tagline">The trusted marketplace for the expat community. Buy quality items from verified sellers or sell to thousands of expats by listing your own items.</div>
+            </div><p style="text-align: center; font-size: 13px; color: #475569; line-height: 1.5; margin-top: 16px; margin-bottom: 0; padding: 0;">This comprehensive tour will guide you through every feature of the platform - from browsing to buying, selling, and managing your account.</p><p style="text-align: center; font-size: 12px; color: #64748b; margin-top: 10px; margin-bottom: 0;">Let's explore what you can do here! ✨</p>
           `,
           onNextClick: () => {
             driverObj.current?.moveNext()
@@ -337,6 +353,16 @@ export function PlatformTutorial() {
       },
 
       {
+        element: '[data-tutorial="currency-selector"]',
+        popover: {
+          title: 'Currency Converter 💱',
+          description:
+            'Click the flag icon to switch currencies. Prices across the platform will automatically convert to your preferred currency using real-time rates.\n\n⚠️ Exchange rates are indicative. TZS is the base currency for purchase.',
+          side: 'bottom',
+          align: 'end',
+        },
+      },
+      {
         element: '[data-tutorial="notifications"]',
         popover: {
           title: 'Notifications 🔔',
@@ -360,7 +386,7 @@ export function PlatformTutorial() {
 
             // Save current step and navigate
             isNavigatingRef.current = true
-            sessionStorage.setItem('tutorial-step', '6')
+            sessionStorage.setItem('tutorial-step', '7')
             sessionStorage.setItem('tutorial-navigating', 'true')
 
             // Small delay to show feedback before navigation starts
@@ -383,7 +409,7 @@ export function PlatformTutorial() {
           onPrevClick: () => {
             showLoadingFeedback()
             isNavigatingRef.current = true
-            sessionStorage.setItem('tutorial-step', '5')
+            sessionStorage.setItem('tutorial-step', '6')
             sessionStorage.setItem('tutorial-navigating', 'true')
             setTimeout(() => {
               router.push('/')
@@ -415,7 +441,7 @@ export function PlatformTutorial() {
 
             // Save current step and navigate
             isNavigatingRef.current = true
-            sessionStorage.setItem('tutorial-step', '9')
+            sessionStorage.setItem('tutorial-step', '10')
             sessionStorage.setItem('tutorial-navigating', 'true')
 
             setTimeout(() => {
@@ -437,7 +463,7 @@ export function PlatformTutorial() {
           onPrevClick: () => {
             showLoadingFeedback()
             isNavigatingRef.current = true
-            sessionStorage.setItem('tutorial-step', '8')
+            sessionStorage.setItem('tutorial-step', '9')
             sessionStorage.setItem('tutorial-navigating', 'true')
             setTimeout(() => {
               router.push('/browse')
@@ -459,7 +485,7 @@ export function PlatformTutorial() {
 
             // Save current step and navigate
             isNavigatingRef.current = true
-            sessionStorage.setItem('tutorial-step', '11')
+            sessionStorage.setItem('tutorial-step', '12')
             sessionStorage.setItem('tutorial-navigating', 'true')
 
             setTimeout(() => {
@@ -482,7 +508,7 @@ export function PlatformTutorial() {
           onPrevClick: () => {
             showLoadingFeedback()
             isNavigatingRef.current = true
-            sessionStorage.setItem('tutorial-step', '10')
+            sessionStorage.setItem('tutorial-step', '11')
             sessionStorage.setItem('tutorial-navigating', 'true')
             setTimeout(() => {
               router.push('/sell')
@@ -524,7 +550,7 @@ export function PlatformTutorial() {
 
             // Save current step and navigate
             isNavigatingRef.current = true
-            sessionStorage.setItem('tutorial-step', '15')
+            sessionStorage.setItem('tutorial-step', '16')
             sessionStorage.setItem('tutorial-navigating', 'true')
 
             setTimeout(() => {
@@ -547,7 +573,7 @@ export function PlatformTutorial() {
           onPrevClick: () => {
             showLoadingFeedback()
             isNavigatingRef.current = true
-            sessionStorage.setItem('tutorial-step', '14')
+            sessionStorage.setItem('tutorial-step', '15')
             sessionStorage.setItem('tutorial-navigating', 'true')
             setTimeout(() => {
               router.push('/expat/dashboard')
@@ -578,7 +604,7 @@ export function PlatformTutorial() {
 
             // Save current step and navigate
             isNavigatingRef.current = true
-            sessionStorage.setItem('tutorial-step', '18')
+            sessionStorage.setItem('tutorial-step', '19')
             sessionStorage.setItem('tutorial-navigating', 'true')
 
             setTimeout(() => {
@@ -603,7 +629,7 @@ export function PlatformTutorial() {
           onPrevClick: () => {
             showLoadingFeedback()
             isNavigatingRef.current = true
-            sessionStorage.setItem('tutorial-step', '17')
+            sessionStorage.setItem('tutorial-step', '18')
             sessionStorage.setItem('tutorial-navigating', 'true')
             setTimeout(() => {
               router.push('/account')

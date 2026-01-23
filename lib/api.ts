@@ -86,12 +86,14 @@ interface MobileCheckoutPayload {
 
 /** Response returned by the mobile checkout endpoint */
 interface MobileCheckoutResponse {
+  order_id?: string
   orderId?: string
   checkoutRequestId?: string
   transactionId?: string
   status?: string
   message?: string
   reference?: string
+  resultCode?: string
 }
 
 /** Response returned by the meet-seller checkout endpoint */

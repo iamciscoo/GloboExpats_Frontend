@@ -325,7 +325,7 @@ function EditListingContent() {
       title: '✅ Main photo updated',
       description: 'This image will be set as the main photo when you save your changes.',
       variant: 'default',
-      duration: 3000,
+      duration: 8000,
     })
   }
 

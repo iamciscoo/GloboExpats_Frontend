@@ -13,6 +13,7 @@ const PUBLIC_ROUTES = [
   '/contact',
   '/browse',
   '/about',
+  '/statistics', // Matomo analytics - completely independent
 ]
 
 export function middleware(request: NextRequest) {

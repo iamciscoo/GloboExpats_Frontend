@@ -29,15 +29,15 @@ FROM node:22-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Accept build-time overridable environment arguments (provide defaults for local builds)
+# Accept build-time environment arguments from docker-compose
 # IMPORTANT: NEXT_PUBLIC_API_URL should be empty - API client endpoints already include /api/v1/ path
 # Next.js proxy will rewrite /api/v1/* requests to BACKEND_URL/api/v1/* server-side
-ARG NEXT_PUBLIC_API_URL=
-ARG BACKEND_URL=http://10.123.22.21:8081
-ARG NEXT_PUBLIC_WS_URL=ws://10.123.22.21:8081/ws
-ARG NEXT_PUBLIC_CDN_URL=
-ARG NEXT_PUBLIC_ENVIRONMENT=production
-ARG NEXT_PUBLIC_BACKEND_URL=http://10.123.22.21:8081
+ARG NEXT_PUBLIC_API_URL
+ARG BACKEND_URL
+ARG NEXT_PUBLIC_WS_URL
+ARG NEXT_PUBLIC_CDN_URL
+ARG NEXT_PUBLIC_ENVIRONMENT
+ARG NEXT_PUBLIC_BACKEND_URL
 
 # Expose them to the build (Next.js inlines NEXT_PUBLIC_*)
 # NOTE:
@@ -97,15 +97,15 @@ RUN chown -R nextjs:nodejs /app
 USER nextjs
 
 # Expose port
-EXPOSE 3000
+# EXPOSE 3000
 
-# Re-declare build args for runtime (these get passed through from build stage)
-ARG NEXT_PUBLIC_API_URL=
-ARG BACKEND_URL=http://10.123.22.21:8081
-ARG NEXT_PUBLIC_WS_URL=ws://10.123.22.21:8081/ws
-ARG NEXT_PUBLIC_CDN_URL=
-ARG NEXT_PUBLIC_ENVIRONMENT=production
-ARG NEXT_PUBLIC_BACKEND_URL=http://10.123.22.21:8081
+# Re-declare build args for runtime (these get passed from docker-compose)
+ARG NEXT_PUBLIC_API_URL
+ARG BACKEND_URL
+ARG NEXT_PUBLIC_WS_URL
+ARG NEXT_PUBLIC_CDN_URL
+ARG NEXT_PUBLIC_ENVIRONMENT
+ARG NEXT_PUBLIC_BACKEND_URL
 
 # Set environment variables
 ENV NODE_ENV=production \

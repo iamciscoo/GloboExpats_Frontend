@@ -1,0 +1,24 @@
+services:
+  globoexpats:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # Build-time arguments from .env file
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        BACKEND_URL: ${BACKEND_URL}
+        NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL}
+        NEXT_PUBLIC_CDN_URL: ${NEXT_PUBLIC_CDN_URL}
+        NEXT_PUBLIC_ENVIRONMENT: ${NEXT_PUBLIC_ENVIRONMENT}
+        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL}
+    container_name: frontend
+    ports:
+      - '3000:3000'
+    restart: unless-stopped
+    networks:
+      - frontend
+
+networks:
+  frontend:
+    driver: bridge
+    name: frontend

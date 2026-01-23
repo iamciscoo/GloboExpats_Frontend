@@ -98,7 +98,7 @@ export const STEP_TIPS: StepTipsConfig[] = [
   },
   {
     step: 3,
-    stepName: 'Pricing & Publish',
+    stepName: 'Pricing',
     tips: [
       {
         icon: DollarSign,
@@ -111,6 +111,36 @@ export const STEP_TIPS: StepTipsConfig[] = [
         title: 'Original Price Value',
         description:
           'Show original purchase price when higher. It demonstrates value and helps justify your asking price to buyers.',
+      },
+      {
+        icon: Star,
+        title: 'Multiple Currency Support',
+        description:
+          'Choose your preferred currency. Prices are automatically converted to TZS for consistency across the platform.',
+      },
+      {
+        icon: Shield,
+        title: 'Warranty Builds Trust',
+        description:
+          'If applicable, mention any remaining warranty. Buyers pay more for items with warranty coverage.',
+      },
+    ],
+  },
+  {
+    step: 4,
+    stepName: 'Review & Publish',
+    tips: [
+      {
+        icon: Eye,
+        title: 'Final Check',
+        description:
+          'Review all details carefully. Accurate listings get fewer questions and sell faster.',
+      },
+      {
+        icon: CheckCircle,
+        title: 'Photo Order',
+        description:
+          "Make sure your best photo is set as the main image. It's the first thing buyers see!",
       },
       {
         icon: Clock,

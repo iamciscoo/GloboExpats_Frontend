@@ -104,8 +104,8 @@ export async function registerUser(payload: {
   password: string
   emailAddress: string
   phoneNumber?: string
-  agreeToTerms: boolean
-  agreeToPrivacyPolicy: boolean
+  agreeToTerms?: boolean
+  agreeToPrivacyPolicy?: boolean
 }) {
   return apiClient.register(payload)
 }
@@ -162,7 +162,7 @@ export function initializeAutoLogout() {
 export function redirectToGoogleLogin() {
   if (typeof window !== 'undefined') {
     // Use NEXT_PUBLIC_BACKEND_URL for OAuth (cannot be proxied, needs direct backend access)
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://10.123.22.21:8081'
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://api.globoexpats.com'
     window.location.href = `${backendUrl}/api/v1/oauth2/login/google`
   }
 }

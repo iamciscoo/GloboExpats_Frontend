@@ -104,7 +104,7 @@ function parseLocationValue(value: string): { country: string; city: string; isC
 export function EnhancedLocationSelect({
   value,
   onValueChange,
-  placeholder = 'Select country first',
+  placeholder = 'Select country',
   className,
   disabled = false,
   showLabels = true,
@@ -297,7 +297,7 @@ export function EnhancedLocationSelect({
                 )}
               >
                 <SelectValue
-                  placeholder={selectedCountry ? 'Select city' : 'Select country first'}
+                  placeholder={selectedCountry ? 'Select city' : '← Choose country first'}
                 />
               </SelectTrigger>
               <SelectContent>

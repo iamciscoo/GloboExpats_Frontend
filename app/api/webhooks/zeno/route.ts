@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/lib/logger'
-import { notifyOrder } from '../order-updates/route'
+import { notifyOrder } from '@/lib/order-notifications'
 
 export const runtime = 'nodejs'
 

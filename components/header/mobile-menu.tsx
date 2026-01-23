@@ -78,7 +78,7 @@ export const MobileMenu = React.memo<MobileMenuProps>(
                     onClick={handleLinkClick}
                     className="text-neutral-200 hover:text-white hover:bg-white/10 transition-colors flex items-center gap-3 py-2.5 px-2 rounded-md"
                   >
-                    <StoreIcon className="h-4 w-4" /> Store
+                    <StoreIcon className="h-4 w-4" /> Market Place
                   </Link>
                   <Link
                     href="/cart"
