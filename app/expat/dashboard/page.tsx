@@ -45,10 +45,11 @@ import {
   Filter,
   ArrowUpDown,
   ShoppingBag,
+  Heart,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { apiClient } from '@/lib/api'
-import { getFullImageUrl, cleanLocationString } from '@/lib/image-utils'
+import { getFullImageUrl, cleanLocationString, transformBackendProduct } from '@/lib/image-utils'
 import { cn } from '@/lib/utils'
 import { RouteGuard } from '@/components/route-guard'
 import PriceDisplay from '@/components/price-display'
@@ -60,6 +61,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { CountryFlag, getCountryCodeFromLabel } from '@/components/country-flag'
+import { useSavedProducts } from '@/hooks/use-saved-products'
+import { ProductCard } from '@/components/ui/product-card'
 
 interface UserListing {
   productId: number
@@ -99,7 +103,8 @@ function DashboardContent() {
   const [listings, setListings] = useState<UserListing[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState(
-    initialTab && ['overview', 'listings', 'messages', 'analytics', 'orders'].includes(initialTab)
+    initialTab &&
+      ['overview', 'listings', 'messages', 'analytics', 'orders', 'saved'].includes(initialTab)
       ? initialTab
       : 'overview'
   )
@@ -118,6 +123,8 @@ function DashboardContent() {
     totalInquiries: 0,
     totalRevenue: 0,
   })
+
+  const { savedProducts, loading: loadingSaved, toggleSaveProduct } = useSavedProducts()
 
   // Pagination state for listings
   const [currentPage, setCurrentPage] = useState(1)
@@ -226,55 +233,14 @@ function DashboardContent() {
           return
         }
 
-        let allProducts: unknown[] = []
-
-        // Use displayItem/newest endpoint - it actually returns products!
-        let currentPage = 0
-        let hasMore = true
-
-        while (hasMore && currentPage < 10) {
-          try {
-            // Use getNewestListings instead of getAllProducts
-            const productsResponse = await apiClient.getNewestListings(currentPage, 20)
-            const response = productsResponse as {
-              data?: { content?: unknown[]; last?: boolean } | unknown[]
-              content?: unknown[]
-            }
-            const pageProducts =
-              (response.data as { content?: unknown[] })?.content ||
-              response.content ||
-              (response.data as unknown[]) ||
-              []
-
-            // Pagination progress (dev only)
-            if (process.env.NODE_ENV === 'development') {
-              console.log(
-                `[Dashboard] Fetched page ${currentPage}: ${pageProducts.length} products`
-              )
-            }
-
-            if (pageProducts.length === 0) {
-              hasMore = false
-            } else {
-              allProducts = [...allProducts, ...pageProducts]
-              currentPage++
-
-              if (
-                (response.data as { last?: boolean })?.last === true ||
-                pageProducts.length < 20
-              ) {
-                hasMore = false
-              }
-            }
-          } catch (error) {
-            console.error(`❌ Error fetching page ${currentPage}:`, error)
-            hasMore = false
-          }
-        }
+        // Use the complete products list - getNewestListings is unreliable (often returns empty)
+        // This matches the logic in FeaturedGrid which is known to be working
+        const productsResponse = await apiClient.getAllProductsComplete(20)
+        const allProducts = productsResponse.content || []
 
         // Log summary only
         if (process.env.NODE_ENV === 'development') {
-          console.log(`[Dashboard] Fetched ${allProducts.length} total products`)
+          console.log(`[Dashboard] Fetched ${allProducts.length} total products via complete list`)
         }
 
         // Filter products for current user
@@ -282,20 +248,37 @@ function DashboardContent() {
 
         const userListings = allProducts.filter((item) => {
           const product = item as Record<string, unknown>
-          // Strategy 1: Match by sellerEmail (if available)
-          if (product.sellerEmail) {
-            const emailMatch = String(product.sellerEmail).toLowerCase() === userEmail.toLowerCase()
-            if (emailMatch) {
+          const authUserId = user?.userId || user?.id
+
+          // Strategy 0: Match by sellerId if available (Best case)
+          const productSellerId = product.sellerId || product.userId
+          if (productSellerId && authUserId) {
+            if (String(productSellerId) === String(authUserId)) {
               return true
             }
           }
 
-          // Strategy 2: Match by sellerName (less secure, but last resort)
+          // Strategy 1: Match by sellerEmail (Reliable)
+          const sellerEmail = (product.sellerEmail ||
+            product.productSellerEmail ||
+            product.email) as string | undefined
+          if (sellerEmail && userEmail) {
+            if (sellerEmail.toLowerCase() === userEmail.toLowerCase()) {
+              return true
+            }
+          }
+
+          // Strategy 2: Match by sellerName (Fallback)
+          const sellerName = (product.sellerName || product.productSellerName) as string | undefined
           const userFullName = `${user?.firstName} ${user?.lastName}`.trim()
-          if (product.sellerName && userFullName) {
-            const nameMatch =
-              String(product.sellerName).toLowerCase().trim() === userFullName.toLowerCase().trim()
-            if (nameMatch) {
+          if (sellerName && userFullName) {
+            // Check for exact match or includes (some backends return "First Last" while user has "First")
+            const cleanSellerName = sellerName.toLowerCase().trim()
+            const cleanUserFullName = userFullName.toLowerCase().trim()
+            if (
+              cleanSellerName === cleanUserFullName ||
+              (cleanUserFullName.length > 2 && cleanSellerName.includes(cleanUserFullName))
+            ) {
               return true
             }
           }
@@ -489,7 +472,7 @@ function DashboardContent() {
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList
-            className="grid w-full grid-cols-5 h-11 p-1 bg-gray-100"
+            className="grid w-full grid-cols-6 h-11 p-1 bg-gray-100"
             data-tutorial="dashboard-tabs"
           >
             <TabsTrigger
@@ -530,6 +513,14 @@ function DashboardContent() {
             >
               <ShoppingBag className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
               <span className="hidden sm:inline truncate">Orders</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="saved"
+              className="flex items-center justify-center gap-1 px-2 py-2 text-xs md:text-sm md:gap-2 md:px-3 data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm rounded-md min-w-0"
+              data-tutorial="dashboard-saved-tab"
+            >
+              <Heart className="h-3 w-3 md:h-4 md:w-4 flex-shrink-0" />
+              <span className="hidden sm:inline truncate">Saved</span>
             </TabsTrigger>
           </TabsList>
 
@@ -719,19 +710,19 @@ function DashboardContent() {
               {(selectedCategory !== 'all' ||
                 selectedStatus !== 'all' ||
                 sortOrder !== 'newest') && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedCategory('all')
-                    setSelectedStatus('all')
-                    setSortOrder('newest')
-                  }}
-                  className="text-[#64748B] hover:text-[#0F172A]"
-                >
-                  Clear Filters
-                </Button>
-              )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedCategory('all')
+                      setSelectedStatus('all')
+                      setSortOrder('newest')
+                    }}
+                    className="text-[#64748B] hover:text-[#0F172A]"
+                  >
+                    Clear Filters
+                  </Button>
+                )}
             </div>
 
             {/* Results count */}
@@ -744,102 +735,31 @@ function DashboardContent() {
             {currentListings.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {currentListings.map((listing) => (
-                    <Card
-                      key={listing.productId}
-                      className="overflow-hidden border border-[#E2E8F0]"
-                    >
-                      <div className="aspect-video bg-[#F1F5F9] relative">
-                        {listing.productImages?.[0]?.imageUrl ? (
-                          <Image
-                            src={getFullImageUrl(listing.productImages[0].imageUrl)}
-                            alt={listing.productName}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="flex items-center justify-center h-full">
-                            <Package className="w-12 h-12 text-[#CBD5E1]" />
-                          </div>
-                        )}
-                        {listing.productQuantity === 0 ? (
-                          <Badge className="absolute top-2 right-2 bg-neutral-800 text-white hover:bg-neutral-800">
-                            Out of Stock
-                          </Badge>
-                        ) : (
-                          <Badge
-                            className={`absolute top-2 right-2 ${getStatusBadge(listing.productStatus || 'active')}`}
-                          >
-                            {listing.productStatus || 'active'}
-                          </Badge>
-                        )}
-                      </div>
-                      <CardContent className="p-4">
-                        <h3 className="font-semibold text-[#0F172A] mb-2 truncate">
-                          {listing.productName}
-                        </h3>
-                        <div className="mb-2">
-                          <PriceDisplay
-                            price={listing.productAskingPrice}
-                            originalCurrency={listing.productCurrency as CurrencyCode}
-                            size="lg"
-                            weight="bold"
-                            className="text-[#1E3A8A]"
-                            showOriginal
-                          />
-                        </div>
-                        <div className="flex items-center text-sm text-[#64748B] mb-3">
-                          <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-                          <span className="truncate">
-                            {cleanLocationString(listing.productLocation)}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm text-[#64748B] mb-4">
-                          <div className="flex items-center">
-                            <Eye className="w-4 h-4 mr-1" />
-                            <span className="font-medium">{listing.views || 0} views</span>
-                          </div>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline" className="flex-1" asChild>
-                            <Link href={`/product/${listing.productId}`}>
-                              <Eye className="w-4 h-4 mr-1" />
-                              View
-                            </Link>
-                          </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button size="sm" variant="outline">
-                                <MoreHorizontal className="w-4 h-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem asChild>
-                                <Link href={`/edit-listing/${listing.productId}`}>
-                                  <Edit className="w-4 h-4 mr-2" />
-                                  Edit Listing
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  setDeleteDialog({
-                                    isOpen: true,
-                                    productId: listing.productId.toString(),
-                                    productName: listing.productName,
-                                  })
-                                }
-                                className="text-red-600 focus:text-red-600"
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Delete Listing
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                  {currentListings.map((listing) => {
+                    const transformedProduct = transformBackendProduct(listing as any)
+                    return (
+                      <ProductCard
+                        key={listing.productId}
+                        product={transformedProduct}
+                        showDate
+                        showViewButton={false}
+                        showCartButton={false}
+                        status={
+                          listing.productQuantity === 0 ? 'Out of Stock' : listing.productStatus
+                        }
+                        onEdit={(id) => {
+                          window.location.href = `/edit-listing/${id}`
+                        }}
+                        onDelete={(id) =>
+                          setDeleteDialog({
+                            isOpen: true,
+                            productId: id.toString(),
+                            productName: listing.productName,
+                          })
+                        }
+                      />
+                    )
+                  })}
                 </div>
 
                 {/* Pagination Component */}
@@ -1029,6 +949,54 @@ function DashboardContent() {
                 </Button>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Saved Tab */}
+          <TabsContent value="saved" className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <h2 className="text-xl font-semibold text-[#0F172A]">Saved Items</h2>
+            </div>
+
+            {loadingSaved ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              </div>
+            ) : savedProducts.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {savedProducts.map((p: Record<string, unknown>) => {
+                  const transformedProduct = transformBackendProduct(p)
+                  const productId = transformedProduct.id
+
+                  return (
+                    <div key={productId}>
+                      <ProductCard
+                        product={transformedProduct}
+                        compact
+                        showViewButton={false}
+                        showCartButton={false}
+                        onUnsave={(id) => {
+                          console.log('🗑️ Dashboard: Unsaving product ID:', id)
+                          toggleSaveProduct(id)
+                        }}
+                      />
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <Card className="border border-[#E2E8F0]">
+                <CardContent className="p-12 text-center">
+                  <Heart className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-neutral-800 mb-2">No Saved Items</h3>
+                  <p className="text-neutral-600 mb-6">
+                    Items you save will appear here for quick access later.
+                  </p>
+                  <Button asChild className="bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">
+                    <Link href="/browse">Explore Products</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
 

@@ -1217,6 +1217,96 @@ class ApiClient {
     }
   }
 
+  /**
+   * Fetches reviews for a specific user
+   * @param userId - User ID to fetch reviews for
+   * @returns Promise resolving to user reviews
+   */
+  async getUserReviews(userId?: number): Promise<unknown> {
+    const qs = userId ? `?userId=${userId}` : ''
+    return this.request(`/api/v1/user-reviews${qs}`)
+  }
+
+  /**
+   * Fetches the average rating for a user
+   * @param userId - User ID to fetch average rating for
+   * @returns Promise resolving to average rating
+   */
+  async getAverageRating(userId?: number): Promise<number> {
+    const qs = userId ? `?userId=${userId}` : ''
+    const response = await this.request(`/api/v1/average-rating${qs}`)
+    return response as unknown as number
+  }
+
+  /**
+   * Posts a review for a user
+   * @param data - Review data including target userId, rating, and comment
+   */
+  async reviewUser(data: {
+    targetUserId: number
+    rating: number
+    comment: string
+  }): Promise<ApiResponse<unknown>> {
+    return this.request('/api/v1/review-user', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  /**
+   * Rates a user
+   * @param data - Rating data including target userId and rating value
+   */
+  async rateUser(data: { targetUserId: number; rating: number }): Promise<ApiResponse<unknown>> {
+    return this.request('/api/v1/rate-user', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  /**
+   * Fetches the seller's product status (likely active, sold, etc. counts)
+   * @returns Promise resolving to seller product status summary
+   */
+  async getSellerProductStatus(): Promise<Record<string, number>> {
+    const response = await this.request('/api/v1/displayItem/seller-productStatus')
+    return response as unknown as Record<string, number>
+  }
+
+  // ============================================================================
+  // SAVED PRODUCTS (WISHLIST) ENDPOINTS
+  // ============================================================================
+
+  /**
+   * Fetches all products saved by the current user
+   * @returns Promise resolving to a list of saved products
+   */
+  async getSavedProducts(): Promise<unknown> {
+    return this.request('/api/saved-products')
+  }
+
+  /**
+   * Saves a product to the user's wishlist
+   * @param productId - Product identifier
+   * @returns Promise resolving to the saved status
+   */
+  async saveProduct(productId: number): Promise<ApiResponse<unknown>> {
+    return this.request(`/api/saved-products/${productId}`, {
+      method: 'POST',
+    })
+  }
+
+  /**
+   * Removes a product from the user's wishlist
+   * @param productId - Product identifier
+   * @returns Promise resolving to the unsaved status
+   */
+  async unsaveProduct(productId: number): Promise<ApiResponse<unknown>> {
+    return this.request(`/api/saved-products/${productId}`, {
+      method: 'DELETE',
+    })
+  }
+
   // ============================================================================
   // USER ENDPOINTS
   // ============================================================================
@@ -1570,19 +1660,13 @@ class ApiClient {
    * Verifies organization email OTP
    * @param organizationalEmail - Organization email used
    * @param otp - One-time password received in email
-   * @param userRoles - Role to assign, e.g., 'SELLER' or 'USER'
    */
-  async verifyEmailOtp(
-    organizationalEmail: string,
-    otp: string,
-    userRoles: 'SELLER' | 'USER' | string
-  ): Promise<ApiResponse<unknown>> {
+  async verifyEmailOtp(organizationalEmail: string, otp: string): Promise<ApiResponse<unknown>> {
     return this.request('/api/v1/email/verifyOTP', {
       method: 'POST',
       body: JSON.stringify({
-        organizationalEmail,
+        email: organizationalEmail, // Backend expects 'email' per VerifyOTPDTO schema
         otp,
-        userRoles,
       }),
     })
   }

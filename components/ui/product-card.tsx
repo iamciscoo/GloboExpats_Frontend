@@ -3,7 +3,14 @@
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useRef } from 'react'
-import { Star, MapPin, ArrowRight, Tag, ShoppingCart, Eye } from 'lucide-react'
+import { Star, MapPin, ArrowRight, Tag, ShoppingCart, Eye, Trash2, Calendar, Edit, MoreHorizontal, Heart } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -20,7 +27,14 @@ interface ProductCardProps {
   viewMode?: 'grid' | 'list'
   className?: string
   onViewDetails?: (productId: number) => void
+  onUnsave?: (productId: number) => void
+  onEdit?: (productId: number) => void
+  onDelete?: (productId: number) => void
   compact?: boolean // For mobile slider optimization
+  showDate?: boolean
+  status?: string
+  showViewButton?: boolean
+  showCartButton?: boolean
 }
 
 export function ProductCard({
@@ -28,7 +42,14 @@ export function ProductCard({
   viewMode = 'grid',
   className,
   onViewDetails,
+  onUnsave,
+  onEdit,
+  onDelete,
   compact = false,
+  showDate = false,
+  status,
+  showViewButton = true,
+  showCartButton = true,
 }: ProductCardProps) {
   const router = useRouter()
   const { addToCart } = useCart()
@@ -185,6 +206,37 @@ export function ProductCard({
               placeholder="blur"
               blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
             />
+            {/* Status Badge */}
+            {status && (
+              <Badge
+                className={cn(
+                  'absolute top-2 left-2 z-10 font-bold px-3 py-1 border-2 border-white/20',
+                  status.toLowerCase() === 'sold'
+                    ? 'bg-neutral-800 text-white'
+                    : 'bg-emerald-500 text-white'
+                )}
+              >
+                {status.toUpperCase()}
+              </Badge>
+            )}
+            {onUnsave && product.id > 0 && (
+              <div className="absolute top-2 right-2 z-30">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white shadow-md border border-neutral-100 transition-all duration-200 group/heart"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (window.confirm('Are you sure you want to remove this item from your saved products?')) {
+                      onUnsave(product.id)
+                    }
+                  }}
+                  title="Unsave: Remove from your list"
+                >
+                  <Heart className="h-4.5 w-4.5 text-red-500 fill-red-500 group-hover:heart:scale-110 transition-transform" />
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Content */}
@@ -340,6 +392,25 @@ export function ProductCard({
               </span>
             </div>
 
+            {/* Date Added - New Field */}
+            {(showDate || product.createdAt) && (
+              <div className={cn('flex items-center gap-1.5 min-h-[1rem]', compact ? 'mb-1' : 'mb-1.5')}>
+                <Calendar
+                  className={cn(
+                    'text-neutral-400 flex-shrink-0',
+                    compact ? 'w-3 h-3 sm:w-3.5 sm:h-3.5' : 'w-3.5 h-3.5 sm:w-4 sm:h-4'
+                  )}
+                />
+                <span className={cn('text-neutral-500 text-[10px] sm:text-xs')}>
+                  {product.createdAt ? new Date(product.createdAt).toLocaleDateString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  }) : 'Recent'}
+                </span>
+              </div>
+            )}
+
             {/* Category Badge - if available (hidden in compact mode) */}
             {!compact && product.category && (
               <div className="flex items-center gap-1 mb-1.5 min-h-[1rem]">
@@ -355,53 +426,99 @@ export function ProductCard({
             )}
 
             {/* Bottom Section - Pushed to bottom */}
-            <div className={cn('mt-auto', compact ? 'pt-1' : 'pt-1.5')}>
-              <div className={cn('flex items-center', compact ? 'gap-1' : 'gap-2')}>
-                <Button
-                  className={cn(
-                    'flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full shadow-futuristic hover:shadow-xl focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 transition-all duration-300 group/btn',
-                    compact
-                      ? 'py-2 sm:py-2 text-xs sm:text-sm h-9 sm:h-10'
-                      : 'py-2 sm:py-2.5 text-sm sm:text-base h-10 sm:h-11'
-                  )}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleViewDetails()
-                  }}
-                  aria-label={`View details for ${product.title}`}
-                >
-                  <span
-                    className={cn(
-                      'flex items-center justify-center',
-                      compact ? 'gap-1 sm:gap-1.5' : 'gap-1.5 sm:gap-2'
-                    )}
-                  >
-                    {compact ? 'View' : 'View Product'}
-                    <ArrowRight
+            {(showViewButton || showCartButton || onEdit || onDelete) && (
+              <div className={cn('mt-auto', compact ? 'pt-1' : 'pt-1.5')}>
+                <div className={cn('flex items-center', compact ? 'gap-1' : 'gap-2')}>
+                  {showViewButton && (
+                    <Button
                       className={cn(
-                        'group-hover/btn:translate-x-1 transition-transform duration-200',
-                        compact ? 'w-3.5 h-3.5 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-4.5 sm:h-4.5'
+                        'flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full shadow-futuristic hover:shadow-xl focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 transition-all duration-300 group/btn',
+                        compact
+                          ? 'py-2 sm:py-2 text-xs sm:text-sm h-9 sm:h-10'
+                          : 'py-2 sm:py-2.5 text-sm sm:text-base h-10 sm:h-11'
                       )}
-                    />
-                  </span>
-                </Button>
-                <button
-                  onClick={handleAddToCart}
-                  className={cn(
-                    'flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-futuristic hover:shadow-xl hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2',
-                    compact
-                      ? 'p-2 sm:p-2.5 w-9 h-9 sm:w-10 sm:h-10'
-                      : 'p-2.5 sm:p-3 w-10 h-10 sm:w-11 sm:h-11',
-                    'flex items-center justify-center'
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleViewDetails()
+                      }}
+                      aria-label={`View details for ${product.title}`}
+                    >
+                      <span
+                        className={cn(
+                          'flex items-center justify-center',
+                          compact ? 'gap-1 sm:gap-1.5' : 'gap-1.5 sm:gap-2'
+                        )}
+                      >
+                        {compact ? 'View' : 'View Product'}
+                        <ArrowRight
+                          className={cn(
+                            'group-hover/btn:translate-x-1 transition-transform duration-200',
+                            compact ? 'w-3.5 h-3.5 sm:w-4 sm:h-4' : 'w-4 h-4 sm:w-4.5 sm:h-4.5'
+                          )}
+                        />
+                      </span>
+                    </Button>
                   )}
-                  aria-label={`Add ${product.title} to cart`}
-                >
-                  <ShoppingCart
-                    className={cn(compact ? 'w-4 h-4 sm:w-5 sm:h-5' : 'w-4.5 h-4.5 sm:w-5 sm:h-5')}
-                  />
-                </button>
+                  {showCartButton && (
+                    <button
+                      onClick={handleAddToCart}
+                      className={cn(
+                        'flex-shrink-0 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-futuristic hover:shadow-xl hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2',
+                        compact
+                          ? 'p-2 sm:p-2.5 w-9 h-9 sm:w-10 sm:h-10'
+                          : 'p-2.5 sm:p-3 w-10 h-10 sm:w-11 sm:h-11',
+                        'flex items-center justify-center'
+                      )}
+                      aria-label={`Add ${product.title} to cart`}
+                    >
+                      <ShoppingCart
+                        className={cn(compact ? 'w-4 h-4 sm:w-5 sm:h-5' : 'w-4.5 h-4.5 sm:w-5 sm:h-5')}
+                      />
+                    </button>
+                  )}
+
+                  {/* Management Actions (Dropdown) */}
+                  {(onEdit || onDelete) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          className={cn(
+                            'flex-shrink-0 bg-white border border-neutral-300 hover:bg-neutral-50 text-neutral-700 rounded-full shadow-sm hover:shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2',
+                            compact
+                              ? 'p-2 sm:p-2.5 w-9 h-9 sm:w-10 sm:h-10'
+                              : 'p-2.5 sm:p-3 w-10 h-10 sm:w-11 sm:h-11',
+                            'flex items-center justify-center'
+                          )}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreHorizontal className={cn(compact ? 'w-4 h-4 sm:w-5 sm:h-5' : 'w-4.5 h-4.5 sm:w-5 sm:h-5')} />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {onEdit && (
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(product.id); }}>
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit Listing
+                          </DropdownMenuItem>
+                        )}
+                        {onDelete && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={(e) => { e.stopPropagation(); onDelete(product.id); }}
+                              className="text-red-600 focus:text-red-600"
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete Listing
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </CardContent>
