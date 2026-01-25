@@ -211,10 +211,6 @@ export function extractAuthCodeFromUrl(url: string): string | null {
   }
 }
 
-export async function verifyOrgEmailOtp(
-  organizationalEmail: string,
-  otp: string,
-  userRoles: 'SELLER' | 'USER' | string
-) {
-  return apiClient.verifyEmailOtp(organizationalEmail, otp, userRoles)
+export async function verifyOrgEmailOtp(organizationalEmail: string, otp: string) {
+  return apiClient.verifyEmailOtp(organizationalEmail, otp)
 }

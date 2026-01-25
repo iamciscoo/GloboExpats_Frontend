@@ -206,11 +206,16 @@ export interface FeaturedItem {
   rating: number
   reviews: number
   location: string
+  city?: string
+  country?: string
+  street?: string
+  whatsapp?: string
   isVerified: boolean
   category?: string
   condition?: string
   views?: number // View count (from backend clickCount field)
   quantity?: number
+  createdAt?: string // ISO string or formatted date
 }
 
 /**

@@ -83,8 +83,9 @@ export const cleanLocationString = (location: string): string => {
  * - sellerId: Unique user ID from database (number)
  * - sellerName: User's display name (string)
  */
-export const transformBackendProduct = (item: Record<string, unknown>) => {
-  // ...existing code...
+export const transformBackendProduct = (rawItem: Record<string, unknown>) => {
+  // Handle nested product objects (e.g. from saved products API)
+  const item = rawItem.product ? (rawItem.product as Record<string, unknown>) : rawItem
 
   // Type assertions for nested properties
   const productImages = item.productImages as Array<{ imageUrl: string }> | undefined
@@ -99,8 +100,58 @@ export const transformBackendProduct = (item: Record<string, unknown>) => {
     )
   }
 
+  // Ultra-aggressive ID extraction
+  const getAnyId = (obj: any): number => {
+    if (obj === undefined || obj === null) return 0
+    if (typeof obj === 'number') return obj
+    if (typeof obj === 'string' && !isNaN(Number(obj))) return Number(obj)
+    if (typeof obj !== 'object') return 0
+
+    const keys = [
+      'productId',
+      'productID',
+      'id',
+      'product_id',
+      'item_id',
+      'ID',
+      'uid',
+      'pk',
+      'idProduct',
+    ]
+    for (const key of keys) {
+      const val = obj[key]
+      if (
+        val !== undefined &&
+        val !== null &&
+        val !== '' &&
+        !isNaN(Number(val)) &&
+        Number(val) !== 0
+      ) {
+        return Number(val)
+      }
+    }
+    return 0
+  }
+
+  const rawId = ((): number => {
+    // 1. Try common nested structures
+    const innerProduct = rawItem.product || rawItem.item || rawItem.data
+    const nestedId = getAnyId(innerProduct)
+    if (nestedId) return nestedId
+
+    // 2. Try top level
+    const topId = getAnyId(rawItem)
+    if (topId) return topId
+
+    return 0
+  })()
+
+  if (rawId === 0 && process.env.NODE_ENV === 'development') {
+    console.warn('[transformBackendProduct] ⚠️ NO ID FOUND. Keys:', Object.keys(rawItem), rawItem)
+  }
+
   const transformed = {
-    id: (item.productId as number) || (item.id as number) || 0,
+    id: rawId,
     title: String(item.productName || item.title || 'Unknown'),
     price:
       typeof item.productAskingPrice === 'number'
@@ -121,14 +172,14 @@ export const transformBackendProduct = (item: Record<string, unknown>) => {
     sellerId: (item.sellerId as number) || undefined,
     sellerName: String(
       item.sellerName ||
-        (typeof listedBy === 'object' ? listedBy?.name : listedBy) ||
-        'Unknown Seller'
+      (typeof listedBy === 'object' ? listedBy?.name : listedBy) ||
+      'Unknown Seller'
     ),
     // listedBy for backward compatibility
     listedBy: String(
       item.sellerName ||
-        (typeof listedBy === 'object' ? listedBy?.name : listedBy) ||
-        'Unknown Seller'
+      (typeof listedBy === 'object' ? listedBy?.name : listedBy) ||
+      'Unknown Seller'
     ),
     rating: (item.rating as number) || 0, // Default to 0 if no rating
     reviews:
@@ -140,8 +191,18 @@ export const transformBackendProduct = (item: Record<string, unknown>) => {
             ? 1 // If it's a single review object, count as 1
             : 0, // Show 0 reviews if none exist (no fake data)
     location: cleanLocationString(
-      String(item.productLocation || item.location || 'Dar es Salaam, TZ')
+      String(
+        item.productLocation ||
+        item.location ||
+        (item.productRegion && item.productCountry
+          ? `${item.productRegion}, ${item.productCountry}`
+          : 'Dar es Salaam, TZ')
+      )
     ),
+    city: String(item.productRegion || item.city || '').trim(),
+    country: String(item.productCountry || item.country || '').trim(),
+    street: String(item.productStreet || item.street || '').trim(),
+    whatsapp: String(item.productWhatsappNumber || item.whatsappNumber || '').trim(),
     isVerified: Boolean(
       (typeof listedBy === 'object' ? listedBy?.verified : false) || item.isVerified || true
     ),
@@ -149,7 +210,9 @@ export const transformBackendProduct = (item: Record<string, unknown>) => {
     condition: String(item.productCondition || item.condition || 'used'),
     // Preserve view count (clickCount from backend) if available
     views: (item.clickCount as number) || 0,
-    quantity: (item.productQuantity as number) || 0,
+    // Default to 1 if missing or 0 to ensure legacy products are visible
+    quantity: typeof item.productQuantity === 'number' ? item.productQuantity : 1,
+    createdAt: (item.createdAt || item.datePosted) as string | undefined,
   }
 
   return transformed

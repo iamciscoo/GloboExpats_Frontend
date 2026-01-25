@@ -2,9 +2,9 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { CountryFlag } from '@/components/country-flag'
+import { CountryFlag, getCountryCodeFromLabel } from '@/components/country-flag'
 import { getCategoryFields } from '@/lib/category-fields'
-import { ITEM_CONDITIONS, CURRENCIES } from '@/lib/constants'
+import { ITEM_CONDITIONS, CURRENCIES, EXPAT_LOCATIONS } from '@/lib/constants'
 import {
   MapPin,
   Package,
@@ -26,6 +26,8 @@ interface FormData {
   category: string
   condition: string
   location: string
+  street: string
+  whatsappNumber: string
   description: string
   price: string
   originalPrice: string
@@ -103,7 +105,26 @@ export function ReviewStep({ formData, backendCategories, onEditStep }: ReviewSt
             }
           />
           <ReviewField label="Condition" value={getConditionLabel(formData.condition)} />
-          <ReviewField label="Location" value={formData.location} icon={MapPin} />
+          <ReviewField
+            label="Location"
+            value={
+              EXPAT_LOCATIONS.find((l) => l.value === formData.location)?.label || formData.location
+            }
+            icon={(() => {
+              const countryCode = getCountryCodeFromLabel(formData.location || '')
+              return countryCode ? undefined : MapPin
+            })()}
+            customIcon={(() => {
+              const countryCode = getCountryCodeFromLabel(formData.location || '')
+              return countryCode ? <CountryFlag countryCode={countryCode} size="sm" /> : undefined
+            })()}
+          />
+          {formData.street && (
+            <ReviewField label="Street / Area" value={formData.street} icon={MapPin} />
+          )}
+          {formData.whatsappNumber && (
+            <ReviewField label="WhatsApp" value={formData.whatsappNumber} icon={Edit3} />
+          )}
           {formData.quantity && (
             <ReviewField label="Available Quantity" value={formData.quantity} />
           )}
@@ -290,11 +311,13 @@ function ReviewField({
   label,
   value,
   icon: Icon,
+  customIcon,
   small = false,
 }: {
   label: string
   value: string
   icon?: React.ComponentType<{ className?: string }>
+  customIcon?: React.ReactNode
   small?: boolean
 }) {
   return (
@@ -303,7 +326,7 @@ function ReviewField({
       <dd
         className={`text-[#0F172A] flex items-center gap-2 ${small ? 'text-sm' : 'text-base font-medium'}`}
       >
-        {Icon && <Icon className="w-4 h-4 text-[#64748B]" />}
+        {customIcon ? customIcon : Icon && <Icon className="w-4 h-4 text-[#64748B]" />}
         {value || <span className="text-[#94A3B8] italic">Not provided</span>}
       </dd>
     </div>

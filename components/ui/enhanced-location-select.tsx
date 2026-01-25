@@ -169,6 +169,7 @@ export function EnhancedLocationSelect({
 
   // Handle city selection
   const handleCityChange = (cityLabel: string) => {
+    console.log('[EnhancedLocationSelect] handleCityChange called with:', cityLabel)
     if (cityLabel === 'other') {
       setShowOtherInput(true)
       setSelectedCity('')
@@ -179,6 +180,7 @@ export function EnhancedLocationSelect({
     }
 
     setSelectedCity(cityLabel)
+    console.log('[EnhancedLocationSelect] Calling onValueChange with:', cityLabel)
     onValueChange(cityLabel)
   }
 
@@ -297,7 +299,9 @@ export function EnhancedLocationSelect({
                 )}
               >
                 <SelectValue
-                  placeholder={selectedCountry ? 'Select city' : '← Choose country first'}
+                  placeholder={
+                    selectedCountry ? 'Select city' : '← Choose country first, then city'
+                  }
                 />
               </SelectTrigger>
               <SelectContent>

@@ -6,17 +6,18 @@
 // ============================================================
 
 // Add this hook call in your StatisticsPage component:
-/*
+/_
 const { data: keywords, loading: loadingKeywords } = useMatomo({
-  method: 'Referrers.getKeywords',
-  period,
-  date: getMatomoDate(dateRange),
+method: 'Referrers.getKeywords',
+period,
+date: getMatomoDate(dateRange),
 })
-*/
+_/
 
 // Add this component after the countries section:
-/*
+/\*
 {keywords && Array.isArray(keywords) && keywords.length > 0 && (
+
   <div className="bg-white rounded-lg shadow mb-8">
     <div className="px-6 py-4 border-b border-gray-200">
       <h2 className="text-lg font-semibold text-gray-900">Top Search Keywords</h2>
@@ -59,17 +60,18 @@ const { data: keywords, loading: loadingKeywords } = useMatomo({
 // EXAMPLE 2: Add Device Type Statistics
 // ============================================================
 
-/*
+/_
 const { data: devices } = useMatomo({
-  method: 'DevicesDetection.getType',
-  period,
-  date: getMatomoDate(dateRange),
+method: 'DevicesDetection.getType',
+period,
+date: getMatomoDate(dateRange),
 })
-*/
+_/
 
 // Add this metric card:
-/*
+/\*
 {devices && Array.isArray(devices) && devices[0] && (
+
   <div className="bg-white rounded-lg shadow p-6">
     <div>
       <p className="text-gray-500 text-sm font-medium mb-4">Devices</p>
@@ -108,17 +110,18 @@ const { data: devices } = useMatomo({
 // EXAMPLE 3: Add Browser Statistics
 // ============================================================
 
-/*
+/_
 const { data: browsers } = useMatomo({
-  method: 'DevicesDetection.getBrowser',
-  period,
-  date: getMatomoDate(dateRange),
+method: 'DevicesDetection.getBrowser',
+period,
+date: getMatomoDate(dateRange),
 })
-*/
+_/
 
 // Add this section:
-/*
+/\*
 {browsers && Array.isArray(browsers) && browsers.length > 0 && (
+
   <div className="bg-white rounded-lg shadow">
     <div className="px-6 py-4 border-b border-gray-200">
       <h2 className="text-lg font-semibold text-gray-900">Browser Distribution</h2>
@@ -153,17 +156,18 @@ const { data: browsers } = useMatomo({
 // EXAMPLE 4: Add Operating System Stats
 // ============================================================
 
-/*
+/_
 const { data: osStats } = useMatomo({
-  method: 'DevicesDetection.getOS',
-  period,
-  date: getMatomoDate(dateRange),
+method: 'DevicesDetection.getOS',
+period,
+date: getMatomoDate(dateRange),
 })
-*/
+_/
 
 // Add this simple card:
-/*
+/\*
 {osStats && Array.isArray(osStats) && osStats.length > 0 && (
+
   <div className="bg-white rounded-lg shadow p-6">
     <h3 className="text-lg font-semibold text-gray-900 mb-4">Operating Systems</h3>
     <ul className="space-y-3">
@@ -182,16 +186,17 @@ const { data: osStats } = useMatomo({
 // EXAMPLE 5: Add Real-Time Live Visitors
 // ============================================================
 
-/*
+/_
 const { data: liveVisitors } = useMatomo({
-  method: 'Live.getCounters',
-  idSite: '1', // your site ID
+method: 'Live.getCounters',
+idSite: '1', // your site ID
 })
-*/
+_/
 
 // Simple live counter card:
-/*
+/\*
 {liveVisitors && (
+
   <div className="bg-gradient-to-r from-green-400 to-green-600 rounded-lg shadow p-6 text-white">
     <div className="flex items-center justify-between">
       <div>
@@ -213,17 +218,18 @@ const { data: liveVisitors } = useMatomo({
 // EXAMPLE 6: Add Referrer Websites Section
 // ============================================================
 
-/*
+/_
 const { data: referrers } = useMatomo({
-  method: 'Referrers.getWebsites',
-  period,
-  date: getMatomoDate(dateRange),
+method: 'Referrers.getWebsites',
+period,
+date: getMatomoDate(dateRange),
 })
-*/
+_/
 
 // Add this table:
-/*
+/\*
 {referrers && Array.isArray(referrers) && referrers.length > 0 && (
+
   <div className="bg-white rounded-lg shadow">
     <div className="px-6 py-4 border-b border-gray-200">
       <h2 className="text-lg font-semibold text-gray-900">Top Referrer Websites</h2>
@@ -269,89 +275,91 @@ const { data: referrers } = useMatomo({
 // EXAMPLE 7: Custom Quick Stat Cards
 // ============================================================
 
-/*
+/\*
 Helper function to create stat cards:
 
 function StatCard({
-  title,
-  value,
-  icon,
-  bgColor = 'blue',
+title,
+value,
+icon,
+bgColor = 'blue',
 }: {
-  title: string
-  value: string | number
-  icon: React.ReactNode
-  bgColor?: 'blue' | 'green' | 'purple' | 'orange' | 'red'
+title: string
+value: string | number
+icon: React.ReactNode
+bgColor?: 'blue' | 'green' | 'purple' | 'orange' | 'red'
 }) {
-  const bgColorMap = {
-    blue: 'bg-blue-100',
-    green: 'bg-green-100',
-    purple: 'bg-purple-100',
-    orange: 'bg-orange-100',
-    red: 'bg-red-100',
-  }
-  
-  const iconColorMap = {
-    blue: 'text-blue-600',
-    green: 'text-green-600',
-    purple: 'text-purple-600',
-    orange: 'text-orange-600',
-    red: 'text-red-600',
-  }
+const bgColorMap = {
+blue: 'bg-blue-100',
+green: 'bg-green-100',
+purple: 'bg-purple-100',
+orange: 'bg-orange-100',
+red: 'bg-red-100',
+}
 
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-gray-500 text-sm font-medium">{title}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">
-            {typeof value === 'number' ? value.toLocaleString() : value}
-          </p>
-        </div>
-        <div className={`${bgColorMap[bgColor]} rounded-full p-3`}>
-          <div className={`${iconColorMap[bgColor]}`}>{icon}</div>
-        </div>
-      </div>
-    </div>
-  )
+const iconColorMap = {
+blue: 'text-blue-600',
+green: 'text-green-600',
+purple: 'text-purple-600',
+orange: 'text-orange-600',
+red: 'text-red-600',
+}
+
+return (
+
+<div className="bg-white rounded-lg shadow p-6">
+<div className="flex items-center justify-between">
+<div>
+<p className="text-gray-500 text-sm font-medium">{title}</p>
+<p className="mt-2 text-3xl font-bold text-gray-900">
+{typeof value === 'number' ? value.toLocaleString() : value}
+</p>
+</div>
+<div className={`${bgColorMap[bgColor]} rounded-full p-3`}>
+<div className={`${iconColorMap[bgColor]}`}>{icon}</div>
+</div>
+</div>
+</div>
+)
 }
 
 // Usage:
 <StatCard
-  title="Bounce Rate"
-  value="45.2%"
-  bgColor="orange"
-  icon={<YourSVGIcon />}
+title="Bounce Rate"
+value="45.2%"
+bgColor="orange"
+icon={<YourSVGIcon />}
 />
-*/
+\*/
 
 // ============================================================
 // EXAMPLE 8: Add Time-Based Comparison
 // ============================================================
 
 // Use Matomo's date range feature to compare periods:
-/*
+/\*
 const { data: todayData } = useMatomo({
-  method: 'VisitsSummary.get',
-  period: 'day',
-  date: 'today',
+method: 'VisitsSummary.get',
+period: 'day',
+date: 'today',
 })
 
 const { data: yesterdayData } = useMatomo({
-  method: 'VisitsSummary.get',
-  period: 'day',
-  date: 'yesterday',
+method: 'VisitsSummary.get',
+period: 'day',
+date: 'yesterday',
 })
 
 // Calculate percentage change
 const visitChange = todayData?.nb_visits && yesterdayData?.nb_visits
-  ? (
-      ((todayData.nb_visits - yesterdayData.nb_visits) / yesterdayData.nb_visits) *
-      100
-    ).toFixed(1)
-  : '0'
+? (
+((todayData.nb_visits - yesterdayData.nb_visits) / yesterdayData.nb_visits) \*
+100
+).toFixed(1)
+: '0'
 
 // Display with trend indicator
+
 <div className="flex items-center gap-2">
   <span className="text-3xl font-bold">
     {todayData?.nb_visits?.toLocaleString()}
@@ -366,7 +374,8 @@ const visitChange = todayData?.nb_visits && yesterdayData?.nb_visits
 // Usage Tips
 // ============================================================
 
-/*
+/\*
+
 1. All these examples follow the same pattern:
    - Use useMatomo() hook with method name
    - Check if data exists and is an array
@@ -387,4 +396,4 @@ const visitChange = todayData?.nb_visits && yesterdayData?.nb_visits
 
 6. Always handle loading and error states
    (already done in the main dashboard)
-*/
+   \*/

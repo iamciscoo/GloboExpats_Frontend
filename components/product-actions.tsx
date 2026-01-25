@@ -2,7 +2,7 @@
 
 import { useVerification } from '@/hooks/use-verification'
 import { VerificationPopup } from '@/components/verification-popup'
-import { Minus, Plus } from 'lucide-react'
+import { Minus, Plus, Heart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCart } from '@/hooks/use-cart'
 import { useRouter } from 'next/navigation'
@@ -10,6 +10,8 @@ import { useToast } from '@/components/ui/use-toast'
 import { productToCartItem } from '@/lib/cart-utils'
 import { useState } from 'react'
 import { useAuth } from '@/hooks/use-auth'
+import { useSavedProducts } from '@/hooks/use-saved-products'
+import { cn } from '@/lib/utils'
 
 interface ProductActionsProps {
   productId?: number
@@ -46,6 +48,7 @@ export function ProductActions({
   const router = useRouter()
   const { toast } = useToast()
   const { user } = useAuth()
+  const { isProductSaved, toggleSaveProduct } = useSavedProducts()
   const [isLoading, setIsLoading] = useState(false)
   const [quantity, setQuantity] = useState(1)
 
@@ -276,6 +279,26 @@ export function ProductActions({
         >
           {isLoading ? 'Processing...' : isOutOfStock ? 'Out of Stock' : 'Buy Now'}
         </Button>
+
+        <Button
+          onClick={() => productId && toggleSaveProduct(productId)}
+          variant="outline"
+          className={cn(
+            'w-full rounded-full h-11 sm:h-12 text-sm sm:text-base font-medium transition-all duration-300',
+            productId && isProductSaved(productId)
+              ? 'border-red-200 bg-red-50 hover:bg-red-100 text-red-600'
+              : 'border-gray-200 hover:bg-gray-50 text-gray-700'
+          )}
+        >
+          <Heart
+            className={cn(
+              'w-5 h-5 mr-2 transition-colors',
+              productId && isProductSaved(productId) ? 'fill-red-600 text-red-600' : 'text-gray-500'
+            )}
+          />
+          {productId && isProductSaved(productId) ? 'Saved to Wishlist' : 'Save for Later'}
+        </Button>
+
         <VerificationPopup
           isOpen={isVerificationPopupOpen}
           onClose={closeVerificationPopup}

@@ -5,31 +5,35 @@
 I've built you a complete analytics interface to display Matomo data. Here's what you got:
 
 ### 1. **Backend API Route** (`/app/api/matomo/route.ts`)
-   - Secure endpoint at `/api/matomo`
-   - Keeps your Matomo token safe on the server
-   - Accepts queries and forwards them to your Matomo instance
-   - Returns analytics data to the frontend
+
+- Secure endpoint at `/api/matomo`
+- Keeps your Matomo token safe on the server
+- Accepts queries and forwards them to your Matomo instance
+- Returns analytics data to the frontend
 
 ### 2. **Custom React Hook** (`/hooks/use-matomo.ts`)
-   - `useMatomo()` hook for easy data fetching
-   - Handles loading and error states
-   - Supports any Matomo API method
-   - Simple to use in components
+
+- `useMatomo()` hook for easy data fetching
+- Handles loading and error states
+- Supports any Matomo API method
+- Simple to use in components
 
 ### 3. **Public Analytics Dashboard** (`/app/statistics/page.tsx`)
-   - **NO LOGIN REQUIRED** - completely public
-   - Beautiful, responsive design with Tailwind CSS
-   - Shows key metrics: visits, unique visitors, page views, bounce rate
-   - Top pages table
-   - Visitor geography table
-   - Time period selector (day/week/month/year)
-   - Date range selector (today/yesterday/last 7/30 days/month)
+
+- **NO LOGIN REQUIRED** - completely public
+- Beautiful, responsive design with Tailwind CSS
+- Shows key metrics: visits, unique visitors, page views, bounce rate
+- Top pages table
+- Visitor geography table
+- Time period selector (day/week/month/year)
+- Date range selector (today/yesterday/last 7/30 days/month)
 
 ### 4. **Documentation** (`MATOMO_ANALYTICS_SETUP.md`)
-   - Complete setup guide
-   - API reference
-   - Troubleshooting tips
-   - Customization examples
+
+- Complete setup guide
+- API reference
+- Troubleshooting tips
+- Customization examples
 
 ---
 
@@ -88,6 +92,7 @@ The key security point: Your `MATOMO_TOKEN` is **only used on the backend**, nev
 ### Add More Metrics
 
 The page already shows:
+
 - ✅ Visits, unique visitors, page views, bounce rate
 - ✅ Top 10 pages with traffic
 - ✅ Top 10 countries with visitor count
@@ -151,6 +156,7 @@ No, it only exists on the server in `.env.local`. The frontend never sees it.
 Yes! The page uses Tailwind CSS. Edit the color classes in `/app/statistics/page.tsx`.
 
 **Q: What if data doesn't show?**
+
 1. Check `.env.local` has correct values
 2. Verify Matomo is tracking your site
 3. Try a different date range

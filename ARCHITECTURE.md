@@ -80,6 +80,7 @@
 ## Component Breakdown
 
 ### 1. Frontend Component (`/app/statistics/page.tsx`)
+
 ```
 StatisticsPage (client-side)
 ├─ State: period, dateRange
@@ -97,6 +98,7 @@ StatisticsPage (client-side)
 ```
 
 ### 2. React Hook (`/hooks/use-matomo.ts`)
+
 ```
 useMatomo(options)
 ├─ Input: {method, period, date, idSite}
@@ -110,6 +112,7 @@ useMatomo(options)
 ```
 
 ### 3. Backend API Route (`/app/api/matomo/route.ts`)
+
 ```
 /api/matomo GET endpoint
 ├─ Receives: query parameters
@@ -173,6 +176,7 @@ useMatomo(options)
 ## Security Model
 
 ### What's Safe? ✅
+
 ```
 PUBLIC (can be in code / frontend / URLs):
 ├─ NEXT_PUBLIC_MATOMO_URL = https://matomo.globoexpats.com
@@ -186,6 +190,7 @@ PROTECTED (server-only, in .env.local):
 ```
 
 ### Token Location: Server Only
+
 ```
 Browser       Backend         Matomo
  │             │               │
@@ -270,11 +275,13 @@ Token NEVER travels to browser! ✅
 ## Typical Request/Response
 
 ### Request to `/api/matomo`
+
 ```
 GET /api/matomo?method=VisitsSummary.get&period=day&date=today&idSite=1
 ```
 
 ### Backend Internal Request to Matomo
+
 ```
 GET https://matomo.globoexpats.com/index.php
    ?module=API
@@ -287,6 +294,7 @@ GET https://matomo.globoexpats.com/index.php
 ```
 
 ### Response to Browser
+
 ```json
 {
   "nb_visits": 150,
@@ -304,6 +312,7 @@ GET https://matomo.globoexpats.com/index.php
 ## Performance Considerations
 
 ### Caching
+
 ```typescript
 // Without caching (current):
 // Re-fetches on every render/date change
@@ -318,6 +327,7 @@ GET https://matomo.globoexpats.com/index.php
 ```
 
 ### Parallel Requests
+
 ```typescript
 // Current approach (good):
 // 3 useMatomo() hooks in parallel
@@ -337,6 +347,7 @@ GET https://matomo.globoexpats.com/index.php
 ## Scaling For Production
 
 ### Current Setup (Good for Small-Medium)
+
 ```
 /api/matomo route
 └─ Direct pass-through to Matomo
@@ -344,6 +355,7 @@ GET https://matomo.globoexpats.com/index.php
 ```
 
 ### For Scaling (Optional Later)
+
 ```
 /api/matomo route with caching
 ├─ Redis/In-memory cache

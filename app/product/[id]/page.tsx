@@ -31,6 +31,7 @@ import { handleAuthError } from '@/lib/auth-redirect'
 import { useAuth } from '@/hooks/use-auth'
 import { canUserContact } from '@/lib/verification-utils'
 import { toast } from '@/components/ui/use-toast'
+import { CountryFlag, getCountryCodeFromLabel } from '@/components/country-flag'
 
 export default function ProductPage() {
   const params = useParams()
@@ -723,7 +724,14 @@ export default function ProductPage() {
                   </h1>
 
                   <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <MapPin className="w-4 h-4" />
+                    {(() => {
+                      const countryCode = getCountryCodeFromLabel(product.location || '')
+                      return countryCode ? (
+                        <CountryFlag countryCode={countryCode} size="sm" />
+                      ) : (
+                        <MapPin className="w-4 h-4" />
+                      )
+                    })()}
                     <span>{product.location}</span>
                   </div>
                 </div>
@@ -815,6 +823,26 @@ export default function ProductPage() {
                       })()}
                     </span>
                   </div>
+
+                  {/* Detailed Location Fields */}
+                  {product.city && (
+                    <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                      <span className="text-sm font-medium text-gray-600">City / Region</span>
+                      <span className="text-sm font-semibold text-gray-900">{product.city}</span>
+                    </div>
+                  )}
+                  {product.country && (
+                    <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                      <span className="text-sm font-medium text-gray-600">Country</span>
+                      <span className="text-sm font-semibold text-gray-900">{product.country}</span>
+                    </div>
+                  )}
+                  {product.street && (
+                    <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                      <span className="text-sm font-medium text-gray-600">Street / Area</span>
+                      <span className="text-sm font-semibold text-gray-900">{product.street}</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Action Buttons */}

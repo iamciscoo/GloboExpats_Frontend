@@ -19,12 +19,7 @@ interface UseMatomoAnalyticsOptions {
 }
 
 export function useMatomo(options: UseMatomoAnalyticsOptions = {}) {
-  const {
-    method = 'VisitsSummary.get',
-    period = 'day',
-    date = 'today',
-    idSite = '1',
-  } = options
+  const { method = 'VisitsSummary.get', period = 'day', date = 'today', idSite = '1' } = options
 
   const [data, setData] = useState<MatomoData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -49,7 +44,7 @@ export function useMatomo(options: UseMatomoAnalyticsOptions = {}) {
       }
 
       const result = await response.json()
-      
+
       // Debug logging
       console.log(`[useMatomo] ${method}:`, {
         hasData: !!result,
@@ -57,7 +52,7 @@ export function useMatomo(options: UseMatomoAnalyticsOptions = {}) {
         length: Array.isArray(result) ? result.length : 'N/A',
         sample: Array.isArray(result) && result.length > 0 ? result[0] : result,
       })
-      
+
       // Handle both single object and array responses from Matomo
       // For arrays (like page lists, country lists), return the full array
       // For single objects (like visit summaries), return the object

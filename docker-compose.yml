@@ -4,21 +4,31 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        # Build-time arguments from .env file
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-        BACKEND_URL: ${BACKEND_URL}
+        # Build-time arguments - BACKEND_URL must be hardcoded for Docker networking
+        # because Next.js rewrites are evaluated at build time
+        NEXT_PUBLIC_API_URL: ''
+        BACKEND_URL: 'http://backend:8080'
         NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL}
         NEXT_PUBLIC_CDN_URL: ${NEXT_PUBLIC_CDN_URL}
         NEXT_PUBLIC_ENVIRONMENT: ${NEXT_PUBLIC_ENVIRONMENT}
-        NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL}
+        NEXT_PUBLIC_BACKEND_URL: 'http://localhost:8081'
     container_name: frontend
     ports:
       - '3000:3000'
     restart: unless-stopped
+    environment:
+      # Override BACKEND_URL to use Docker service name instead of localhost
+      # Backend accepts HTTP and redirects to OAuth for protected endpoints
+      - BACKEND_URL=http://backend:8080
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8081
     networks:
       - frontend
+      - backend
 
 networks:
   frontend:
     driver: bridge
     name: frontend
+  backend:
+    external: true
+    name: backend

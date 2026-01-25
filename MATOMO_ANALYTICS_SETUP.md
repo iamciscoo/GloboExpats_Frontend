@@ -19,6 +19,7 @@ A fully functional analytics dashboard integrated with Matomo that displays real
 You need three pieces of information from your Matomo instance (`https://matomo.globoexpats.com/`):
 
 #### A. Get Your Authentication Token
+
 1. Log in to your Matomo dashboard
 2. Go to **Administration** (gear icon)
 3. Click **Personal** in the left sidebar
@@ -28,7 +29,9 @@ You need three pieces of information from your Matomo instance (`https://matomo.
 7. Copy the generated token
 
 #### B. Get Your Site ID
+
 The Site ID is the numeric identifier for your website:
+
 1. In Matomo admin, go to **Sites** or check the URL bar
 2. Usually visible in the dashboard URL or in the site settings
 3. Common values are `1`, `2`, etc.
@@ -44,7 +47,8 @@ MATOMO_TOKEN=your_actual_token_here
 MATOMO_SITE_ID=1
 ```
 
-**Important**: 
+**Important**:
+
 - `NEXT_PUBLIC_MATOMO_URL` is exposed to the frontend (that's ok, it's just the URL)
 - `MATOMO_TOKEN` is ONLY used on the backend in `/app/api/matomo/route.ts` - never exposed to frontend
 - Never commit `.env.local` to git (it's in `.gitignore`)
@@ -58,6 +62,7 @@ Visit: `http://localhost:3000/statistics`
 ### API Route (`/app/api/matomo/route.ts`)
 
 This is a secure backend endpoint that:
+
 1. Accepts analytics requests from the frontend
 2. Uses your `MATOMO_TOKEN` to authenticate with Matomo's API
 3. Fetches data from `https://matomo.globoexpats.com/`
@@ -65,6 +70,7 @@ This is a secure backend endpoint that:
 5. **Never exposes** the token to the frontend
 
 **Usage from frontend:**
+
 ```javascript
 const params = new URLSearchParams({
   method: 'VisitsSummary.get',
@@ -91,6 +97,7 @@ const { data, loading, error, refetch } = useMatomo({
 ### Statistics Page (`/app/statistics/page.tsx`)
 
 A public page that displays:
+
 - **Key Metrics**: Visits, unique visitors, page views, bounce rate
 - **Top Pages**: Most visited pages with traffic breakdown
 - **Visitor Geography**: Distribution of visitors by country
@@ -155,7 +162,7 @@ const { data } = useMatomo({
 
 ```typescript
 const { data } = useMatomo({
-  period: 'month',  // or 'week', 'year'
+  period: 'month', // or 'week', 'year'
   date: 'lastMonth', // or 'last30', 'last7'
 })
 ```
@@ -173,21 +180,25 @@ const { data: referrers } = useMatomo({
 ## Troubleshooting
 
 ### "Failed to fetch analytics data"
+
 - Check that `MATOMO_TOKEN` is set in `.env.local`
 - Verify the token is valid (not expired)
 - Check that `MATOMO_SITE_ID` matches your website in Matomo
 
 ### "No data available"
+
 - Your site might not have tracked data for that time period
 - Try selecting a different date range
 - Make sure your Matomo instance is tracking your website
 
 ### CORS/Network Errors
+
 - These shouldn't happen because we're using the backend API route
 - If they do, check that Matomo is accessible from your server
 - Verify no firewall is blocking requests to Matomo
 
 ### Token Authentication Fails
+
 - Regenerate the token in Matomo (Administration > Personal > Security)
 - Ensure no typos in `.env.local`
 - Check that the token has API permissions enabled
@@ -195,11 +206,13 @@ const { data: referrers } = useMatomo({
 ## Security Notes
 
 ✅ **Safe:**
+
 - `NEXT_PUBLIC_MATOMO_URL` - This is just the base URL, safe to expose
 - Analytics data itself - Usually not sensitive
 - `/statistics` route - Public access is fine for analytics
 
 ⚠️ **Never expose:**
+
 - `MATOMO_TOKEN` - Keep only in server environment variables
 - Admin credentials
 - Any personal data you might track
@@ -213,6 +226,7 @@ const { data: referrers } = useMatomo({
 ## Future Enhancements
 
 Consider adding:
+
 - Date range picker (calendar)
 - Export to CSV/PDF
 - Custom report builder

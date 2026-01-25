@@ -28,7 +28,17 @@ export default function NewListingsSlider() {
       setLoading(true)
       setError(null)
       const res = await apiClient.getNewestListings(0, 20)
-      const content = extractContentFromResponse(res)
+      let content = extractContentFromResponse(res)
+
+      // FALLBACK: If dedicated newest endpoint is empty (common backend sync issue),
+      // fetch from the general products list which is guaranteed to work
+      if (content.length === 0) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[NewListings] Empty newest list, falling back to general products...')
+        }
+        const fallbackRes = await apiClient.getAllProductsComplete(5)
+        content = fallbackRes.content || []
+      }
 
       if (process.env.NODE_ENV === 'development') {
         console.log(`[NewListings] Fetched ${content.length} products`)

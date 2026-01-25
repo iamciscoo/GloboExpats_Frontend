@@ -34,6 +34,8 @@ interface FormData {
   categoryId: number
   condition: string
   location: string
+  street: string
+  whatsappNumber: string
   productDescription: string
   currency: string
   askingPrice: string
@@ -81,6 +83,8 @@ function EditListingContent() {
     categoryId: 0,
     condition: '',
     location: '',
+    street: '',
+    whatsappNumber: '',
     productDescription: '',
     currency: 'TZS',
     askingPrice: '',
@@ -184,6 +188,8 @@ function EditListingContent() {
           categoryId: Number(product.categoryId || 0),
           condition: String(product.productCondition || ''),
           location: locationValue,
+          street: String(product.productStreet || ''),
+          whatsappNumber: String(product.whatsappNumber || ''),
           productDescription: parsedDescription.description,
           currency: String(product.productCurrency || 'TZS'),
           askingPrice: String(product.productAskingPrice || ''),
@@ -268,7 +274,7 @@ function EditListingContent() {
       const totalSizeMB = (totalSize / 1024 / 1024).toFixed(1)
       setErrors([
         `Total file size (${totalSizeMB}MB) would exceed the 100MB upload limit. ` +
-          'Please select smaller images or reduce the number of images.',
+        'Please select smaller images or reduce the number of images.',
       ])
       return
     }
@@ -375,6 +381,7 @@ function EditListingContent() {
     if (!formData.productName.trim()) newErrors.push('Product name is required')
     if (!formData.categoryId) newErrors.push('Category is required')
     if (!formData.condition) newErrors.push('Condition is required')
+    if (!formData.street.trim()) newErrors.push('Street / Area is required')
     if (!formData.location) newErrors.push('Location is required')
     if (!formData.productDescription.trim()) newErrors.push('Description is required')
     if (!formData.askingPrice || isNaN(Number(formData.askingPrice))) {
@@ -427,11 +434,65 @@ function EditListingContent() {
         categoryName
       )
 
+      /**
+       * Map country codes to full names to match backend expectations
+       */
+      const COUNTRY_MAP: Record<string, string> = {
+        TZ: 'Tanzania',
+        KE: 'Kenya',
+        UG: 'Uganda',
+        RW: 'Rwanda',
+        BI: 'Burundi',
+      }
+
+      const sanitizeLocationForBackend = (loc: string): string => {
+        if (!loc) return ''
+
+        // 1. Check if the location is a known slug from EXPAT_LOCATIONS
+        const locationObj = EXPAT_LOCATIONS.find((l) => l.value === loc)
+        if (locationObj) {
+          // Extract city name from label (e.g. "Dar es Salaam, TZ" -> "Dar es Salaam")
+          const cityName = locationObj.label.split(',')[0].trim()
+          return `${cityName}, ${locationObj.country}`
+        }
+
+        // 2. Fallback: Manual cleanup for custom or raw strings
+        // Initial cleanup: Remove emojis and non-ASCII (e.g., flags), trim extra spaces
+        let sanitized = loc.replace(/[^\x20-\x7E]/g, '').trim()
+
+        // Map country codes to full names for known patterns (e.g. "Nairobi, KE" -> "Nairobi, Kenya")
+        Object.entries(COUNTRY_MAP).forEach(([code, name]) => {
+          const regex = new RegExp(`,\\s*${code}$`, 'i')
+          if (regex.test(sanitized)) {
+            sanitized = sanitized.replace(regex, `, ${name}`)
+          }
+        })
+
+        return sanitized
+      }
+
+      const sanitizedLocation = sanitizeLocationForBackend(formData.location)
+
+      const normalizeConditionForBackend = (cond: string): string => {
+        const c = (cond || '').toLowerCase()
+        if (c === 'new') return 'NEW'
+        if (c === 'like-new') return 'LIKE_NEW'
+        return 'USED'
+      }
+
+      // Split sanitized location into region and country
+      const locationParts = sanitizedLocation.split(',').map((p) => p.trim())
+      const productRegion = locationParts[0] || ''
+      const productCountry = locationParts[1] || ''
+
       const updateData = {
         productName: formData.productName.trim().substring(0, MAX_LENGTHS.productName),
         categoryId: formData.categoryId,
-        condition: formData.condition.substring(0, MAX_LENGTHS.condition),
-        location: formData.location.substring(0, MAX_LENGTHS.location),
+        condition: normalizeConditionForBackend(formData.condition),
+        productCountry: productCountry,
+        productRegion: productRegion,
+        productStreet: formData.street.trim() || 'Not specified',
+        whatsappNumber: formData.whatsappNumber.trim() || '',
         productDescription: enhancedDescription,
         currency: 'TZS',
         askingPrice: Math.round(askingPriceInTZS),
@@ -501,7 +562,7 @@ function EditListingContent() {
             // 100MB limit
             throw new Error(
               `Total file size (${(totalSize / 1024 / 1024).toFixed(1)}MB) exceeds the 100MB limit. ` +
-                'Please reduce the number of images or compress them to smaller sizes.'
+              'Please reduce the number of images or compress them to smaller sizes.'
             )
           }
         } catch (downloadError) {
@@ -564,7 +625,7 @@ function EditListingContent() {
           console.error('❌ Product data updated but image operations failed')
           throw new Error(
             'Product information was updated successfully, but image changes failed. ' +
-              'Please try editing the listing again to update the images.'
+            'Please try editing the listing again to update the images.'
           )
         } else if (!dataUpdated) {
           console.error('❌ Product data update failed')
@@ -689,9 +750,8 @@ function EditListingContent() {
                       return (
                         <div
                           key={image.imageId}
-                          className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden group ${
-                            isMarkedForRemoval ? 'opacity-50 ring-2 ring-red-500' : ''
-                          }`}
+                          className={`relative aspect-square bg-gray-100 rounded-lg overflow-hidden group ${isMarkedForRemoval ? 'opacity-50 ring-2 ring-red-500' : ''
+                            }`}
                         >
                           <Image
                             src={getFullImageUrl(image.imageUrl)}
@@ -727,11 +787,10 @@ function EditListingContent() {
                             <button
                               type="button"
                               onClick={() => markImageForRemoval(image.imageId)}
-                              className={`group/btn flex items-center gap-1 px-2 py-1 rounded-md transition-all shadow-lg text-xs font-medium ${
-                                isMarkedForRemoval
+                              className={`group/btn flex items-center gap-1 px-2 py-1 rounded-md transition-all shadow-lg text-xs font-medium ${isMarkedForRemoval
                                   ? 'bg-green-600 hover:bg-green-700 text-white'
                                   : 'bg-red-600 hover:bg-red-700 text-white opacity-0 group-hover:opacity-100'
-                              }`}
+                                }`}
                               title={isMarkedForRemoval ? 'Keep this image' : 'Remove image'}
                             >
                               {isMarkedForRemoval ? (
@@ -881,7 +940,7 @@ function EditListingContent() {
               </div>
 
               <div>
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category">Category *</Label>
                 <Select
                   value={formData.categoryId.toString()}
                   onValueChange={(value) =>
@@ -902,7 +961,7 @@ function EditListingContent() {
               </div>
 
               <div>
-                <Label htmlFor="condition">Condition</Label>
+                <Label htmlFor="condition">Condition *</Label>
                 <Select
                   value={formData.condition}
                   onValueChange={(value) => setFormData((prev) => ({ ...prev, condition: value }))}
@@ -920,12 +979,41 @@ function EditListingContent() {
                 </Select>
               </div>
 
-              <div className="md:col-span-2">
-                <Label htmlFor="location">Location</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="street">Street / Area *</Label>
+                  <Input
+                    id="street"
+                    value={formData.street}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, street: e.target.value }))}
+                    placeholder="e.g., Oyster Bay, Kilimani"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="whatsapp">WhatsApp Number *</Label>
+                  <Input
+                    id="whatsapp"
+                    type="tel"
+                    value={formData.whatsappNumber}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, whatsappNumber: e.target.value }))
+                    }
+                    placeholder="e.g., +255 700 000 000"
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="location">Location *</Label>
                 <div className="mt-1">
                   <EnhancedLocationSelect
                     value={formData.location}
-                    onValueChange={(value) => setFormData((prev) => ({ ...prev, location: value }))}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, location: value }))
+                    }
                     placeholder="Select country first"
                     showLabels={false}
                   />

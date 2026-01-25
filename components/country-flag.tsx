@@ -110,5 +110,22 @@ export function getCountryCodeFromLabel(label: string): string | null {
   )
     return 'BI'
 
+  // USA
+  if (
+    lowerLabel.includes('usa') ||
+    lowerLabel.includes('united states') ||
+    lowerLabel.includes(' us')
+  )
+    return 'US'
+
+  // UK
+  if (
+    lowerLabel.includes('uk') ||
+    lowerLabel.includes('united kingdom') ||
+    lowerLabel.includes(' bg') ||
+    lowerLabel.includes('britain')
+  )
+    return 'GB'
+
   return null
 }

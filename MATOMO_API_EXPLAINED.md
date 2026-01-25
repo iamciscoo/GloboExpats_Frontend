@@ -5,12 +5,15 @@ The Matomo documentation can be confusing. This guide breaks it down in simple t
 ## Basic Concepts
 
 ### 1. What is an API?
+
 Think of Matomo's API as a waiter at a restaurant:
+
 - You (the frontend) make a request: "Show me visitors from last 7 days"
 - The waiter (API) takes your order to the kitchen (Matomo)
 - The kitchen prepares the data and gives you a plate (JSON response)
 
 ### 2. The REST API
+
 Matomo uses a REST API, which means you make HTTP requests to get data.
 
 ```
@@ -19,6 +22,7 @@ https://matomo.globoexpats.com/index.php?module=API&method=VisitsSummary.get&idS
 ```
 
 Breaking it down:
+
 - `module=API` - We're calling the API (always this)
 - `method=VisitsSummary.get` - The data we want (visits, visitors, actions, etc.)
 - `idSite=1` - Which website (1 = first website in your Matomo)
@@ -31,14 +35,15 @@ Breaking it down:
 
 These are the 4 main parameters you'll always use:
 
-| Parameter | Options | Meaning |
-|-----------|---------|---------|
-| `idSite` | 1, 2, 3... | Which website to analyze |
-| `period` | day, week, month, year | How to group the data |
-| `date` | today, yesterday, YYYY-MM-DD | Which date(s) |
-| `format` | json, xml, csv, html | How to return it |
+| Parameter | Options                      | Meaning                  |
+| --------- | ---------------------------- | ------------------------ |
+| `idSite`  | 1, 2, 3...                   | Which website to analyze |
+| `period`  | day, week, month, year       | How to group the data    |
+| `date`    | today, yesterday, YYYY-MM-DD | Which date(s)            |
+| `format`  | json, xml, csv, html         | How to return it         |
 
 **Common date values:**
+
 - `today` - Today only
 - `yesterday` - Yesterday only
 - `last7` - Last 7 days
@@ -51,12 +56,14 @@ These are the 4 main parameters you'll always use:
 Each `method` returns different data:
 
 **Top-Level Metrics:**
+
 ```
 VisitsSummary.get
 Returns: visits, unique visitors, actions (page views), bounce rate, time spent
 ```
 
 **Page & Action Data:**
+
 ```
 Actions.getPageUrls
 Returns: Which pages got how many visits
@@ -69,6 +76,7 @@ Returns: All actions/pages combined
 ```
 
 **Visitor Geography:**
+
 ```
 UserCountry.getCountry
 Returns: Which countries your visitors come from
@@ -78,6 +86,7 @@ Returns: Which continents your visitors come from
 ```
 
 **Traffic Sources (Where visitors come from):**
+
 ```
 Referrers.getKeywords
 Returns: What search terms people used
@@ -90,6 +99,7 @@ Returns: Campaign tracking data
 ```
 
 **Device & Browser Info:**
+
 ```
 DevicesDetection.getType
 Returns: Desktop, Mobile, Tablet splits
@@ -102,6 +112,7 @@ Returns: Windows, Mac, Linux, iOS, Android
 ```
 
 **Real-Time:**
+
 ```
 Live.getLastVisitsDetails
 Returns: Individual visitor details (real-time)
@@ -117,11 +128,13 @@ Returns: Count of visitors in last N minutes
 ### Simple Example: Get Today's Stats
 
 **API URL (What we actually call):**
+
 ```
 /api/matomo?method=VisitsSummary.get&period=day&date=today&idSite=1
 ```
 
 **What happens:**
+
 1. Your frontend calls this route
 2. Backend secretly adds your `token_auth` (hidden from frontend)
 3. Backend calls Matomo
@@ -129,6 +142,7 @@ Returns: Count of visitors in last N minutes
 5. Your frontend displays it
 
 **In your React component:**
+
 ```typescript
 const { data } = useMatomo({
   method: 'VisitsSummary.get',
@@ -149,6 +163,7 @@ const { data } = useMatomo({
 ## Common Use Cases
 
 ### 1. "Show me how many people visited today"
+
 ```typescript
 const { data } = useMatomo({
   method: 'VisitsSummary.get',
@@ -160,6 +175,7 @@ console.log(data.nb_visits) // e.g., 150
 ```
 
 ### 2. "Show me the top 5 pages"
+
 ```typescript
 const { data } = useMatomo({
   method: 'Actions.getPageUrls',
@@ -178,6 +194,7 @@ data.slice(0, 5) // Get top 5
 ```
 
 ### 3. "Show me where visitors are from"
+
 ```typescript
 const { data } = useMatomo({
   method: 'UserCountry.getCountry',
@@ -194,6 +211,7 @@ const { data } = useMatomo({
 ```
 
 ### 4. "Show me visits trend over 30 days"
+
 ```typescript
 const { data } = useMatomo({
   method: 'VisitsSummary.get',
@@ -206,6 +224,7 @@ const { data } = useMatomo({
 ```
 
 ### 5. "Show me search keywords"
+
 ```typescript
 const { data } = useMatomo({
   method: 'Referrers.getKeywords',
@@ -228,6 +247,7 @@ const { data } = useMatomo({
 Most API calls return one of these:
 
 ### Type 1: Single Object
+
 ```typescript
 // For VisitsSummary.get
 {
@@ -241,6 +261,7 @@ Most API calls return one of these:
 ```
 
 ### Type 2: Array of Objects
+
 ```typescript
 // For Actions.getPageUrls, UserCountry.getCountry, etc.
 [
@@ -251,17 +272,18 @@ Most API calls return one of these:
 ```
 
 ### Type 3: Nested Data (with subtables)
+
 ```typescript
 // When method supports subtables (hierarchical data)
-[
+;[
   {
     label: 'parent item',
     nb_visits: 100,
     subtable: [
       { label: 'child item', nb_visits: 50 },
       { label: 'child item', nb_visits: 50 },
-    ]
-  }
+    ],
+  },
 ]
 ```
 
@@ -271,22 +293,23 @@ Our hook handles all three automatically.
 
 ## Important Metrics (What the numbers mean)
 
-| Metric | Meaning |
-|--------|---------|
-| `nb_visits` | Number of visits (a visit = browsing session) |
+| Metric             | Meaning                                                    |
+| ------------------ | ---------------------------------------------------------- |
+| `nb_visits`        | Number of visits (a visit = browsing session)              |
 | `nb_uniq_visitors` | Number of unique people (same person, multiple visits = 1) |
-| `nb_actions` | Page views + file downloads + outlink clicks |
-| `bounce_count` | Visits where person only viewed 1 page then left |
-| `bounce_rate` | Percentage of visits that bounced |
-| `sum_visit_length` | Total seconds spent on site |
-| `conversion_rate` | Percentage of visits that converted (achieved goal) |
-| `revenue` | Revenue from e-commerce transactions |
+| `nb_actions`       | Page views + file downloads + outlink clicks               |
+| `bounce_count`     | Visits where person only viewed 1 page then left           |
+| `bounce_rate`      | Percentage of visits that bounced                          |
+| `sum_visit_length` | Total seconds spent on site                                |
+| `conversion_rate`  | Percentage of visits that converted (achieved goal)        |
+| `revenue`          | Revenue from e-commerce transactions                       |
 
 ---
 
 ## Common Mistakes (And How to Fix Them)
 
 ### Mistake 1: Wrong date format
+
 ```typescript
 // ❌ Wrong
 date: '2024/01/15'
@@ -296,6 +319,7 @@ date: '2024-01-15'
 ```
 
 ### Mistake 2: Forgetting token_auth
+
 ```typescript
 // ❌ This won't work (no auth)
 const url = 'https://matomo.globoexpats.com/index.php?...'
@@ -305,6 +329,7 @@ const url = 'https://matomo.globoexpats.com/index.php?...'
 ```
 
 ### Mistake 3: Using wrong idSite
+
 ```typescript
 // ❌ If your site ID is 1, using 2 gets wrong data
 idSite: 2
@@ -314,6 +339,7 @@ idSite: 1
 ```
 
 ### Mistake 4: Expecting array when getting single object
+
 ```typescript
 // ✅ Always check type first
 if (Array.isArray(data)) {
@@ -328,6 +354,7 @@ if (Array.isArray(data)) {
 ## Getting More Data From API
 
 ### Option 1: More Rows
+
 By default, Matomo returns top 100 rows. To get more:
 
 ```typescript
@@ -338,6 +365,7 @@ By default, Matomo returns top 100 rows. To get more:
 ```
 
 ### Option 2: Specific Date Range
+
 Instead of predefined dates, use custom ranges:
 
 ```typescript
@@ -348,6 +376,7 @@ Instead of predefined dates, use custom ranges:
 ```
 
 ### Option 3: Filter Results
+
 ```typescript
 // Get only pages containing "product"
 &label=product
@@ -388,11 +417,13 @@ Instead of predefined dates, use custom ranges:
 ## Quick Reference
 
 **All the URLs we generate look like:**
+
 ```
 /api/matomo?method=[METHOD]&period=[PERIOD]&date=[DATE]&idSite=[SITE_ID]
 ```
 
 **Common METHOD values:**
+
 ```
 VisitsSummary.get
 Actions.getPageUrls
@@ -405,11 +436,13 @@ Live.getLastVisitsDetails
 ```
 
 **Common PERIOD values:**
+
 ```
 day, week, month, year, range
 ```
 
 **Common DATE values:**
+
 ```
 today, yesterday, last7, last30, lastMonth
 YYYY-MM-DD (specific date)

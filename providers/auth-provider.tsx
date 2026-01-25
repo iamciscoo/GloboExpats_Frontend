@@ -122,11 +122,7 @@ interface AuthContextType extends AuthState {
   requestOrganizationEmailOtp: (organizationalEmail: string) => Promise<void>
 
   /** Verify organization email address via OTP */
-  verifyOrganizationEmail: (
-    organizationalEmail: string,
-    otp: string,
-    userRoles?: 'SELLER' | 'USER' | string
-  ) => Promise<void>
+  verifyOrganizationEmail: (organizationalEmail: string, otp: string) => Promise<void>
 
   /** Refresh user session from backend */
   refreshSession: () => Promise<void>
@@ -693,11 +689,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 
   const verifyOrganizationEmail = useCallback(
-    async (
-      organizationalEmail: string,
-      otp: string,
-      userRoles: 'SELLER' | 'USER' | string = 'USER'
-    ): Promise<void> => {
+    async (organizationalEmail: string, otp: string): Promise<void> => {
       if (!authState.user) throw new Error('Must be logged in to verify email')
       setAuthState((prev) => ({ ...prev, isLoading: true, error: null }))
       try {
@@ -705,7 +697,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (token) apiClient.setAuthToken(token)
 
         // Verify the OTP with backend
-        await verifyOrgEmailOtp(organizationalEmail, otp, userRoles)
+        await verifyOrgEmailOtp(organizationalEmail, otp)
 
         // Fetch updated user details from backend to get real verification status
         const updatedUserDetails = await fetchUserDetails()

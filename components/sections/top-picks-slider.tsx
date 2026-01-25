@@ -28,7 +28,17 @@ export default function TopPicksSlider() {
       setLoading(true)
       setError(null)
       const res = await apiClient.getTopPicks(0, 30) // Fetch more to have better selection
-      const content = extractContentFromResponse(res)
+      let content = extractContentFromResponse(res)
+
+      // FALLBACK: If dedicated trending/top-picks endpoint is empty (common backend sync issue),
+      // fetch from the general products list which is guaranteed to work
+      if (content.length === 0) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('[TopPicks] Empty top picks list, falling back to general products...')
+        }
+        const fallbackRes = await apiClient.getAllProductsComplete(10)
+        content = fallbackRes.content || []
+      }
 
       if (process.env.NODE_ENV === 'development') {
         console.log(`[TopPicks] Fetched ${content.length} products`)

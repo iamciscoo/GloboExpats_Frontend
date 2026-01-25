@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge'
 import { RouteGuard } from '@/components/route-guard'
 import { EnhancedLocationSelect } from '@/components/ui/enhanced-location-select'
 import { apiClient } from '@/lib/api'
-import { ITEM_CONDITIONS, CURRENCIES } from '@/lib/constants'
+import { ITEM_CONDITIONS, CURRENCIES, EXPAT_LOCATIONS } from '@/lib/constants'
 import { CURRENCIES as CURRENCY_CONFIG } from '@/lib/currency-converter'
 import { getCategoryFields } from '@/lib/category-fields'
 import { getStepTips, getCategoryTips, getStepName } from '@/lib/step-tips'
@@ -35,6 +35,8 @@ interface FormData {
   category: string
   condition: string
   location: string
+  street: string
+  whatsappNumber: string
   description: string
   price: string
   originalPrice: string
@@ -52,6 +54,8 @@ const INITIAL_FORM_DATA: FormData = {
   category: '',
   condition: '',
   location: '',
+  street: '',
+  whatsappNumber: '',
   description: '',
   price: '',
   originalPrice: '',
@@ -232,8 +236,13 @@ function SellPageContent() {
           errorMessage = 'Please select a category'
         } else if (!formData.condition) {
           errorMessage = 'Please select the item condition'
+        } else if (!formData.street.trim()) {
+          errorMessage = 'Please enter your street or area'
         } else if (!formData.location) {
+          console.log('[Sell] validateStep - location is empty:', JSON.stringify(formData.location))
           errorMessage = 'Please choose a location'
+        } else if (!formData.whatsappNumber.trim()) {
+          errorMessage = 'Please enter your WhatsApp number for buyers to contact you'
         }
         break
       case 2:
@@ -419,23 +428,70 @@ function SellPageContent() {
         formData.category
       )
 
+      /**
+       * Map country codes to full names to match backend expectations
+       */
+      const COUNTRY_MAP: Record<string, string> = {
+        TZ: 'Tanzania',
+        KE: 'Kenya',
+        UG: 'Uganda',
+        RW: 'Rwanda',
+        BI: 'Burundi',
+      }
+
+      // Country code to full name mapping for backend compatibility
+      // Backend expects "City, Country" format with full country name (e.g., "Nairobi, Kenya")
+      // Frontend stores "City, CC" format (e.g., "Nairobi, KE")
       const sanitizeLocationForBackend = (loc: string): string => {
         if (!loc) return ''
-        // Remove emojis and non-ASCII (e.g., flags), trim extra spaces
-        return loc.replace(/[^\x20-\x7E]/g, '').trim()
+
+        // 1. Check if the location is a known slug from EXPAT_LOCATIONS
+        const locationObj = EXPAT_LOCATIONS.find((l) => l.value === loc)
+        if (locationObj) {
+          // Extract city name from label (e.g. "Dar es Salaam, TZ" -> "Dar es Salaam")
+          const cityName = locationObj.label.split(',')[0].trim()
+          return `${cityName}, ${locationObj.country}`
+        }
+
+        // 2. Fallback: Manual cleanup for custom or raw strings
+        // Initial cleanup: Remove emojis and non-ASCII (e.g., flags), trim extra spaces
+        let sanitized = loc.replace(/[^\x20-\x7E]/g, '').trim()
+
+        // Map country codes to full names for known patterns (e.g. "Nairobi, KE" -> "Nairobi, Kenya")
+        Object.entries(COUNTRY_MAP).forEach(([code, name]) => {
+          const regex = new RegExp(`,\\s*${code}$`, 'i')
+          if (regex.test(sanitized)) {
+            sanitized = sanitized.replace(regex, `, ${name}`)
+          }
+        })
+
+        return sanitized
       }
+
+      // Debug: Log the location value before sanitization
+      console.log('[Sell] formData.location (raw):', JSON.stringify(formData.location))
+      const sanitizedLocation = sanitizeLocationForBackend(formData.location)
+      console.log('[Sell] sanitizedLocation:', JSON.stringify(sanitizedLocation))
+
+      // Split sanitized location into region and country
+      const locationParts = sanitizedLocation.split(',').map((p) => p.trim())
+      const productRegion = locationParts[0] || ''
+      const productCountry = locationParts[1] || ''
 
       const productData = {
         productName: formData.title.trim(),
         categoryId: categoryId,
         condition: normalizeConditionForBackend(formData.condition),
-        location: sanitizeLocationForBackend(formData.location),
+        productCountry: productCountry,
+        productRegion: productRegion,
+        productStreet: formData.street.trim() || 'Not specified',
+        whatsappNumber: formData.whatsappNumber.trim() || '',
         productDescription: enhancedDescription,
         currency: 'TZS', // Always store as TZS in backend
         askingPrice: Math.round(askingPriceInTZS), // Round to nearest shilling
         originalPrice: Math.round(originalPriceInTZS),
         productWarranty: formData.warranty.trim() || 'No warranty', // Use form data or default
-        productQuantity: 1, // Initialize with 1 to avoid 500 error, update later
+        productQuantity: formData.quantity !== '' ? parseInt(formData.quantity) : 1,
       }
 
       const actualQuantity = formData.quantity !== '' ? parseInt(formData.quantity) : 1
@@ -488,7 +544,7 @@ function SellPageContent() {
                 // Don't continue - stop on first failure to trigger rollback
                 throw new Error(
                   `Failed to upload batch ${batchNumber} of ${Math.ceil(remainingImages.length / batchSize)}. ` +
-                    `${batchError instanceof Error ? batchError.message : 'Unknown error'}`
+                  `${batchError instanceof Error ? batchError.message : 'Unknown error'}`
                 )
               }
             }
@@ -655,20 +711,18 @@ function SellPageContent() {
               <div key={step} className="flex items-center flex-1">
                 <div className="flex flex-col items-center w-full">
                   <div
-                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold transition-all duration-300 ${
-                      step === currentStep
-                        ? 'bg-[#1E3A8A] text-white shadow-md'
-                        : step < currentStep
-                          ? 'bg-[#1E3A8A] text-white'
-                          : 'bg-[#F1F5F9] text-[#94A3B8] border-2 border-[#E2E8F0]'
-                    }`}
+                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-sm sm:text-base font-semibold transition-all duration-300 ${step === currentStep
+                      ? 'bg-[#1E3A8A] text-white shadow-md'
+                      : step < currentStep
+                        ? 'bg-[#1E3A8A] text-white'
+                        : 'bg-[#F1F5F9] text-[#94A3B8] border-2 border-[#E2E8F0]'
+                      }`}
                   >
                     {step}
                   </div>
                   <span
-                    className={`mt-2 text-xs sm:text-sm font-medium transition-all duration-300 text-center ${
-                      step <= currentStep ? 'text-[#0F172A]' : 'text-[#94A3B8]'
-                    }`}
+                    className={`mt-2 text-xs sm:text-sm font-medium transition-all duration-300 text-center ${step <= currentStep ? 'text-[#0F172A]' : 'text-[#94A3B8]'
+                      }`}
                   >
                     {STEP_TITLES[step - 1]}
                   </span>
@@ -676,9 +730,7 @@ function SellPageContent() {
                 {index < 3 && (
                   <div className="flex-1 h-0.5 mx-2 sm:mx-4 mb-8">
                     <div
-                      className={`h-full transition-all duration-300 ${
-                        step < currentStep ? 'bg-[#1E3A8A]' : 'bg-[#E2E8F0]'
-                      }`}
+                      className={`h-full transition-all duration-300 ${step < currentStep ? 'bg-[#1E3A8A]' : 'bg-[#E2E8F0]'}`}
                     />
                   </div>
                 )}
@@ -866,7 +918,7 @@ function Step1Content({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
         <div className="space-y-3">
-          <Label className="text-base font-semibold text-neutral-800">Category *</Label>
+          <label className="text-base font-semibold text-neutral-800">Category *</label>
           <Select
             onValueChange={(value) => {
               // Clear category fields when category changes
@@ -924,7 +976,7 @@ function Step1Content({
         </div>
 
         <div className="space-y-3">
-          <Label className="text-base font-semibold text-neutral-800">Condition *</Label>
+          <label className="text-base font-semibold text-neutral-800">Condition *</label>
           <Select
             onValueChange={(value) => updateFormData({ condition: value })}
             value={formData.condition}
@@ -943,8 +995,40 @@ function Step1Content({
         </div>
       </div>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
+        <div className="space-y-3">
+          <label htmlFor="street" className="text-base font-semibold text-neutral-800">
+            Street / Area *
+          </label>
+          <Input
+            id="street"
+            placeholder="e.g., Oyster Bay, Kilimani, Upper Hill"
+            className="h-12 sm:h-14 text-base border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 transition-all duration-200 bg-white"
+            value={formData.street}
+            onChange={(e) => updateFormData({ street: e.target.value })}
+          />
+        </div>
+
+        <div className="space-y-3">
+          <label htmlFor="whatsapp" className="text-base font-semibold text-neutral-800">
+            WhatsApp Number *
+          </label>
+          <Input
+            id="whatsapp"
+            type="tel"
+            placeholder="e.g., +255 700 000 000"
+            className="h-12 sm:h-14 text-base border-2 border-[#E2E8F0] rounded-xl focus:border-[#1E3A8A] focus:ring-2 focus:ring-[#1E3A8A]/20 transition-all duration-200 bg-white"
+            value={formData.whatsappNumber}
+            onChange={(e) => updateFormData({ whatsappNumber: e.target.value })}
+          />
+          <p className="text-xs text-brand-primary font-medium">
+            This number will be used to contact you for this specific product listing.
+          </p>
+        </div>
+      </div>
+
       <div className="space-y-3">
-        <Label className="text-base font-semibold text-neutral-800">Location *</Label>
+        <label className="text-base font-semibold text-neutral-800">Location *</label>
         <EnhancedLocationSelect
           value={formData.location}
           onValueChange={(value) => updateFormData({ location: value })}

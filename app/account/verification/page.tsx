@@ -66,7 +66,7 @@ export default function VerificationPage() {
     setError('')
     setSuccess('')
     try {
-      await verifyOrganizationEmail(organizationEmail, otp, 'BUYER')
+      await verifyOrganizationEmail(organizationEmail, otp)
       setSuccess('Email verified successfully')
       setOtpSent(false)
       setOtp('')
