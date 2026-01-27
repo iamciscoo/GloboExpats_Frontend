@@ -1,959 +1,552 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useMatomo } from '@/hooks/use-matomo'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import {
+  LayoutDashboard,
+  Users,
+  Monitor,
+  FileText,
+  Zap,
+  Calendar,
+  RefreshCw,
+  AlertCircle,
+  BarChart3,
+  UserCircle,
+} from 'lucide-react'
+
+import OverviewTab from './components/OverviewTab'
+import AudienceTab from './components/AudienceTab'
+import TechnologyTab from './components/TechnologyTab'
+import ContentTabComponent from './components/ContentTabComponent'
+import RealtimeTab from './components/RealtimeTab'
+import UserActivityTab from './components/UserActivityTab'
+
+// Utility to normalize Matomo data - handles both flat arrays and date-keyed objects
+function normalizeData(data: any): any[] {
+  if (!data) return []
+  if (Array.isArray(data)) return data
+  // Handle date-keyed object (e.g., { "2026-01-21": [...], "2026-01-22": [...] })
+  if (typeof data === 'object') {
+    const values = Object.values(data)
+    // Check if values are arrays (date-keyed format)
+    if (values.length > 0 && Array.isArray(values[0])) {
+      // Flatten and aggregate by label
+      const aggregated: Record<string, any> = {}
+      values.forEach((arr: any) => {
+        if (Array.isArray(arr)) {
+          arr.forEach((item: any) => {
+            const key = item.label || 'Unknown'
+            if (!aggregated[key]) {
+              aggregated[key] = { ...item }
+            } else {
+              // Sum numeric values
+              aggregated[key].nb_visits = (aggregated[key].nb_visits || 0) + (item.nb_visits || 0)
+              aggregated[key].nb_uniq_visitors = (aggregated[key].nb_uniq_visitors || 0) + (item.nb_uniq_visitors || 0)
+              aggregated[key].nb_actions = (aggregated[key].nb_actions || 0) + (parseInt(item.nb_actions) || 0)
+              aggregated[key].nb_hits = (aggregated[key].nb_hits || 0) + (item.nb_hits || 0)
+            }
+          })
+        }
+      })
+      return Object.values(aggregated).sort((a: any, b: any) => (b.nb_visits || 0) - (a.nb_visits || 0))
+    }
+    // Single object (like VisitsSummary.get for single day)
+    return [data]
+  }
+  return []
+}
+
+// Utility to normalize summary data (single object or date-keyed)
+function normalizeSummary(data: any): any {
+  if (!data) return null
+  if (Array.isArray(data)) return data[0] || null
+  if (typeof data === 'object') {
+    const keys = Object.keys(data)
+    // Check if it looks like date keys
+    if (keys.length > 0 && /^\d{4}-\d{2}-\d{2}$/.test(keys[0])) {
+      // Aggregate all date values
+      const aggregated: any = {}
+      keys.forEach((dateKey) => {
+        const dayData = data[dateKey]
+        if (dayData && typeof dayData === 'object' && !Array.isArray(dayData)) {
+          Object.keys(dayData).forEach((field) => {
+            if (typeof dayData[field] === 'number') {
+              aggregated[field] = (aggregated[field] || 0) + dayData[field]
+            } else if (typeof dayData[field] === 'string' && !aggregated[field]) {
+              aggregated[field] = dayData[field]
+            }
+          })
+        }
+      })
+      // Calculate averages for rate fields
+      if (aggregated.bounce_count && aggregated.nb_visits) {
+        aggregated.bounce_rate = Math.round((aggregated.bounce_count / aggregated.nb_visits) * 100) + '%'
+      }
+      if (aggregated.sum_visit_length && aggregated.nb_visits) {
+        aggregated.avg_time_on_site = Math.round(aggregated.sum_visit_length / aggregated.nb_visits)
+      }
+      if (aggregated.nb_actions && aggregated.nb_visits) {
+        aggregated.nb_actions_per_visit = Math.round((aggregated.nb_actions / aggregated.nb_visits) * 10) / 10
+      }
+      return aggregated
+    }
+    // Already a single object
+    return data
+  }
+  return null
+}
 
 type Period = 'day' | 'week' | 'month' | 'year'
-type DateRange = 'today' | 'yesterday' | 'last7' | 'last30' | 'lastMonth'
-type ActiveSection = 'overview' | 'audience' | 'technology' | 'content' | 'realtime'
+type DateRange = 'today' | 'yesterday' | 'last7' | 'last30' | 'lastMonth' | 'lastYear'
 
-// Matomo data types
-interface MatomoDataItem {
-  label: string
-  nb_visits?: number
-  nb_uniq_visitors?: number
-  bounce_rate?: string | number
-}
+const periodOptions: { value: Period; label: string }[] = [
+  { value: 'day', label: 'Daily' },
+  { value: 'week', label: 'Weekly' },
+  { value: 'month', label: 'Monthly' },
+  { value: 'year', label: 'Yearly' },
+]
 
-type MatomoDevice = MatomoDataItem
-type MatomoPage = MatomoDataItem
-type MatomoCountry = MatomoDataItem
-type MatomoContinent = MatomoDataItem
-type MatomoCity = MatomoDataItem
-type MatomoLanguage = MatomoDataItem
-type MatomoBrowser = MatomoDataItem
-type MatomoOS = MatomoDataItem
-interface MatomoVisit {
-  visitorId?: string
-  countryCode?: string
-  lastActionDateTime?: string
-  actions?: number
-  visitDuration?: number
-}
+const dateRangeOptions: { value: DateRange; label: string; description: string }[] = [
+  { value: 'today', label: 'Today', description: 'Current day' },
+  { value: 'yesterday', label: 'Yesterday', description: 'Previous day' },
+  { value: 'last7', label: 'Last 7 Days', description: 'Past week' },
+  { value: 'last30', label: 'Last 30 Days', description: 'Past month' },
+  { value: 'lastMonth', label: 'Last Month', description: 'Previous month' },
+  { value: 'lastYear', label: 'Last Year', description: 'Previous year' },
+]
 
 export default function StatisticsPage() {
   const [period, setPeriod] = useState<Period>('day')
-  const [dateRange, setDateRange] = useState<DateRange>('today')
-  const [activeSection, setActiveSection] = useState<ActiveSection>('overview')
+  const [dateRange, setDateRange] = useState<DateRange>('last7')
+  const [activeTab, setActiveTab] = useState('overview')
+  const [refreshKey, setRefreshKey] = useState(0)
 
-  // Map our UI date values to Matomo API date format
-  const getMatomoDate = (range: DateRange): string => {
+  const getMatomoDate = useCallback((range: DateRange): string => {
     const dateMap: Record<DateRange, string> = {
       today: 'today',
       yesterday: 'yesterday',
       last7: 'last7',
       last30: 'last30',
       lastMonth: 'lastMonth',
+      lastYear: 'lastYear',
     }
     return dateMap[range]
-  }
+  }, [])
 
-  // Fetch main analytics data
+  // Create stable options objects
+  const matomoDate = useMemo(() => getMatomoDate(dateRange), [dateRange, getMatomoDate])
+
+  // Core analytics data
   const {
     data: visitsSummary,
     loading: loadingVisits,
     error: errorVisits,
+    refetch: refetchVisits,
   } = useMatomo({
     method: 'VisitsSummary.get',
     period,
-    date: getMatomoDate(dateRange),
+    date: matomoDate,
+    _key: refreshKey,
   })
 
-  // Fetch page URLs data
   const {
     data: pageUrls,
     loading: loadingPages,
     error: errorPages,
+    refetch: refetchPages,
   } = useMatomo({
     method: 'Actions.getPageUrls',
     period,
-    date: getMatomoDate(dateRange),
+    date: matomoDate,
+    filter_limit: '50',
+    _key: refreshKey,
   })
 
-  // Fetch countries data
+  // Audience data
   const {
     data: countries,
     loading: loadingCountries,
-    error: errorCountries,
+    refetch: refetchCountries,
   } = useMatomo({
     method: 'UserCountry.getCountry',
     period,
-    date: getMatomoDate(dateRange),
+    date: matomoDate,
+    filter_limit: '50',
+    _key: refreshKey,
   })
 
-  // Device & Technology Analytics
-  const { data: deviceTypes, loading: loadingDeviceTypes } = useMatomo({
+  const {
+    data: continents,
+    loading: loadingContinents,
+    refetch: refetchContinents,
+  } = useMatomo({
+    method: 'UserCountry.getContinent',
+    period,
+    date: matomoDate,
+    _key: refreshKey,
+  })
+
+  const {
+    data: cities,
+    loading: loadingCities,
+    refetch: refetchCities,
+  } = useMatomo({
+    method: 'UserCountry.getCity',
+    period,
+    date: matomoDate,
+    filter_limit: '30',
+    _key: refreshKey,
+  })
+
+  const {
+    data: languages,
+    loading: loadingLanguages,
+    refetch: refetchLanguages,
+  } = useMatomo({
+    method: 'UserLanguage.getLanguage',
+    period,
+    date: matomoDate,
+    _key: refreshKey,
+  })
+
+  // Technology data
+  const {
+    data: deviceTypes,
+    loading: loadingDeviceTypes,
+    refetch: refetchDevices,
+  } = useMatomo({
     method: 'DevicesDetection.getType',
     period,
-    date: getMatomoDate(dateRange),
+    date: matomoDate,
+    _key: refreshKey,
   })
 
-  const { data: browsers, loading: loadingBrowsers } = useMatomo({
-    method: 'UserSettings.getBrowser',
+  const {
+    data: browsers,
+    loading: loadingBrowsers,
+    refetch: refetchBrowsers,
+  } = useMatomo({
+    method: 'DevicesDetection.getBrowsers',
     period,
-    date: getMatomoDate(dateRange),
+    date: matomoDate,
+    filter_limit: '20',
+    _key: refreshKey,
   })
 
-  const { data: operatingSystems, loading: loadingOS } = useMatomo({
-    method: 'UserSettings.getOS',
+  const {
+    data: operatingSystems,
+    loading: loadingOS,
+    refetch: refetchOS,
+  } = useMatomo({
+    method: 'DevicesDetection.getOsVersions',
     period,
-    date: getMatomoDate(dateRange),
+    date: matomoDate,
+    filter_limit: '20',
+    _key: refreshKey,
   })
 
-  // Real-Time Data
-  const { data: liveVisitors, loading: loadingLive } = useMatomo({
+  // Content data
+  const {
+    data: pageTitles,
+    loading: loadingPageTitles,
+    refetch: refetchTitles,
+  } = useMatomo({
+    method: 'Actions.getPageTitles',
+    period,
+    date: matomoDate,
+    filter_limit: '50',
+    _key: refreshKey,
+  })
+
+  const {
+    data: entryPages,
+    loading: loadingEntryPages,
+    refetch: refetchEntry,
+  } = useMatomo({
+    method: 'Actions.getEntryPageUrls',
+    period,
+    date: matomoDate,
+    filter_limit: '30',
+    _key: refreshKey,
+  })
+
+  const {
+    data: exitPages,
+    loading: loadingExitPages,
+    refetch: refetchExit,
+  } = useMatomo({
+    method: 'Actions.getExitPageUrls',
+    period,
+    date: matomoDate,
+    filter_limit: '30',
+    _key: refreshKey,
+  })
+
+  // Real-time data
+  const {
+    data: liveVisitors,
+    loading: loadingLive,
+    refetch: refetchLive,
+  } = useMatomo({
     method: 'Live.getCounters',
-    idSite: '1',
+    lastMinutes: '30',
+    _key: refreshKey,
   })
 
-  const { data: recentVisits, loading: loadingRecent } = useMatomo({
+  const {
+    data: recentVisits,
+    loading: loadingRecent,
+    refetch: refetchRecent,
+  } = useMatomo({
     method: 'Live.getLastVisitsDetails',
     period: 'day',
     date: 'today',
-    filter_limit: '10',
+    filter_limit: '20',
+    _key: refreshKey,
   })
 
-  // Advanced Metrics
-  const { data: pageTitles, loading: loadingPageTitles } = useMatomo({
-    method: 'Actions.getPageTitles',
-    period,
-    date: getMatomoDate(dateRange),
-  })
-
-  const { data: entryPages, loading: loadingEntryPages } = useMatomo({
-    method: 'Actions.getEntryPageUrls',
-    period,
-    date: getMatomoDate(dateRange),
-  })
-
-  const { data: exitPages, loading: loadingExitPages } = useMatomo({
-    method: 'Actions.getExitPageUrls',
-    period,
-    date: getMatomoDate(dateRange),
-  })
-
-  // Geographic Data
-  const { data: continents, loading: loadingContinents } = useMatomo({
-    method: 'UserCountry.getContinent',
-    period,
-    date: getMatomoDate(dateRange),
-  })
-
-  const { data: cities, loading: loadingCities } = useMatomo({
-    method: 'UserCountry.getCity',
-    period,
-    date: getMatomoDate(dateRange),
-  })
-
-  const { data: languages, loading: loadingLanguages } = useMatomo({
-    method: 'UserLanguage.getLanguage',
-    period,
-    date: getMatomoDate(dateRange),
-  })
+  // Loading states by tab
+  const overviewLoading = loadingVisits || loadingPages
+  const audienceLoading = loadingCountries || loadingContinents || loadingCities || loadingLanguages
+  const technologyLoading = loadingDeviceTypes || loadingBrowsers || loadingOS
+  const contentLoading = loadingPageTitles || loadingEntryPages || loadingExitPages
+  const realtimeLoading = loadingLive || loadingRecent
 
   const isLoading =
-    loadingVisits ||
-    loadingPages ||
-    loadingCountries ||
-    loadingDeviceTypes ||
-    loadingBrowsers ||
-    loadingOS ||
-    loadingLive ||
-    loadingRecent ||
-    loadingPageTitles ||
-    loadingEntryPages ||
-    loadingExitPages ||
-    loadingContinents ||
-    loadingCities ||
-    loadingLanguages
+    overviewLoading || audienceLoading || technologyLoading || contentLoading || realtimeLoading
+  const hasError = errorVisits || errorPages
 
-  const hasError = errorVisits || errorPages || errorCountries
+  // Refresh handlers
+  const handleRefreshAll = useCallback(() => {
+    setRefreshKey((prev) => prev + 1)
+  }, [])
+
+  const handleRefreshRealtime = useCallback(() => {
+    refetchLive()
+    refetchRecent()
+  }, [refetchLive, refetchRecent])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-          <p className="mt-2 text-gray-600">Real-time statistics and insights</p>
-        </div>
+    <div className="min-h-screen bg-slate-50">
+      {/* Header */}
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-4 sm:py-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30">
+                  <BarChart3 className="h-5 w-5" />
+                </div>
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
+                    Analytics Dashboard
+                  </h1>
+                  <p className="text-sm text-slate-500 hidden sm:block">
+                    Track your site performance and user activity
+                  </p>
+                </div>
+              </div>
 
-        {/* Controls */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label
-                htmlFor="period-select"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Period
-              </label>
-              <select
-                id="period-select"
-                value={period}
-                onChange={(e) => setPeriod(e.target.value as Period)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="day">Daily</option>
-                <option value="week">Weekly</option>
-                <option value="month">Monthly</option>
-                <option value="year">Yearly</option>
-              </select>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleRefreshAll}
+                  disabled={isLoading}
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50 shadow-sm"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                  <span className="hidden sm:inline">Refresh</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Filters Section */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+            <div className="flex-1">
+              <span className="block text-sm font-medium text-slate-700 mb-2">
+                <Calendar className="inline-block h-4 w-4 mr-1.5 text-slate-400" />
+                Time Period
+              </span>
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Time period selection">
+                {periodOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setPeriod(option.value)}
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                      period === option.value
+                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
+                        : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div>
-              <label
-                htmlFor="date-range-select"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
+            <div className="flex-1">
+              <label htmlFor="date-range" className="block text-sm font-medium text-slate-700 mb-2">
                 Date Range
               </label>
               <select
-                id="date-range-select"
+                id="date-range"
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value as DateRange)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full sm:w-auto px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
               >
-                <option value="today">Today</option>
-                <option value="yesterday">Yesterday</option>
-                <option value="last7">Last 7 Days</option>
-                <option value="last30">Last 30 Days</option>
-                <option value="lastMonth">Last Month</option>
+                {dateRangeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-slate-500">
+              <span
+                className={`h-2 w-2 rounded-full ${isLoading ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`}
+              />
+              {isLoading ? 'Loading...' : 'Data ready'}
             </div>
           </div>
         </div>
 
-        {/* Main Layout with Sidebar */}
-        <div className="flex gap-8">
-          {/* Sidebar */}
-          <div className="w-64 flex-shrink-0">
-            <div className="bg-white rounded-lg shadow">
-              <div className="p-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Analytics</h2>
+        {/* Error Banner */}
+        {hasError && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-sm font-semibold text-red-800">Error Loading Analytics Data</h3>
+                <p className="text-sm text-red-700 mt-1">{errorVisits || errorPages}</p>
+                <p className="text-xs text-red-600 mt-2">
+                  Make sure MATOMO_TOKEN and MATOMO_SITE_ID environment variables are configured
+                  correctly.
+                </p>
+                <button
+                  onClick={handleRefreshAll}
+                  className="mt-3 text-sm font-medium text-red-700 hover:text-red-800 underline"
+                >
+                  Try again
+                </button>
               </div>
-              <nav className="p-4 space-y-2">
-                <button
-                  onClick={() => setActiveSection('overview')}
-                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                    activeSection === 'overview'
-                      ? 'bg-blue-100 text-blue-700 border-r-4 border-blue-500'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg">📊</span>
-                    <div>
-                      <div className="font-medium">Overview</div>
-                      <div className="text-sm opacity-75">Key metrics</div>
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setActiveSection('audience')}
-                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                    activeSection === 'audience'
-                      ? 'bg-blue-100 text-blue-700 border-r-4 border-blue-500'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg">👥</span>
-                    <div>
-                      <div className="font-medium">Audience</div>
-                      <div className="text-sm opacity-75">Geography & demographics</div>
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setActiveSection('technology')}
-                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                    activeSection === 'technology'
-                      ? 'bg-blue-100 text-blue-700 border-r-4 border-blue-500'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg">💻</span>
-                    <div>
-                      <div className="font-medium">Technology</div>
-                      <div className="text-sm opacity-75">Devices & browsers</div>
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setActiveSection('content')}
-                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                    activeSection === 'content'
-                      ? 'bg-blue-100 text-blue-700 border-r-4 border-blue-500'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg">📄</span>
-                    <div>
-                      <div className="font-medium">Content</div>
-                      <div className="text-sm opacity-75">Pages & engagement</div>
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setActiveSection('realtime')}
-                  className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-                    activeSection === 'realtime'
-                      ? 'bg-blue-100 text-blue-700 border-r-4 border-blue-500'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg">⚡</span>
-                    <div>
-                      <div className="font-medium">Real-time</div>
-                      <div className="text-sm opacity-75">Live activity</div>
-                    </div>
-                  </div>
-                </button>
-              </nav>
             </div>
           </div>
+        )}
 
-          {/* Main Content */}
-          <div className="flex-1">
-            {/* Error Message */}
-            {hasError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
-                <p className="text-red-800">
-                  <strong>Error:</strong> {errorVisits || errorPages || errorCountries}
-                </p>
-                <p className="text-sm text-red-600 mt-2">
-                  Make sure you have set the environment variables: MATOMO_TOKEN and MATOMO_SITE_ID
-                </p>
-              </div>
-            )}
-
-            {/* Loading State */}
-            {isLoading && !hasError && (
-              <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                <p className="ml-4 text-gray-600">Loading analytics data...</p>
-              </div>
-            )}
-
-            {/* Content Sections */}
-            {!isLoading && visitsSummary && (
-              <>
-                {/* Overview Section */}
-                {activeSection === 'overview' && (
-                  <div className="space-y-8">
-                    {/* Main Metrics */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                      {/* Visits */}
-                      <div className="bg-white rounded-lg shadow p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-gray-500 text-sm font-medium">Visits</p>
-                            <p className="mt-2 text-3xl font-bold text-gray-900">
-                              {visitsSummary.nb_visits?.toLocaleString() || '0'}
-                            </p>
-                          </div>
-                          <div className="bg-blue-100 rounded-full p-3">
-                            <svg
-                              className="w-6 h-6 text-blue-600"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M13 10V3L4 14h7v7l9-11h-7z"
-                              />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Unique Visitors */}
-                      <div className="bg-white rounded-lg shadow p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-gray-500 text-sm font-medium">Unique Visitors</p>
-                            <p className="mt-2 text-3xl font-bold text-gray-900">
-                              {visitsSummary.nb_uniq_visitors?.toLocaleString() || '0'}
-                            </p>
-                          </div>
-                          <div className="bg-green-100 rounded-full p-3">
-                            <svg
-                              className="w-6 h-6 text-green-600"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 4.354a4 4 0 110 5.292M15 12H9m6 0a6 6 0 11-12 0 6 6 0 0112 0z"
-                              />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Page Views */}
-                      <div className="bg-white rounded-lg shadow p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-gray-500 text-sm font-medium">Page Views</p>
-                            <p className="mt-2 text-3xl font-bold text-gray-900">
-                              {visitsSummary.nb_actions?.toLocaleString() || '0'}
-                            </p>
-                          </div>
-                          <div className="bg-purple-100 rounded-full p-3">
-                            <svg
-                              className="w-6 h-6 text-purple-600"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                              />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Bounce Rate */}
-                      <div className="bg-white rounded-lg shadow p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-gray-500 text-sm font-medium">Bounce Rate</p>
-                            <p className="mt-2 text-3xl font-bold text-gray-900">
-                              {visitsSummary.bounce_rate
-                                ? `${parseFloat(visitsSummary.bounce_rate.toString()).toFixed(1)}%`
-                                : '0%'}
-                            </p>
-                          </div>
-                          <div className="bg-orange-100 rounded-full p-3">
-                            <svg
-                              className="w-6 h-6 text-orange-600"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M13 10V3L4 14h7v7l9-11h-7z"
-                              />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Top Pages */}
-                    {pageUrls && Array.isArray(pageUrls) && pageUrls.length > 0 && (
-                      <div className="bg-white rounded-lg shadow">
-                        <div className="px-6 py-4 border-b border-gray-200">
-                          <h2 className="text-lg font-semibold text-gray-900">Top Pages</h2>
-                        </div>
-                        <div className="overflow-x-auto">
-                          <table className="w-full">
-                            <thead className="bg-gray-50 border-b border-gray-200">
-                              <tr>
-                                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                                  Page
-                                </th>
-                                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                                  Visits
-                                </th>
-                                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                                  Unique Visitors
-                                </th>
-                                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                                  Bounce Rate
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                              {pageUrls.slice(0, 10).map((page: MatomoPage, index: number) => (
-                                <tr key={index} className="hover:bg-gray-50">
-                                  <td className="px-6 py-4 text-sm text-gray-900">
-                                    <a
-                                      href={page.label}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:text-blue-800 truncate block"
-                                      title={page.label}
-                                    >
-                                      {page.label.length > 50
-                                        ? `${page.label.substring(0, 50)}...`
-                                        : page.label}
-                                    </a>
-                                  </td>
-                                  <td className="px-6 py-4 text-sm text-gray-600">
-                                    {page.nb_visits?.toLocaleString()}
-                                  </td>
-                                  <td className="px-6 py-4 text-sm text-gray-600">
-                                    {page.nb_uniq_visitors?.toLocaleString()}
-                                  </td>
-                                  <td className="px-6 py-4 text-sm text-gray-600">
-                                    {page.bounce_rate
-                                      ? `${parseFloat(page.bounce_rate.toString()).toFixed(1)}%`
-                                      : 'N/A'}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Audience Section */}
-                {activeSection === 'audience' && (
-                  <div className="space-y-8">
-                    {/* Top Countries */}
-                    {countries && Array.isArray(countries) && countries.length > 0 && (
-                      <div className="bg-white rounded-lg shadow">
-                        <div className="px-6 py-4 border-b border-gray-200">
-                          <h2 className="text-lg font-semibold text-gray-900">
-                            Visitors by Country
-                          </h2>
-                        </div>
-                        <div className="overflow-x-auto">
-                          <table className="w-full">
-                            <thead className="bg-gray-50 border-b border-gray-200">
-                              <tr>
-                                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                                  Country
-                                </th>
-                                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                                  Visits
-                                </th>
-                                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                                  Unique Visitors
-                                </th>
-                                <th className="px-6 py-3 text-left text-sm font-medium text-gray-700">
-                                  % of Total
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                              {countries
-                                .slice(0, 10)
-                                .map((country: MatomoCountry, index: number) => {
-                                  const percentage = visitsSummary.nb_visits
-                                    ? (
-                                        ((country.nb_visits || 0) / visitsSummary.nb_visits) *
-                                        100
-                                      ).toFixed(1)
-                                    : '0'
-                                  return (
-                                    <tr key={index} className="hover:bg-gray-50">
-                                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                                        {country.label}
-                                      </td>
-                                      <td className="px-6 py-4 text-sm text-gray-600">
-                                        {country.nb_visits?.toLocaleString()}
-                                      </td>
-                                      <td className="px-6 py-4 text-sm text-gray-600">
-                                        {country.nb_uniq_visitors?.toLocaleString()}
-                                      </td>
-                                      <td className="px-6 py-4 text-sm text-gray-600">
-                                        {percentage}%
-                                      </td>
-                                    </tr>
-                                  )
-                                })}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Geographic Data */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                      {/* Continents */}
-                      {continents && Array.isArray(continents) && continents.length > 0 && (
-                        <div className="bg-white rounded-lg shadow">
-                          <div className="px-6 py-4 border-b border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">
-                              Visitors by Continent
-                            </h3>
-                          </div>
-                          <div className="p-6">
-                            <ul className="space-y-3">
-                              {continents
-                                .slice(0, 6)
-                                .map((continent: MatomoContinent, index: number) => (
-                                  <li key={index} className="flex justify-between items-center">
-                                    <span className="text-sm text-gray-700">{continent.label}</span>
-                                    <span className="text-sm font-medium text-gray-900">
-                                      {continent.nb_visits?.toLocaleString()}
-                                    </span>
-                                  </li>
-                                ))}
-                            </ul>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Cities */}
-                      {cities && Array.isArray(cities) && cities.length > 0 && (
-                        <div className="bg-white rounded-lg shadow">
-                          <div className="px-6 py-4 border-b border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">Top Cities</h3>
-                          </div>
-                          <div className="p-6">
-                            <ul className="space-y-3">
-                              {cities.slice(0, 8).map((city: MatomoCity, index: number) => (
-                                <li key={index} className="flex justify-between items-center">
-                                  <span className="text-sm text-gray-700">{city.label}</span>
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {city.nb_visits?.toLocaleString()}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Languages */}
-                      {languages && Array.isArray(languages) && languages.length > 0 && (
-                        <div className="bg-white rounded-lg shadow">
-                          <div className="px-6 py-4 border-b border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">
-                              Browser Languages
-                            </h3>
-                          </div>
-                          <div className="p-6">
-                            <ul className="space-y-3">
-                              {languages.slice(0, 6).map((lang: MatomoLanguage, index: number) => (
-                                <li key={index} className="flex justify-between items-center">
-                                  <span className="text-sm text-gray-700">{lang.label}</span>
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {lang.nb_visits?.toLocaleString()}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Technology Section */}
-                {activeSection === 'technology' && (
-                  <div className="space-y-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                      {/* Device Types */}
-                      {deviceTypes && Array.isArray(deviceTypes) && deviceTypes.length > 0 && (
-                        <div className="bg-white rounded-lg shadow p-6">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-4">Device Types</h3>
-                          <div className="space-y-4">
-                            {deviceTypes.slice(0, 3).map((device: MatomoDevice, index: number) => (
-                              <div key={index}>
-                                <div className="flex justify-between items-center mb-2">
-                                  <span className="text-sm font-medium text-gray-900 capitalize">
-                                    {device.label === 'Desktop'
-                                      ? '💻 Desktop'
-                                      : device.label === 'Smartphone'
-                                        ? '📱 Mobile'
-                                        : device.label === 'Tablet'
-                                          ? '📱 Tablet'
-                                          : device.label === 'Feature phone'
-                                            ? '📱 Feature Phone'
-                                            : device.label === 'Phablet'
-                                              ? '📱 Phablet'
-                                              : `📱 ${device.label}`}
-                                  </span>
-                                  <span className="text-sm text-gray-600">
-                                    {device.nb_visits?.toLocaleString()}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div
-                                    className="bg-blue-600 h-2 rounded-full"
-                                    style={{
-                                      width: `${
-                                        deviceTypes
-                                          .filter(
-                                            (d: MatomoDevice) => d.nb_visits && d.nb_visits > 0
-                                          )
-                                          .reduce(
-                                            (sum: number, d: MatomoDevice) =>
-                                              sum + (d.nb_visits || 0),
-                                            0
-                                          ) > 0
-                                          ? ((device.nb_visits || 0) /
-                                              deviceTypes
-                                                .filter(
-                                                  (d: MatomoDevice) =>
-                                                    d.nb_visits && d.nb_visits > 0
-                                                )
-                                                .reduce(
-                                                  (sum: number, d: MatomoDevice) =>
-                                                    sum + (d.nb_visits || 0),
-                                                  0
-                                                )) *
-                                            100
-                                          : 0
-                                      }%`,
-                                    }}
-                                  ></div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Browsers */}
-                      {browsers && Array.isArray(browsers) && browsers.length > 0 && (
-                        <div className="bg-white rounded-lg shadow p-6">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Browsers</h3>
-                          <div className="space-y-3">
-                            {browsers.slice(0, 5).map((browser: MatomoBrowser, index: number) => (
-                              <div key={index} className="flex justify-between items-center">
-                                <span className="text-sm text-gray-700">{browser.label}</span>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-20 bg-gray-200 rounded-full h-2">
-                                    <div
-                                      className="bg-green-600 h-2 rounded-full"
-                                      style={{
-                                        width: `${
-                                          browsers[0]?.nb_visits
-                                            ? ((browser.nb_visits || 0) / browsers[0].nb_visits) *
-                                              100
-                                            : 0
-                                        }%`,
-                                      }}
-                                    ></div>
-                                  </div>
-                                  <span className="text-sm font-medium text-gray-900 w-12">
-                                    {browser.nb_visits?.toLocaleString()}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Operating Systems */}
-                      {operatingSystems &&
-                        Array.isArray(operatingSystems) &&
-                        operatingSystems.length > 0 && (
-                          <div className="bg-white rounded-lg shadow p-6">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                              Operating Systems
-                            </h3>
-                            <ul className="space-y-3">
-                              {operatingSystems.slice(0, 5).map((os: MatomoOS, index: number) => (
-                                <li key={index} className="flex justify-between text-sm">
-                                  <span className="text-gray-700">{os.label}</span>
-                                  <span className="font-medium text-gray-900">
-                                    {os.nb_visits?.toLocaleString()}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Content Section */}
-                {activeSection === 'content' && (
-                  <div className="space-y-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                      {/* Page Titles */}
-                      {pageTitles && Array.isArray(pageTitles) && pageTitles.length > 0 && (
-                        <div className="bg-white rounded-lg shadow">
-                          <div className="px-6 py-4 border-b border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">Top Page Titles</h3>
-                          </div>
-                          <div className="p-6">
-                            <ul className="space-y-3">
-                              {pageTitles.slice(0, 5).map((page: MatomoPage, index: number) => (
-                                <li key={index} className="flex justify-between items-center">
-                                  <span
-                                    className="text-sm text-gray-700 truncate flex-1 mr-2"
-                                    title={page.label}
-                                  >
-                                    {page.label.length > 30
-                                      ? `${page.label.substring(0, 30)}...`
-                                      : page.label}
-                                  </span>
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {page.nb_visits?.toLocaleString()}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Entry Pages */}
-                      {entryPages && Array.isArray(entryPages) && entryPages.length > 0 && (
-                        <div className="bg-white rounded-lg shadow">
-                          <div className="px-6 py-4 border-b border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">Entry Pages</h3>
-                          </div>
-                          <div className="p-6">
-                            <ul className="space-y-3">
-                              {entryPages.slice(0, 5).map((page: MatomoPage, index: number) => (
-                                <li key={index} className="flex justify-between items-center">
-                                  <span
-                                    className="text-sm text-gray-700 truncate flex-1 mr-2"
-                                    title={page.label}
-                                  >
-                                    {page.label.length > 30
-                                      ? `${page.label.substring(0, 30)}...`
-                                      : page.label}
-                                  </span>
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {page.nb_visits?.toLocaleString()}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Exit Pages */}
-                      {exitPages && Array.isArray(exitPages) && exitPages.length > 0 && (
-                        <div className="bg-white rounded-lg shadow">
-                          <div className="px-6 py-4 border-b border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">Exit Pages</h3>
-                          </div>
-                          <div className="p-6">
-                            <ul className="space-y-3">
-                              {exitPages.slice(0, 5).map((page: MatomoPage, index: number) => (
-                                <li key={index} className="flex justify-between items-center">
-                                  <span
-                                    className="text-sm text-gray-700 truncate flex-1 mr-2"
-                                    title={page.label}
-                                  >
-                                    {page.label.length > 30
-                                      ? `${page.label.substring(0, 30)}...`
-                                      : page.label}
-                                  </span>
-                                  <span className="text-sm font-medium text-gray-900">
-                                    {page.nb_visits?.toLocaleString()}
-                                  </span>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Real-time Section */}
-                {activeSection === 'realtime' && (
-                  <div className="space-y-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                      {/* Live Visitors */}
-                      {liveVisitors && (
-                        <div className="bg-gradient-to-r from-green-400 to-green-600 rounded-lg shadow p-6 text-white">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-green-100 text-sm font-medium">
-                                Live Visitors (Last 30 min)
-                              </p>
-                              <p className="mt-2 text-4xl font-bold">{liveVisitors.visits || 0}</p>
-                              <p className="text-green-100 text-sm mt-1">
-                                Active visitors right now
-                              </p>
-                            </div>
-                            <div className="flex items-center justify-center w-16 h-16">
-                              <div className="relative w-12 h-12">
-                                <div className="absolute inset-0 bg-green-300 rounded-full animate-pulse"></div>
-                                <div className="absolute inset-2 bg-green-600 rounded-full"></div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Recent Visits */}
-                      {recentVisits && Array.isArray(recentVisits) && recentVisits.length > 0 && (
-                        <div className="bg-white rounded-lg shadow p-6">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                            Recent Visitor Activity
-                          </h3>
-                          <div className="space-y-3">
-                            {recentVisits.slice(0, 5).map((visit: MatomoVisit, index: number) => (
-                              <div
-                                key={index}
-                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                    <span className="text-xs font-medium text-blue-600">
-                                      {visit.countryCode || '🌍'}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <p className="text-sm font-medium text-gray-900">
-                                      {visit.visitorId?.substring(0, 8) || 'Anonymous'}
-                                    </p>
-                                    <p className="text-xs text-gray-600">
-                                      {visit.lastActionDateTime
-                                        ? new Date(visit.lastActionDateTime).toLocaleTimeString()
-                                        : 'Unknown time'}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="text-right">
-                                  <p className="text-sm font-medium text-gray-900">
-                                    {visit.actions || 0} actions
-                                  </p>
-                                  <p className="text-xs text-gray-600">
-                                    {visit.visitDuration || 0}s
-                                  </p>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* Empty State */}
-            {!isLoading && !visitsSummary && !hasError && (
-              <div className="bg-white rounded-lg shadow p-12 text-center">
-                <p className="text-gray-500">No data available</p>
-              </div>
-            )}
+        {/* Main Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-1.5">
+            <TabsList className="grid w-full grid-cols-6 gap-1 bg-transparent">
+              <TabsTrigger
+                value="overview"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-blue-500/30 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span className="hidden sm:inline">Overview</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="users"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all data-[state=active]:bg-purple-600 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-purple-500/30 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              >
+                <UserCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Users</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="audience"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-blue-500/30 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              >
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Audience</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="technology"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-blue-500/30 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              >
+                <Monitor className="h-4 w-4" />
+                <span className="hidden sm:inline">Technology</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="content"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-blue-500/30 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              >
+                <FileText className="h-4 w-4" />
+                <span className="hidden sm:inline">Content</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="realtime"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-md data-[state=active]:shadow-emerald-500/30 text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+              >
+                <Zap className="h-4 w-4" />
+                <span className="hidden sm:inline">Real-time</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+              </TabsTrigger>
+            </TabsList>
           </div>
+
+          {/* Tab Contents */}
+          <TabsContent value="overview" className="mt-6">
+            <OverviewTab
+              visitsSummary={normalizeSummary(visitsSummary)}
+              pageUrls={normalizeData(pageUrls)}
+              loading={overviewLoading}
+            />
+          </TabsContent>
+
+          <TabsContent value="users" className="mt-6">
+            <UserActivityTab period={period} date={matomoDate} />
+          </TabsContent>
+
+          <TabsContent value="audience" className="mt-6">
+            <AudienceTab
+              countries={normalizeData(countries)}
+              continents={normalizeData(continents)}
+              cities={normalizeData(cities)}
+              languages={normalizeData(languages)}
+              loading={audienceLoading}
+            />
+          </TabsContent>
+
+          <TabsContent value="technology" className="mt-6">
+            <TechnologyTab
+              deviceTypes={normalizeData(deviceTypes)}
+              browsers={normalizeData(browsers)}
+              operatingSystems={normalizeData(operatingSystems)}
+              loading={technologyLoading}
+            />
+          </TabsContent>
+
+          <TabsContent value="content" className="mt-6">
+            <ContentTabComponent
+              pageTitles={normalizeData(pageTitles)}
+              entryPages={normalizeData(entryPages)}
+              exitPages={normalizeData(exitPages)}
+              loading={contentLoading}
+            />
+          </TabsContent>
+
+          <TabsContent value="realtime" className="mt-6">
+            <RealtimeTab
+              liveVisitors={liveVisitors}
+              recentVisits={recentVisits}
+              loading={realtimeLoading}
+              onRefresh={handleRefreshRealtime}
+            />
+          </TabsContent>
+        </Tabs>
+
+        {/* Footer */}
+        <div className="mt-8 text-center text-sm text-slate-500">
+          <p>Powered by Matomo Analytics • Data updates every 30 seconds for real-time stats</p>
         </div>
       </div>
     </div>

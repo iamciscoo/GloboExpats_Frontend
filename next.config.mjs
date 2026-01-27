@@ -77,6 +77,16 @@ const nextConfig = {
         },
       },
     },
+    // Better webpack caching to prevent chunk errors
+    webpackBuildWorker: true,
+  },
+
+  // Add onDemandEntries for better chunk management
+  onDemandEntries: {
+    // Period (in ms) where the server will keep pages in the buffer
+    maxInactiveAge: 25 * 1000,
+    // Number of pages that should be kept simultaneously without being disposed
+    pagesBufferLength: 2,
   },
 
   // Allow development access from network IP addresses
@@ -262,30 +272,34 @@ const nextConfig = {
    * =============================================================================
    */
   webpack: (config, { dev, isServer, webpack }) => {
-    // Optimize bundle splitting for better caching
+    // Only apply optimizations in production builds
     if (!dev && !isServer) {
       config.optimization = {
         ...config.optimization,
         splitChunks: {
           chunks: 'all',
+          maxSize: 244000, // Limit chunk size to prevent timeout issues
           cacheGroups: {
             vendor: {
               test: /[\\/]node_modules[\\/]/,
               name: 'vendors',
               priority: 10,
               chunks: 'all',
+              maxSize: 244000,
             },
             radix: {
               test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
               name: 'radix',
               priority: 20,
               chunks: 'all',
+              maxSize: 244000,
             },
             lucide: {
               test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
               name: 'icons',
               priority: 20,
               chunks: 'all',
+              maxSize: 244000,
             },
             common: {
               name: 'common',
@@ -293,6 +307,7 @@ const nextConfig = {
               priority: 5,
               chunks: 'all',
               reuseExistingChunk: true,
+              maxSize: 244000,
             },
           },
         },
