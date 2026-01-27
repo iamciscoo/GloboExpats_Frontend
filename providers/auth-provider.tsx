@@ -181,8 +181,7 @@ const createDefaultVerificationStatus = (
   const isBackendVerified =
     (user as { isVerified?: boolean })?.isVerified === true ||
     (user as { verificationStatus?: string })?.verificationStatus === 'VERIFIED' ||
-    (user as { backendVerificationStatus?: string })?.backendVerificationStatus === 'VERIFIED' ||
-    (user as { isOrganizationEmailVerified?: boolean })?.isOrganizationEmailVerified === true
+    (user as { backendVerificationStatus?: string })?.backendVerificationStatus === 'VERIFIED'
 
   // Simplified logic: Email verified = all access
   return {
@@ -459,13 +458,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         verificationStatus: {
           isFullyVerified: userDetails.verificationStatus === 'VERIFIED',
           isIdentityVerified: userDetails.passportVerificationStatus === 'VERIFIED',
-          isOrganizationEmailVerified: !!userDetails.organizationalEmail,
-          canBuy:
-            userDetails.verificationStatus === 'VERIFIED' || !!userDetails.organizationalEmail,
-          canList:
-            userDetails.verificationStatus === 'VERIFIED',
-          canSell:
-            userDetails.verificationStatus === 'VERIFIED',
+          isOrganizationEmailVerified: userDetails.verificationStatus === 'VERIFIED',
+          canBuy: userDetails.verificationStatus === 'VERIFIED',
+          canList: userDetails.verificationStatus === 'VERIFIED',
+          canSell: userDetails.verificationStatus === 'VERIFIED',
           canContact: userDetails.verificationStatus === 'VERIFIED',
           currentStep: userDetails.verificationStatus === 'VERIFIED' ? 'complete' : 'identity',
           pendingActions: userDetails.verificationStatus === 'PENDING' ? ['admin_review'] : [],
