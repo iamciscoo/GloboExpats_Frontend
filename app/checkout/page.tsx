@@ -38,6 +38,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { useUserProfile } from '@/hooks/use-user-profile'
 import { useVerification } from '@/hooks/use-verification'
 import PriceDisplay from '@/components/price-display'
+import { useCurrency } from '@/providers/currency-provider'
 import { toast } from '@/components/ui/use-toast'
 import {
   api,
@@ -143,6 +144,7 @@ export default function CheckoutPage() {
     removeFromCart,
   } = useCart()
   const { checkVerification } = useVerification()
+  const { selectedCurrency } = useCurrency()
 
   // Check verification on page load
   useEffect(() => {
@@ -354,11 +356,8 @@ export default function CheckoutPage() {
   // const shippingCost = 0
   const totalAmount = checkoutSubtotal // No shipping cost added to checkout total
 
-  // Format currency based on selected country
-  const formatPrice = (amount: number) => {
-    const currency = selectedCountryData?.currency || 'TZS'
-    return `${currency} ${amount.toLocaleString()}`
-  }
+
+
 
   // Handler functions - defined before any early returns (Rules of Hooks)
   const handleAddressChange = useCallback((field: keyof ShippingAddress, value: string) => {
@@ -1834,7 +1833,7 @@ export default function CheckoutPage() {
                             <p className="text-xs text-neutral-500">Qty: {item.quantity}</p>
                           </div>
                           <div className="text-right">
-                            <p className="font-medium">{formatPrice(item.price * item.quantity)}</p>
+                            <p className="font-medium"><PriceDisplay price={item.price * item.quantity} /></p>
                           </div>
                         </div>
                       ))}
@@ -2008,11 +2007,18 @@ export default function CheckoutPage() {
                   <Separator className="my-3" />
 
                   <div className="bg-neutral-50 p-4 rounded-xl border border-neutral-200">
-                    <div className="flex justify-between items-center">
-                      <span className="text-base font-bold text-gray-800">Total</span>
-                      <span className="text-xl font-bold text-brand-primary">
-                        <PriceDisplay price={totalAmount} size="lg" weight="bold" showOriginal />
-                      </span>
+                    <div className="flex justify-between items-start">
+                      <span className="text-base font-bold text-gray-800 mt-1">Total</span>
+                      <div className="text-right">
+                        <span className="text-xl font-bold text-brand-primary block">
+                          <PriceDisplay price={totalAmount} size="lg" weight="bold" showOriginal />
+                        </span>
+                        {selectedCurrency !== 'TZS' && (
+                          <p className="text-xs text-neutral-500 font-medium mt-0.5">
+                            Approx. TZS {totalAmount.toLocaleString()}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
